@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "main:main.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "cpu.pc">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "CPU::step(bool):cpu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "pc">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::step(long):ppu.h">
+         <PersistentStrings>
+            <PersistentString
+               value = "ncycles">
+            </PersistentString>
+            <PersistentString
+               value = "(int)line">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::update_stat_register():ppu.cc">
+      </ContextState>
+      <ContextState
+         contextName = "MMU::set(unsigned short, unsigned char):mmu.h">
+         <PersistentStrings>
+            <PersistentString
+               value = "mem">
+            </PersistentString>
+            <PersistentString
+               value = "mem.__elems_[src]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

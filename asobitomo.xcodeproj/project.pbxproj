@@ -7,24 +7,42 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A2CCE567203A97FD00F3FD4F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE566203A97FD00F3FD4F /* main.cpp */; };
+		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
+		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
+		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
+		A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE576203A981900F3FD4F /* mmu.cc */; };
+		A2CCE57D203A9D6700F3FD4F /* Tetris.gb in Copy Files */ = {isa = PBXBuildFile; fileRef = A2CCE57C203A9C3600F3FD4F /* Tetris.gb */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A2CCE561203A97FD00F3FD4F /* CopyFiles */ = {
+		A2CCE561203A97FD00F3FD4F /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
+				A2CCE57D203A9D6700F3FD4F /* Tetris.gb in Copy Files */,
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
-		A2CCE566203A97FD00F3FD4F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		A2CCE56E203A981800F3FD4F /* ppu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ppu.h; sourceTree = "<group>"; };
+		A2CCE56F203A981800F3FD4F /* flags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = flags.h; sourceTree = "<group>"; };
+		A2CCE570203A981800F3FD4F /* cpu_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu_macros.h; sourceTree = "<group>"; };
+		A2CCE571203A981800F3FD4F /* main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cc; sourceTree = "<group>"; };
+		A2CCE572203A981800F3FD4F /* cpu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cpu.cc; sourceTree = "<group>"; };
+		A2CCE573203A981800F3FD4F /* cpu_bc_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu_bc_macros.h; sourceTree = "<group>"; };
+		A2CCE574203A981900F3FD4F /* ppu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ppu.cc; sourceTree = "<group>"; };
+		A2CCE575203A981900F3FD4F /* cpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
+		A2CCE576203A981900F3FD4F /* mmu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mmu.cc; sourceTree = "<group>"; };
+		A2CCE577203A981900F3FD4F /* mmu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mmu.h; sourceTree = "<group>"; };
+		A2CCE57C203A9C3600F3FD4F /* Tetris.gb */ = {isa = PBXFileReference; lastKnownFileType = file; path = Tetris.gb; sourceTree = "<group>"; };
+		A2F50360203C9BDB000FCD02 /* op_names.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = op_names.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +75,19 @@
 		A2CCE565203A97FD00F3FD4F /* asobitomo */ = {
 			isa = PBXGroup;
 			children = (
-				A2CCE566203A97FD00F3FD4F /* main.cpp */,
+				A2CCE57C203A9C3600F3FD4F /* Tetris.gb */,
+				A2CCE573203A981800F3FD4F /* cpu_bc_macros.h */,
+				A2CCE570203A981800F3FD4F /* cpu_macros.h */,
+				A2CCE572203A981800F3FD4F /* cpu.cc */,
+				A2CCE575203A981900F3FD4F /* cpu.h */,
+				A2CCE56F203A981800F3FD4F /* flags.h */,
+				A2CCE571203A981800F3FD4F /* main.cc */,
+				A2CCE576203A981900F3FD4F /* mmu.cc */,
+				A2CCE577203A981900F3FD4F /* mmu.h */,
+				A2CCE574203A981900F3FD4F /* ppu.cc */,
+				A2CCE56E203A981800F3FD4F /* ppu.h */,
+				A2CCE56D203A981800F3FD4F /* types.h */,
+				A2F50360203C9BDB000FCD02 /* op_names.h */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
@@ -71,7 +101,7 @@
 			buildPhases = (
 				A2CCE55F203A97FD00F3FD4F /* Sources */,
 				A2CCE560203A97FD00F3FD4F /* Frameworks */,
-				A2CCE561203A97FD00F3FD4F /* CopyFiles */,
+				A2CCE561203A97FD00F3FD4F /* Copy Files */,
 			);
 			buildRules = (
 			);
@@ -119,7 +149,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A2CCE567203A97FD00F3FD4F /* main.cpp in Sources */,
+				A2CCE579203A981900F3FD4F /* cpu.cc in Sources */,
+				A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */,
+				A2CCE578203A981900F3FD4F /* main.cc in Sources */,
+				A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -19,7 +19,7 @@ int main() {
   int i = 0;
   while (i++ <= 100000000) {
 //    cpu.step(i >= 100000000 - 1000);
-  if (cpu.pc == 0x021b) {
+  if (cpu.pc == 0x029b) {
   ;
   }
     cpu.step(false);

@@ -212,7 +212,7 @@ void CPU::dump_state() {
     << "\tSCY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff42))
     << "\tSCX: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff43)) << endl;
   cout << "LCDC: " << binary(mmu._read_mem(0xff40))
-    << "\t\tSTAT: " << binary(mmu._read_mem(0xff44)) << endl;
+    << "\t\tSTAT: " << binary(mmu._read_mem(0xff41)) << endl;
   cout <<
     "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
     "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
