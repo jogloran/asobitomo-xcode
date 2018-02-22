@@ -1,15 +1,35 @@
 #include <iostream>
 #include <iomanip>
+#include <vector>
 #include <fstream>
+#include <algorithm>
+#include <deque>
 #include "types.h"
 #include "cpu.h"
 
 using namespace std;
 
+size_t history_repeating(std::deque<word> history) {
+  for (auto i = 10; i >= 2; --i) {
+    if (history.size() < 2*i) continue;
+    
+    if (std::equal(history.end() - i, history.end(), history.end() - 2*i)) {
+      return i;
+    }
+  }
+  
+  return 0;
+}
+
 int main() {
-  CPU cpu("/Users/jogloran-s/my/asobitomo/Tetris.gb");
+  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
 
   copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
+  
+  std::deque<word> history;
+  size_t repeating = 0;
+  size_t last_period = 0;
+  const bool debug = true;
 
   while (!cpu.halted && cpu.pc != 0x100) {
     // bool debug = cpu.mmu[0xff44] >= 143 && cpu.mmu[0xff44] <= 153;
@@ -17,12 +37,35 @@ int main() {
   }
   //
   int i = 0;
-  while (i++ <= 100000000) {
-//    cpu.step(i >= 100000000 - 1000);
-  if (cpu.pc == 0x029b) {
-  ;
-  }
-    cpu.step(false);
+  while (i++ <= 1000000000) {
+    if (cpu.pc == 0x7ff3) {
+      ;
+    }
+    history.emplace_back(cpu.pc);
+    if (history.size() >= 20) {
+      history.pop_front();
+    }
+    
+    bool should_dump = false;
+    
+    if (debug) {
+      auto period = history_repeating(history);
+      if (period) {
+        repeating++;
+        if (repeating == 1) {
+          should_dump = true;
+        }
+      } else {
+        if (repeating > 0 && should_dump) {
+          std::cout << "\t... [last " << last_period << " ops repeated " << dec << repeating << " times]" << std::endl << std::endl;
+        }
+        
+        repeating = 0;
+      }
+      last_period = period;
+    }
+    
+    cpu.step(should_dump);
   }
 
   cpu.dump_state();

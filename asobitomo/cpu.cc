@@ -228,6 +228,7 @@ void CPU::dump_state() {
     "N: " << setw(2) << hex << static_cast<int>(N()) << ' ' <<
     "H: " << setw(2) << hex << static_cast<int>(H()) << ' ' <<
     "C: " << setw(2) << hex << static_cast<int>(C()) << ' ' << endl;
+  cout << endl;
 }
 
 
@@ -248,8 +249,6 @@ void CPU::fire_interrupts() {
   if (interrupt_enabled == InterruptState::Disabled) {
     return;
   }
-
-  interrupt_enabled = InterruptState::Disabled;
 
   byte interrupt_enable = mmu._read_mem(0xffff);
   byte interrupt_flags = mmu._read_mem(0xff0f);
@@ -305,8 +304,4 @@ void CPU::step(bool debug)  {
   cycles += ncycles[instr];
 
   ppu.step(cycles - old_cycles);
-
-  if (debug) {
-    cout << endl;
-  }
 }

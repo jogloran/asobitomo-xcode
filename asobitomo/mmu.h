@@ -65,6 +65,10 @@ public:
       ; // writing to background tilemap 1
     }
     
+    if (loc == 0x7ff3) {
+      ;
+    }
+    
     if (loc >= 0x2000 && loc <= 0x3fff) {
       if (value == 0x00) {
         bank = 1;
@@ -102,17 +106,17 @@ public:
 
   // const byte& operator[](word loc) const;
   byte& _read_mem(int loc) {
-  if (loc == 0x415f) {
-  ; // writing tile data?
-  // called by 27c3
-  // called by 27d7
-  // called by 036c
-  
-  }
-  if (loc == 0x020c) {
-  ; // beginning of code
-  }
-    // return mem[loc];
+    if (loc == 0x415f) {
+    ; // writing tile data?
+    // called by 27c3
+    // called by 27d7
+    // called by 036c
+    
+    }
+    if (loc == 0x020c) {
+    ; // beginning of code
+    }
+
     if (loc >= 0xff00 && loc <= 0xff7f) {
       accessed[loc - 0xff00]++;
     }
@@ -135,7 +139,8 @@ public:
       return cart[loc]; /* rom bank 0 0x150 - 0x3fff */
     } else if (loc <= 0x7fff) {
       /* rom bank switchable 0x4000 - 0x7fff */
-      return cart[bank * 0x4000 + loc];
+//      return cart[bank * 0x4000 + loc];
+      return cart[loc]; /* TODO: this only works on non-MBC */
     } else if (loc <= 0x97ff) {
       return mem[loc]; /* RAM 0x8000 - 0x97ff */
     } else if (loc <= 0x9bff) {
