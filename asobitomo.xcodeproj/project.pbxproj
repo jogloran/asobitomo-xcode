@@ -41,7 +41,7 @@
 		A2CCE575203A981900F3FD4F /* cpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
 		A2CCE576203A981900F3FD4F /* mmu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mmu.cc; sourceTree = "<group>"; };
 		A2CCE577203A981900F3FD4F /* mmu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mmu.h; sourceTree = "<group>"; };
-		A2CCE57C203A9C3600F3FD4F /* Tetris.gb */ = {isa = PBXFileReference; lastKnownFileType = file; path = Tetris.gb; sourceTree = "<group>"; };
+		A2CCE57C203A9C3600F3FD4F /* Tetris.gb */ = {isa = PBXFileReference; lastKnownFileType = file; name = Tetris.gb; path = ../../asobitomo/Tetris.gb; sourceTree = "<group>"; };
 		A2F50360203C9BDB000FCD02 /* op_names.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = op_names.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 

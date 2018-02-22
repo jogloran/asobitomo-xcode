@@ -52,7 +52,7 @@ typedef void (*op)(CPU&);
 class CPU {
 public:
   CPU(std::string path): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
-    pc(0x0000), sp(0x0000), cycles(0), mmu(path), ppu(*this), halted(false),
+    pc(0x0000), sp(0x0000), cycles(0), ppu(*this), mmu(path, ppu), halted(false),
     interrupt_enabled(InterruptState::Disabled) {}
 
   enum class InterruptState {
@@ -121,11 +121,12 @@ public:
   word pc, sp;
   long cycles;
 
-  MMU mmu;
   PPU ppu;
+  MMU mmu;
   bool halted;
 
   InterruptState interrupt_enabled;
+  std::string interrupt_state_as_string(InterruptState state);
 
   static constexpr size_t NINSTR = 256;
 

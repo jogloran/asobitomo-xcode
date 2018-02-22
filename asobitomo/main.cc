@@ -22,14 +22,15 @@ size_t history_repeating(std::deque<word> history) {
 }
 
 int main() {
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
+  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
 
   copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
+  cpu.mmu[0xff80] = 0xf; // joypad initialis.ation
   
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
-  const bool debug = true;
+  const bool debug = false;
 
   while (!cpu.halted && cpu.pc != 0x100) {
     // bool debug = cpu.mmu[0xff44] >= 143 && cpu.mmu[0xff44] <= 153;
@@ -38,15 +39,14 @@ int main() {
   //
   int i = 0;
   while (i++ <= 1000000000) {
-    if (cpu.pc == 0x7ff3) {
-      ;
+    bool should_dump = false;
+    if (cpu.pc == 0x0205) {
+//      should_dump = true;
     }
     history.emplace_back(cpu.pc);
     if (history.size() >= 20) {
       history.pop_front();
     }
-    
-    bool should_dump = false;
     
     if (debug) {
       auto period = history_repeating(history);
@@ -56,11 +56,12 @@ int main() {
           should_dump = true;
         }
       } else {
-        if (repeating > 0 && should_dump) {
-          std::cout << "\t... [last " << last_period << " ops repeated " << dec << repeating << " times]" << std::endl << std::endl;
+        if (repeating > 0) {
+          std::cout << "\t... [last " << dec << last_period << " ops repeated " << dec << repeating << " times]" << std::endl << std::endl;
         }
         
         repeating = 0;
+        should_dump = true;
       }
       last_period = period;
     }

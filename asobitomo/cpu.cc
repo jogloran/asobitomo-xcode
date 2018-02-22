@@ -200,6 +200,13 @@ std::string CPU::op_name_for(word loc) {
   }
 }
 
+std::string CPU::interrupt_state_as_string(InterruptState state) {
+  static std::string state_strings[] {
+    "Disabled", "Disable Next", "Enable Next", "Enabled",
+  };
+  return state_strings[static_cast<int>(state)];
+}
+
 void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<
@@ -213,6 +220,10 @@ void CPU::dump_state() {
     << "\tSCX: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff43)) << endl;
   cout << "LCDC: " << binary(mmu._read_mem(0xff40))
     << "\t\tSTAT: " << binary(mmu._read_mem(0xff41)) << endl;
+  cout << "IF: " << binary(mmu._read_mem(0xff0f))
+    << "\t\tIE: " << binary(mmu._read_mem(0xffff)) << endl;
+  cout << "Interrupts: " << interrupt_state_as_string(interrupt_enabled) << endl;
+  cout << "0xff85: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff85)) << endl;
   cout <<
     "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
     "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
@@ -256,21 +267,28 @@ void CPU::fire_interrupts() {
   byte candidate_interrupts = interrupt_enable & interrupt_flags;
 
   word handler = 0x0;
+  byte handled_interrupt;
   if (candidate_interrupts & 0x1) {
+    handled_interrupt = 0x1;
     handler = 0x40; // vblank interrupt
   } else if (candidate_interrupts & 0x2) {
+    handled_interrupt = 0x2;
     handler = 0x48; // STAT interrupt
   } else if (candidate_interrupts & 0x4) {
+    handled_interrupt = 0x4;
     handler = 0x50; // timer interrupt
   } else if (candidate_interrupts & 0x8) {
+    handled_interrupt = 0x8;
     handler = 0x58; // serial interrupt
   } else if (candidate_interrupts & 0x10) {
+    handled_interrupt = 0x10;
     handler = 0x60; // joypad interrupt
   } else {
     return;
   }
 
   interrupt_enabled = InterruptState::Disabled;
+  mmu.set(0xff0f, interrupt_flags & ~handled_interrupt);
   mmu[sp - 1] = pc >> 8;
   mmu[sp] = pc & 0xff;
   sp -= 2;
@@ -290,8 +308,6 @@ void CPU::step(bool debug)  {
   }
 
   byte instr = mmu[pc];
-
-  byte ly = static_cast<int>(mmu._read_mem(0xff44));
 
   if (debug) {
     dump_state();

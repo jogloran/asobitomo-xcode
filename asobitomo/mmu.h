@@ -11,6 +11,7 @@
 using namespace std;
 
 #include "types.h"
+#include "ppu.h"
 
 class MMU {
 public:
@@ -38,7 +39,7 @@ public:
       byte complement_cksum;
       byte cksum;
     };
-  MMU(std::string path): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true) {
+  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xf) {
     fill(mem.begin(), mem.end(), 0);
 
     std::ifstream f(path);
@@ -74,6 +75,15 @@ public:
         bank = 1;
       } else {
         bank = value & 0x1f;
+      }
+    }
+    
+    if (loc == 0xff40) {
+      // LCD stat
+      if (value & (1 << 7)) {
+        ppu.set_lcd(true);
+      } else {
+        ppu.set_lcd(false);
       }
     }
 
@@ -124,6 +134,10 @@ public:
     if (loc == 0xff46) { // DMA
       return mem[loc];
     }
+    
+    if (loc == 0xff00) { //joypad
+      return joypad;
+    }
 
     if (loc <= 0x00ff) {
       // std::cout << "rom" << std::endl;
@@ -161,7 +175,7 @@ public:
          0xc000 - 0xcdff */
       return mem[loc - 0x2000];
     } else if (loc <= 0xfe9f) {
-      return mem[loc]; /* 0xfe00 - 0xf39f */
+      return mem[loc]; /* 0xfe00 - 0xfe9f */
     // } else if (loc <= 0xfeff) {
     // } else if (loc <= 0xff7f) {
     // } else if (loc <= 0xfffe) {
@@ -178,6 +192,7 @@ public:
   static constexpr int RAM_BYTES = 65536;
   static constexpr word CARTRIDGE_TYPE_OFFSET = 0x0147;
 
+  PPU& ppu;
   byte bank;
   std::array<byte, RAM_BYTES> mem;
   std::vector<byte> rom {
@@ -207,4 +222,5 @@ public:
   std::vector<byte> cart;
 
   bool rom_mapped;
+  byte joypad;
 };
