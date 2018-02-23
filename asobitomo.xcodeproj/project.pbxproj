@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09079489204089140063686E /* screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09079488204089140063686E /* screen.cc */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
 		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
 		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
@@ -29,6 +30,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		09079487204089140063686E /* screen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screen.h; sourceTree = "<group>"; };
+		09079488204089140063686E /* screen.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cc; sourceTree = "<group>"; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		A2CCE56E203A981800F3FD4F /* ppu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ppu.h; sourceTree = "<group>"; };
@@ -75,6 +78,8 @@
 		A2CCE565203A97FD00F3FD4F /* asobitomo */ = {
 			isa = PBXGroup;
 			children = (
+				09079488204089140063686E /* screen.cc */,
+				09079487204089140063686E /* screen.h */,
 				A2CCE57C203A9C3600F3FD4F /* Tetris.gb */,
 				A2CCE573203A981800F3FD4F /* cpu_bc_macros.h */,
 				A2CCE570203A981800F3FD4F /* cpu_macros.h */,
@@ -152,6 +157,7 @@
 				A2CCE579203A981900F3FD4F /* cpu.cc in Sources */,
 				A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */,
 				A2CCE578203A981900F3FD4F /* main.cc in Sources */,
+				09079489204089140063686E /* screen.cc in Sources */,
 				A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

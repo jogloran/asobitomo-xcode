@@ -49,30 +49,6 @@ public:
   void set(word loc, byte value) {
     // std::cout << hex<<loc << std::endl;
     mem[loc] = value;
-    if (!rom_mapped && value != 0x0 && (loc == 0xff42 || loc == 0xff43)) {
-      // scroll
-      ;
-    }
-    
-    if (!rom_mapped && loc >= 0x8000 && loc <= 0x97ff && value != 0x2f && value != 0x00) {
-      ; // writing to VRAM
-    }
-    
-    if (!rom_mapped && loc >= 0xfe00 && loc <= 0xfe9f) {
-      ; // writing to sprite OAM
-    }
-    
-    if (!rom_mapped && loc >= 0x9800 && loc <= 0x9bff) {
-      ; // writing to background tilemap 1
-    }
-    
-    if (loc == 0x7ff3) {
-      ;
-    }
-    
-    if (loc >= 0xc000 && loc <= 0xc09f) {
-//      ;
-    }
     
     if (loc >= 0x2000 && loc <= 0x3fff) {
       if (value == 0x00) {
@@ -84,11 +60,14 @@ public:
     
     if (loc == 0xff40) {
       // LCD stat
-      if (value & (1 << 7)) {
-        ppu.set_lcd(true);
-      } else {
-        ppu.set_lcd(false);
-      }
+      ppu.set_lcd_on(value & (1 << 7));
+      ppu.set_window_tilemap_offset(value & (1 << 6) ? 0x9c00 : 0x9800);
+      ppu.set_window_display(value & (1 << 5));
+      ppu.set_bg_window_tile_data_offset(value & (1 << 4) ? 0x8000 : 0x8800);
+      ppu.set_bg_tilemap_offset(value & (1 << 3) ? 0x9c00 : 0x9800);
+      ppu.set_sprite_mode(value & (1 << 2) ? PPU::SpriteMode::S8x16 : PPU::SpriteMode::S8x8);
+      ppu.set_sprite_display(value & (1 << 1));
+      ppu.set_bg_display(value & 0x1);
     }
 
     if (loc == 0xff46) {
@@ -120,17 +99,6 @@ public:
 
   // const byte& operator[](word loc) const;
   byte& _read_mem(int loc) {
-    if (loc == 0x415f) {
-    ; // writing tile data?
-    // called by 27c3
-    // called by 27d7
-    // called by 036c
-    
-    }
-    if (loc == 0x020c) {
-    ; // beginning of code
-    }
-
     if (loc >= 0xff00 && loc <= 0xff7f) {
       accessed[loc - 0xff00]++;
     }
