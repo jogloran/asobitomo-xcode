@@ -95,15 +95,15 @@ PPU::update_stat_register()  {
     ((stat & 0x10) && mode == Mode::VBLANK) ||
     ((stat & 0x08) && mode == Mode::HBLANK);
   if (set_lcd_interrupt) {
-    IF |= 1 << 2;
-  } else {
-    IF &= ~(1 << 2);
-  }
-  
-  if (mode == Mode::VBLANK) {
     IF |= 1 << 1;
   } else {
     IF &= ~(1 << 1);
+  }
+  
+  if (mode == Mode::VBLANK) {
+    IF |= 1 << 0;
+  } else {
+    IF &= ~(1 << 0);
   }
   
   cpu.mmu.set(0xff0f, IF);

@@ -126,6 +126,7 @@ public:
   bool halted;
 
   InterruptState interrupt_enabled;
+  std::string ppu_state_as_string(PPU::Mode mode);
   std::string interrupt_state_as_string(InterruptState state);
 
   static constexpr size_t NINSTR = 256;

@@ -31,4 +31,6 @@ private:
   bool lcd_on;
 
   CPU& cpu;
+  
+  friend class CPU;
 };

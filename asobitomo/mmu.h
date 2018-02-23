@@ -70,6 +70,10 @@ public:
       ;
     }
     
+    if (loc >= 0xc000 && loc <= 0xc09f) {
+//      ;
+    }
+    
     if (loc >= 0x2000 && loc <= 0x3fff) {
       if (value == 0x00) {
         bank = 1;

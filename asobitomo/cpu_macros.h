@@ -532,7 +532,7 @@ CP8_HELPER(a)
 
 #define JP_HL() [](CPU& cpu) { \
   word hl = (cpu.h << 8) | cpu.l; \
-  cpu.pc = cpu.mmu[hl]; \
+  cpu.pc = hl; \
 }
 
 #define LD_SP_HL() [](CPU& cpu) { \

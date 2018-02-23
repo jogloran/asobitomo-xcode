@@ -207,6 +207,13 @@ std::string CPU::interrupt_state_as_string(InterruptState state) {
   return state_strings[static_cast<int>(state)];
 }
 
+std::string CPU::ppu_state_as_string(PPU::Mode mode) {
+  static std::string mode_strings[] {
+    "hblank", "vblank", "oam", "vram"
+  };
+  return mode_strings[static_cast<int>(mode)];
+}
+
 void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<
@@ -219,7 +226,8 @@ void CPU::dump_state() {
     << "\tSCY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff42))
     << "\tSCX: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff43)) << endl;
   cout << "LCDC: " << binary(mmu._read_mem(0xff40))
-    << "\t\tSTAT: " << binary(mmu._read_mem(0xff41)) << endl;
+    << "\t\tSTAT: " << binary(mmu._read_mem(0xff41))
+    << " (" << ppu_state_as_string(ppu.mode) << ")" << endl;
   cout << "IF: " << binary(mmu._read_mem(0xff0f))
     << "\t\tIE: " << binary(mmu._read_mem(0xffff)) << endl;
   cout << "Interrupts: " << interrupt_state_as_string(interrupt_enabled) << endl;
@@ -288,6 +296,7 @@ void CPU::fire_interrupts() {
   }
 
   interrupt_enabled = InterruptState::Disabled;
+//  std::cout << "<><> handling interrupt: " << hex << handled_interrupt << std::endl;
   mmu.set(0xff0f, interrupt_flags & ~handled_interrupt);
   mmu[sp - 1] = pc >> 8;
   mmu[sp] = pc & 0xff;

@@ -38,9 +38,10 @@ int main() {
   }
   //
   int i = 0;
-  while (i++ <= 1000000000) {
+//  while (i++ <= 10000000) {
+  while (cpu.pc != 0x037e) {
     bool should_dump = false;
-    if (cpu.pc == 0x0205) {
+    if (cpu.pc == 0x02f8) {
 //      should_dump = true;
     }
     history.emplace_back(cpu.pc);
@@ -52,9 +53,7 @@ int main() {
       auto period = history_repeating(history);
       if (period) {
         repeating++;
-        if (repeating == 1) {
-          should_dump = true;
-        }
+        should_dump = (repeating == 1);
       } else {
         if (repeating > 0) {
           std::cout << "\t... [last " << dec << last_period << " ops repeated " << dec << repeating << " times]" << std::endl << std::endl;
