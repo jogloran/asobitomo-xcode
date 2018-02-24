@@ -3,6 +3,8 @@
 #include "types.h"
 #include "screen.h"
 
+#include <array>
+
 class CPU;
 
 class PPU {
@@ -11,7 +13,7 @@ public:
     S8x8, S8x16
   };
   
-  PPU(CPU& cpu): screen(),
+  PPU(CPU& cpu): raster(), screen(),
     line(0), mode(Mode::OAM), ncycles(0), vblank_ncycles(0), cpu(cpu), lcd_on(false),
     window_tilemap_offset(0), window_display(false),
     bg_window_tile_data_offset(0),
@@ -51,9 +53,12 @@ public:
   void set_bg_display(bool on) {
     bg_display = on;
   }
-  
+  void rasterise_line();
 private:
 
+  std::array<byte, 256> raster;
+  
+  
   void update_stat_register();
   
   Screen screen;

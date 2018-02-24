@@ -35,6 +35,9 @@ PPU::step(long delta) {
         mode = Mode::HBLANK;
         ncycles -= 172;
         // write one row to framebuffer
+        
+        rasterise_line();
+        screen.set_row(line, raster.begin(), raster.end());
       }
       
       update_stat_register();
@@ -107,4 +110,60 @@ PPU::update_stat_register()  {
   }
   
   cpu.mmu.set(0xff0f, IF);
+}
+
+struct OAM {
+  byte y;
+  byte x;
+  byte tile_index;
+  byte flags;
+};
+
+void
+PPU::rasterise_line() {
+  byte& oam_ref = cpu.mmu._read_mem(0xfe00);
+  OAM* oam = reinterpret_cast<OAM*>(&oam_ref);
+  
+  // render bg
+  // render window
+  // render sprites
+  
+  // bg
+  // find bg tiles which intersect this line
+  // line / 8 will intersect this line
+  // bg_tilemap_offset is the beginning of bg tiles (32x32, one byte per tile)
+  // if bg_tilemap_offset is 0x9800, tile IDs are unsigned offsets 0 - 255
+  // if bg_tilemap_offset is 0x9c00, tile IDs are signed offsets -127 - 128
+  
+  // bg and window tile data comes from either 0x8000-0x8fff (1) or 0x8800-0x97ff (0)
+  // according to LCDC bit 4
+  byte scx = cpu.mmu._read_mem(0xff43);
+  byte scy = cpu.mmu._read_mem(0xff42);
+  byte palette = cpu.mmu._read_mem(0xff47);
+  
+  if (bg_display) {
+    // line is from 0 to 143 and 144 to 153 during vblank
+    word bg_tilemap_row_offset = bg_tilemap_offset + (line / 8) * 32;
+  }
+  
+  if (window_display) {
+    
+  }
+  
+  if (sprite_display) {
+    // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
+    for (size_t j = 0; j < 40; ++j) {
+      OAM entry = oam[j];
+      
+      for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
+        if (entry.x != 0x0 && line + 16 >= entry.y && line + 16 < entry.y + 8) {
+          // sprite is visible on this line
+          raster[x] = 0;
+          
+        }
+      }
+    }
+  }
+  
+  
 }

@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 tiles_fn = sys.argv[1]
-data = np.fromfile(open(tiles_fn), dtype=np.uint8, sep=' ').reshape((256, 16))
+data = np.fromfile(open(tiles_fn), dtype=np.uint8, sep=' ').reshape((512, 16))
 
 btt_fn = sys.argv[2]
 btt = np.fromfile(open(btt_fn), dtype=np.uint8, sep=' ').reshape((32, 32))

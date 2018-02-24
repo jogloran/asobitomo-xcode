@@ -14,8 +14,8 @@ public:
     std::copy(begin, end, fb.begin() + row * BUF_WIDTH);
   }
   
-  static constexpr int BUF_WIDTH = 32;
-  static constexpr int BUF_HEIGHT = 32;
+  static constexpr int BUF_WIDTH = 256;
+  static constexpr int BUF_HEIGHT = 256;
   
 private:
   std::vector<byte> fb;

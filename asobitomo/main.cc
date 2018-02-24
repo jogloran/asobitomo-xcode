@@ -23,7 +23,7 @@ size_t history_repeating(std::deque<word> history) {
 
 int main() {
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/test.gb");
+  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
 
   copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
   cpu.mmu[0xff80] = 0xf; // joypad initialis.ation
@@ -31,7 +31,7 @@ int main() {
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
-  const bool debug = true;
+  const bool debug = false;
 
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
@@ -69,6 +69,7 @@ int main() {
   }
 
   cpu.dump_state();
+  cpu.ppu.rasterise_line();
 
   std::ofstream out("vram");
   copy(cpu.mmu.mem.begin() + 0x8000, cpu.mmu.mem.begin() + 0xa000, ostream_iterator<unsigned int>(out, " "));
