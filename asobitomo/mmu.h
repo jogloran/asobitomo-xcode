@@ -17,30 +17,10 @@ class MMU {
 public:
   std::vector<int> accessed;
 
-    struct Header {
-      byte boot_rom[0x100];
-
-      uint16_t nop;
-      uint16_t jmp;
-
-      byte logo[48];
-
-      char title[0x0b];
-      char designation[4];
-      char licensee[2];
-
-      byte sgb_compatible;
-      byte cart_type;
-      byte rom_size;
-      byte ram_size;
-      byte destination;
-      byte old_licensee;
-      byte mask_rom_version;
-      byte complement_cksum;
-      byte cksum;
-    };
-  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xf) {
+  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xff) {
     fill(mem.begin(), mem.end(), 0);
+    
+    mem[0xf000] = 0xff;
 
     std::ifstream f(path);
     f.read((char*)cart.data(), 32768);
@@ -68,6 +48,18 @@ public:
       ppu.set_sprite_mode(value & (1 << 2) ? PPU::SpriteMode::S8x16 : PPU::SpriteMode::S8x8);
       ppu.set_sprite_display(value & (1 << 1));
       ppu.set_bg_display(value & 0x1);
+    }
+    
+    if (loc == 0xff00) { // joypad
+      // code will write to 0xff00 bits 4 (select direction) and 5 (select buttons)
+      // then expect to read from 0xff00 bits 0-3 to get a button press
+      if ((value & (1 << 4)) == 0) {
+        mem[loc] = 0xff;
+      } else if ((value & (1 << 5)) == 0) {
+        mem[loc] = 0xf7;
+      } else {
+        mem[loc] = 0xff;
+      }
     }
 
     if (loc == 0xff46) {
@@ -108,7 +100,7 @@ public:
     }
     
     if (loc == 0xff00) { //joypad
-      return joypad;
+      return mem[loc];
     }
 
     if (loc <= 0x00ff) {

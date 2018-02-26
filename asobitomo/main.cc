@@ -26,7 +26,8 @@ int main() {
   CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
 
   copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
-  cpu.mmu[0xff80] = 0xf; // joypad initialis.ation
+//  cpu.mmu[0xff80] = 0xf; // joypad initialis.ation
+//  cpu.mmu[0xff00] = 0x37;
   
   std::deque<word> history;
   size_t repeating = 0;
@@ -41,9 +42,11 @@ int main() {
   while (i++ <= 10000000) {
 //  while (cpu.pc != 0x037e) {
     bool should_dump = false;
-    if (cpu.pc == 0x0369) {
+//    if (cpu.pc == 0x0369) { // credits
+    if (cpu.pc == 0x03ae) {
 //      should_dump = true;
       ASOBITOMO_DEBUG = true;
+      
     }
     history.emplace_back(cpu.pc);
     if (history.size() >= 20) {

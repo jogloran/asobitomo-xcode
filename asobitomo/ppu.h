@@ -1,7 +1,7 @@
 #pragma once
 
 #include "types.h"
-#include "screen.h"
+#include "console_screen.h"
 
 #include <array>
 
@@ -61,12 +61,12 @@ public:
   
 private:
 
-  std::array<byte, 256> raster;
+  std::array<byte, 160> raster;
   
   
   void update_stat_register();
   
-  Screen screen;
+  Console screen;
 
   byte line;
   Mode mode;
