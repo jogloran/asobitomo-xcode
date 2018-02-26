@@ -41,8 +41,9 @@ int main() {
   while (i++ <= 10000000) {
 //  while (cpu.pc != 0x037e) {
     bool should_dump = false;
-    if (cpu.pc == 0x02f8) {
+    if (cpu.pc == 0x0369) {
 //      should_dump = true;
+      ASOBITOMO_DEBUG = true;
     }
     history.emplace_back(cpu.pc);
     if (history.size() >= 20) {

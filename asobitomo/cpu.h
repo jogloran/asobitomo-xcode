@@ -7,6 +7,8 @@
 #include <iomanip>
 #include "flags.h"
 
+extern bool ASOBITOMO_DEBUG;
+
 constexpr int NINSTR = 256;
 
 constexpr long ncycles_cb[NINSTR] = {

@@ -1,6 +1,9 @@
 #include "ppu.h"
 #include "cpu.h"
 
+#include <numeric>
+#include <iterator>
+
 void
 PPU::step(long delta) {
   if (!cpu.ppu.lcd_on) return;
@@ -51,6 +54,7 @@ PPU::step(long delta) {
         if (line == 144) {
           mode = Mode::VBLANK;
           // last hblank: blit buffer
+          std::cout << "\033[2J\033[1;1H";
         } else {
           mode = Mode::OAM;
         }
@@ -141,9 +145,64 @@ PPU::rasterise_line() {
   byte scy = cpu.mmu._read_mem(0xff42);
   byte palette = cpu.mmu._read_mem(0xff47);
   
-  if (bg_display) {
+  if (true) {
     // line is from 0 to 143 and 144 to 153 during vblank
-    word bg_tilemap_row_offset = bg_tilemap_offset + (line / 8) * 32;
+    // line touches tiles in row (line + scy) / 8
+    //                       columns scx / 8 to scx / 8 + 20
+    // starting and ending at vertical pixel (line + scy) % 8
+    //                        horizontal pixel scx % 8
+    
+    // get the sequence of tiles which are touched
+    auto row_touched = (line + scy) / 8;
+    
+    auto index_touched = row_touched * 32 + (scx / 8); // index_touched... +20
+    // y coordinate within a tile is (line + scy) % 8
+    // starting x coordinate for the line of tiles is scx % 8
+    
+    word item = bg_tilemap_offset + index_touched;
+    
+    // if bg_window_tile_data_offset is 0x8000,
+    //     tile data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
+    // else if bg_window_tile_data_offset is 0x8800,
+    //     tile data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
+    
+    // there are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
+    
+    std::vector<std::vector<PaletteIndex>> tile_data;
+    auto begin = &cpu.mmu.mem[item];
+    auto end = &cpu.mmu.mem[item] + 20;
+    std::transform(begin, end, std::back_inserter(tile_data),
+                   [this, scy](byte index) {
+                     // 2 bytes per row, 16 bytes per tile
+                     // in each row, first byte is LSB of palette indices
+                     //              second byte is MSB
+                     if (bg_window_tile_data_offset == 0x8000) {
+                       return decode(bg_window_tile_data_offset + index*4,
+                                     (line + scy) % 8);
+                     } else {
+                       return decode(bg_window_tile_data_offset + (128-index)*4,
+                                     (line + scy) % 8);
+                     }
+                   });
+    
+    // now we have tile data for each touched tile
+    // need to extract line of palette indices
+    
+    
+    
+    if (ASOBITOMO_DEBUG) {
+    // y coordinate within a tile is (line + scy) % 8
+    // starting x coordinate for the line of tiles is scx % 8
+      static const char* d[] = {
+        " ", "\u2591", "\u2592", "\u2593"
+      };
+      for (auto it = tile_data.begin(); it != tile_data.end(); ++it) {
+        for (auto it2 = it->begin(); it2 != it->end(); ++it2) {
+          std::cout << d[*it2] << d[*it2];
+        }
+      }
+      std::cout << std::endl;
+      }
   }
   
   if (window_display) {
@@ -164,6 +223,47 @@ PPU::rasterise_line() {
       }
     }
   }
-  
-  
 }
+
+std::vector<PPU::PaletteIndex>
+PPU::decode(word start_loc, byte start_y) {
+  // start_y is from 0 to 7
+//  std::vector<byte> data(
+//                           &cpu.mmu._read_mem(bg_window_tile_data_offset + static_cast<sbyte>(start_loc)*4),
+//                           &cpu.mmu._read_mem(bg_window_tile_data_offset + static_cast<sbyte>(start_loc)*4 + 16));
+  // we want row start_y of the tile
+  // 2 bytes per row, 8 rows
+  
+  // the relevant line is bg_window_tile_data_offset + static_cast<sbyte>(start_loc)*4 + start_y (+ 1)
+  byte b1 = cpu.mmu._read_mem(bg_window_tile_data_offset + (start_loc)*4 + start_y*2);
+  byte b2 = cpu.mmu._read_mem(bg_window_tile_data_offset + (start_loc)*4 + start_y*2 + 1);
+  
+  // b1/b2 is packed:
+  // b1            b2
+  // 00 01 10 11 | 10 11 00 10 LSB
+  // 01 00 10 10 | 10 10 01 01 MSB
+  // -------------------------
+  // 02 02 30 31   30 31 02 12 <- we want to get this sequence
+  if (ASOBITOMO_DEBUG) {
+    ;
+  }
+  
+  return unpack_bits(b1, b2);
+}
+
+std::vector<PPU::PaletteIndex>
+PPU::unpack_bits(byte lsb, byte msb) {
+  std::vector<PPU::PaletteIndex> result(8, 0);
+  
+  for (int i = 7; i >= 0; --i) {
+    byte m = msb & 0x1;
+    byte l = lsb & 0x1;
+    
+    result[i] = (m << 1) | l;
+    
+    lsb >>= 1; msb >>= 1;
+  }
+  
+  return result;
+}
+

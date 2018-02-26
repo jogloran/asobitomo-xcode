@@ -54,6 +54,11 @@ public:
     bg_display = on;
   }
   void rasterise_line();
+  
+  typedef byte PaletteIndex;
+  std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */);
+  std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb);
+  
 private:
 
   std::array<byte, 256> raster;

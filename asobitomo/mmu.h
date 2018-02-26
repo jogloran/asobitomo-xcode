@@ -98,7 +98,7 @@ public:
   }
 
   // const byte& operator[](word loc) const;
-  byte& _read_mem(int loc) {
+  byte& _read_mem(word loc) {
     if (loc >= 0xff00 && loc <= 0xff7f) {
       accessed[loc - 0xff00]++;
     }

@@ -6,6 +6,8 @@
 #include "cpu_bc_macros.h"
 #include "op_names.h"
 
+bool ASOBITOMO_DEBUG = false;
+
 std::array<op, 256> CPU::cb_ops  {
   RLC8(),
   RRC8(),
