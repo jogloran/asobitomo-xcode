@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "CPU::step(bool):cpu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "pc">
+            </PersistentString>
+            <PersistentString
+               value = "interrupt_enabled">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::step(long):ppu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "ncycles">
+            </PersistentString>
+            <PersistentString
+               value = "line">
+            </PersistentString>
+            <PersistentString
+               value = "raster">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::step(long):ppu.h">
+         <PersistentStrings>
+            <PersistentString
+               value = "ncycles">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::rasterise_line():ppu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "line">
+            </PersistentString>
+            <PersistentString
+               value = "bg_tilemap_offset">
+            </PersistentString>
+            <PersistentString
+               value = "bg_window_tile_data_offset">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::rasterise_line()::$_0::operator()(unsigned char) const:ppu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "(line + scy) % 8">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::update_stat_register():ppu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "cpu.interrupt_enabled">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Console::blit():console_screen.h">
+      </ContextState>
+      <ContextState
+         contextName = "main:main.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "cpu.pc">
+            </PersistentString>
+            <PersistentString
+               value = "cpu.ppu.ncycles">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "CPU::update_interrupt_state():cpu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "interrupt_enabled">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PPU::decode(unsigned short, unsigned char):ppu.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "bg_window_tile_data_offset + static_cast&lt;sbyte&gt;(start_loc)*4 + start_y*2">
+            </PersistentString>
+            <PersistentString
+               value = "bg_window_tile_data_offset">
+            </PersistentString>
+            <PersistentString
+               value = "start_loc + start_y*2">
+            </PersistentString>
+            <PersistentString
+               value = "unpack_bits(b1 ,b2)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

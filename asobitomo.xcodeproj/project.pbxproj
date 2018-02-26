@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		09079489204089140063686E /* screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09079488204089140063686E /* screen.cc */; };
+		0907948B2043A01F0063686E /* console_screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0907948A2043A01F0063686E /* console_screen.cc */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
 		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
 		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
@@ -32,6 +33,8 @@
 /* Begin PBXFileReference section */
 		09079487204089140063686E /* screen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screen.h; sourceTree = "<group>"; };
 		09079488204089140063686E /* screen.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cc; sourceTree = "<group>"; };
+		0907948A2043A01F0063686E /* console_screen.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = console_screen.cc; sourceTree = "<group>"; };
+		0907948C2043A02D0063686E /* console_screen.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = console_screen.h; sourceTree = "<group>"; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		A2CCE56E203A981800F3FD4F /* ppu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ppu.h; sourceTree = "<group>"; };
@@ -93,6 +96,8 @@
 				A2CCE56E203A981800F3FD4F /* ppu.h */,
 				A2CCE56D203A981800F3FD4F /* types.h */,
 				A2F50360203C9BDB000FCD02 /* op_names.h */,
+				0907948A2043A01F0063686E /* console_screen.cc */,
+				0907948C2043A02D0063686E /* console_screen.h */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
@@ -155,6 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A2CCE579203A981900F3FD4F /* cpu.cc in Sources */,
+				0907948B2043A01F0063686E /* console_screen.cc in Sources */,
 				A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */,
 				A2CCE578203A981900F3FD4F /* main.cc in Sources */,
 				09079489204089140063686E /* screen.cc in Sources */,
