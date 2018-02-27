@@ -419,6 +419,8 @@ CP8_HELPER(a)
     word a16 = cpu.get_word(); \
     cpu.pc = a16; \
     cpu.cycles += 4; \
+  } else { \
+    cpu.pc += 2; \
   } \
 }
 
@@ -431,8 +433,8 @@ CP8_HELPER(a)
 
 #define CALL_COND_a16(cond) [](CPU& cpu) { \
   word a16 = cpu.get_word(); \
+  cpu.pc += 2; \
   if (cond) { \
-    cpu.pc += 2; \
     cpu.mmu.set(cpu.sp - 1, cpu.pc >> 8); \
     cpu.mmu.set(cpu.sp, cpu.pc & 0xff); \
     cpu.sp -= 2; \

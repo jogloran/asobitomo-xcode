@@ -233,7 +233,8 @@ void CPU::dump_state() {
   cout << "IF: " << binary(mmu._read_mem(0xff0f))
     << "\t\tIE: " << binary(mmu._read_mem(0xffff)) << endl;
   cout << "Interrupts: " << interrupt_state_as_string(interrupt_enabled) << endl;
-  cout << "0xff00: " << setw(2) << hex << binary(mmu._read_mem(0xff00)) << endl;
+  cout << "0xff00: " << setw(2) << hex << binary(mmu._read_mem(0xff00))
+    << "\t\t0xff81: " << setw(2) << hex << binary(mmu._read_mem(0xff81)) << endl;
   cout <<
     "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
     "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<

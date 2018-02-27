@@ -78,15 +78,17 @@ SRL8_helper(a)
   cpu.unset_flags(Nf); \
   cpu.set_flags(Hf); \
   word loc = (cpu.h << 8) | cpu.l; \
-  if (cpu.mmu[loc] & (1 << bit)) { \
+  if ((cpu.mmu[loc] & (1 << bit)) == 0) { \
     cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
   } \
 }
 
 #define BIT_GEN(bit, reg) [](CPU& cpu) { \
   cpu.unset_flags(Nf); \
   cpu.set_flags(Hf); \
-  if (cpu.reg & (1 << bit)) { \
+  if ((cpu.reg & (1 << bit)) == 0) { \
     cpu.set_flags(Zf); \
   } else { \
     cpu.unset_flags(Zf); \

@@ -13,11 +13,13 @@ using namespace std;
 #include "types.h"
 #include "ppu.h"
 
+extern bool in_title;
+
 class MMU {
 public:
   std::vector<int> accessed;
 
-  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xff) {
+  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xf) {
     fill(mem.begin(), mem.end(), 0);
     
     mem[0xf000] = 0xff;
@@ -53,18 +55,31 @@ public:
     if (loc == 0xff00) { // joypad
       // code will write to 0xff00 bits 4 (select direction) and 5 (select buttons)
       // then expect to read from 0xff00 bits 0-3 to get a button press
-      if ((value & (1 << 4)) == 0) {
-        mem[loc] = 0xff;
-      } else if ((value & (1 << 5)) == 0) {
-        mem[loc] = 0xf7;
-      } else {
-        mem[loc] = 0xff;
-      }
+//      if ((value & (1 << 4))) {
+//        mem[loc] = 0x1f;
+//      } else if ((value & (1 << 5))) {
+//        mem[loc] = 0x27;
+//      } else {
+//        mem[loc] = 0x0f;
+//      }
+      mem[loc] = value | 0xf;
+//      std::cout << "joypad: " << hex << static_cast<int>(mem[loc]) << std::endl;
+    }
+    
+    if (loc == 0xff81 && value == 128) {
+      std::cout << "ff81 set: " << static_cast<int>(mem[0xff81]) << std::endl;
+    }
+    
+    if (loc == 0xc001) {
+      ;
     }
 
     if (loc == 0xff46) {
       word src = value << 8;
       for (word addr = 0xfe00; addr < 0xfea0; ++addr) {
+        if (addr == 0xfe01 && (*this)[src] == 0x10) {
+          ;
+        }
         (*this)[addr] = (*this)[src++];
       }
     }
@@ -100,7 +115,37 @@ public:
     }
     
     if (loc == 0xff00) { //joypad
-      return mem[loc];
+      byte key_input = 0xf;
+      
+      byte value = mem[0xff00] | 0xf;
+      if ((value & 0x20) == 0) {
+//        if (i++ % 30 < 25) {
+//        int r = rand() % 4;
+//        if (r==0)
+//        key_input ^= 0x8;
+//        else if (r==1)
+//          key_input ^= 0x4;
+//        else if (r==2)
+//          key_input ^= 0x2;
+//        else if (r==3)
+//          key_input ^= 0x1;
+        
+//        }
+      } else if ((value & 0x10) == 0) {
+//        int r = rand() % 4;
+//        if (r==0)
+//          key_input ^= 0x8;
+//        else if (r==1)
+//          key_input ^= 0x4;
+//        else if (r==2)
+//          key_input ^= 0x2;
+//        else if (r==3)
+//          key_input ^= 0x1;
+      }
+      joypad = (0xf0 & value) | key_input;
+//      std::cout << "joypad read: " << hex << static_cast<int>(joypad) << std::endl;
+      mem[loc] = joypad;
+      return joypad;
     }
 
     if (loc <= 0x00ff) {
@@ -187,4 +232,7 @@ public:
 
   bool rom_mapped;
   byte joypad;
+  
+  int i = 0;
 };
+
