@@ -21,7 +21,12 @@ size_t history_repeating(std::deque<word> history) {
   return 0;
 }
 
-int main() {
+int argc;
+char** argv;
+
+int main(int argc_, char** argv_) {
+  argc = argc_; argv = argv_;
+  
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
   CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
 
@@ -43,9 +48,9 @@ int main() {
 //  while (cpu.pc != 0x037e) {
     bool should_dump = false;
 //    if (cpu.pc == 0x0369) { // credits
-    if (cpu.pc == 0x03ae) {
-//      should_dump = true;
-      ASOBITOMO_DEBUG = true;
+    if (cpu.pc == 0x29a6) {
+      should_dump = true;
+//      ASOBITOMO_DEBUG = true;
       
     }
     history.emplace_back(cpu.pc);

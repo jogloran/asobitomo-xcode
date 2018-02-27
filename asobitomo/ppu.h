@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "console_screen.h"
+#include "gl_screen.h"
 
 #include <array>
 
@@ -66,7 +67,7 @@ private:
   
   void update_stat_register();
   
-  Console screen;
+  GL screen;
 
   byte line;
   Mode mode;

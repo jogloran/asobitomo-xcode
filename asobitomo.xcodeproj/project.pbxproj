@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		09079489204089140063686E /* screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09079488204089140063686E /* screen.cc */; };
 		0907948B2043A01F0063686E /* console_screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0907948A2043A01F0063686E /* console_screen.cc */; };
+		093DACDE2044F43A0087724B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDD2044F43A0087724B /* GLUT.framework */; };
+		093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDF2044F4F80087724B /* OpenGL.framework */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
 		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
 		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
@@ -35,6 +37,10 @@
 		09079488204089140063686E /* screen.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cc; sourceTree = "<group>"; };
 		0907948A2043A01F0063686E /* console_screen.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = console_screen.cc; sourceTree = "<group>"; };
 		0907948C2043A02D0063686E /* console_screen.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = console_screen.h; sourceTree = "<group>"; };
+		093DACDA2044F4090087724B /* gl_screen.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gl_screen.h; sourceTree = "<group>"; };
+		093DACDB2044F4100087724B /* gl_screen.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gl_screen.cc; sourceTree = "<group>"; };
+		093DACDD2044F43A0087724B /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		093DACDF2044F4F80087724B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		A2CCE56E203A981800F3FD4F /* ppu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ppu.h; sourceTree = "<group>"; };
@@ -56,17 +62,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */,
+				093DACDE2044F43A0087724B /* GLUT.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		093DACDC2044F43A0087724B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				093DACDF2044F4F80087724B /* OpenGL.framework */,
+				093DACDD2044F43A0087724B /* GLUT.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A2CCE55A203A97FD00F3FD4F = {
 			isa = PBXGroup;
 			children = (
 				A2CCE565203A97FD00F3FD4F /* asobitomo */,
 				A2CCE564203A97FD00F3FD4F /* Products */,
+				093DACDC2044F43A0087724B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,6 +99,7 @@
 		A2CCE565203A97FD00F3FD4F /* asobitomo */ = {
 			isa = PBXGroup;
 			children = (
+				093DACDB2044F4100087724B /* gl_screen.cc */,
 				09079488204089140063686E /* screen.cc */,
 				09079487204089140063686E /* screen.h */,
 				A2CCE57C203A9C3600F3FD4F /* Tetris.gb */,
@@ -98,6 +117,7 @@
 				A2F50360203C9BDB000FCD02 /* op_names.h */,
 				0907948A2043A01F0063686E /* console_screen.cc */,
 				0907948C2043A02D0063686E /* console_screen.h */,
+				093DACDA2044F4090087724B /* gl_screen.h */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
