@@ -59,7 +59,7 @@ public:
   typedef byte PaletteIndex;
   std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */);
   std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb);
-    Console screen;
+    GL screen;
 private:
 
   std::array<byte, 160> raster;

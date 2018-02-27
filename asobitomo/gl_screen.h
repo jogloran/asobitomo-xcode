@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include <GLUT/glut.h>
+#include <SDL2/SDL.h>
 
 extern int argc;
 extern char** argv;
@@ -12,36 +13,33 @@ extern char** argv;
 
 class GL : public Screen {
 public:
-  
-  static void myDisplayFunc() {
-    // gfx fun
-  }
+  SDL_Window* window_;
+  SDL_Renderer* renderer_;
+  SDL_Texture* texture_;
   
   GL() {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    
-    glutInitWindowPosition(80, 80);
-    glutInitWindowSize(500,500);
-    
-    glutCreateWindow("A Simple OpenGL Program");
-    
-    glClear(GL_COLOR_BUFFER_BIT);
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-    gluOrtho2D( 0.0, 500.0, 500.0,0.0 );
-    
-    glBegin(GL_POINTS);
-    glColor3f(1,1,1);
-    glVertex2i(100,100);
-    glEnd();
-    
-    glutDisplayFunc(myDisplayFunc);
-    glFlush();
-    glutMainLoop();
+    SDL_InitSubSystem(SDL_INIT_VIDEO);
+    window_ = SDL_CreateWindow("test", 0, 0, Screen::BUF_WIDTH, Screen::BUF_HEIGHT, SDL_WINDOW_RESIZABLE);
+    renderer_ = SDL_CreateRenderer(window_, -1, 0);
+    SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
+    SDL_RenderSetLogicalSize(renderer_, Screen::BUF_WIDTH * 3, Screen::BUF_HEIGHT * 3);
+    texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_, 1, Screen::BUF_WIDTH * 3, Screen::BUF_HEIGHT * 3);
   }
   
   void blit() {
     
+  }
+  
+  void draw() {
+    std::cout << "Draw" << std::endl;
+    SDL_UpdateTexture(texture_, NULL, fb.data(), Screen::BUF_WIDTH * 3 * 4);
+    SDL_RenderClear(renderer_);
+    SDL_RenderCopy(renderer_, texture_, NULL, NULL);
+    SDL_RenderPresent(renderer_);
+    
+    SDL_ShowWindow(window_);
+    SDL_RaiseWindow(window_);
+    
+    SDL_Delay( 5000 );
   }
 };

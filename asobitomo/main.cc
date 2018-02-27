@@ -42,13 +42,13 @@ int main(int argc_, char** argv_) {
 
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
-    cpu.ppu.screen.blit();
+//    cpu.ppu.screen.blit();
   }
   //
   int i = 0;
   bool s=false;
         bool should_dump = false;
-  while (i++ <= 10000000) {
+  while (i++ <= 1000000) {
 //  while (cpu.pc != 0x037e) {
 //    if (cpu.pc == 0x0369) { // credits
 //    if (cpu.pc == 0x0502 || cpu.pc == 0x04f3 || cpu.pc == 0x04f5 || cpu.pc == 0x0502 || cpu.pc == 0x0507) {
@@ -66,7 +66,7 @@ int main(int argc_, char** argv_) {
       in_title = true;
       ASOBITOMO_DEBUG = true;
       //      should_dump = true;
-      cpu.ppu.screen.blit();
+//      cpu.ppu.screen.blit();
 //      ASOBITOMO_DEBUG = true;
 //      cpu.ppu.screen.blit();
     }
@@ -112,7 +112,7 @@ int main(int argc_, char** argv_) {
   }
 
   cpu.dump_state();
-  cpu.ppu.rasterise_line();
+  cpu.ppu.screen.draw();
 
   std::ofstream out("vram");
   copy(cpu.mmu.mem.begin() + 0x8000, cpu.mmu.mem.begin() + 0xa000, ostream_iterator<unsigned int>(out, " "));
