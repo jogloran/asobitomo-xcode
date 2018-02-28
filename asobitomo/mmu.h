@@ -36,6 +36,10 @@ public:
 
   void set(word loc, byte value) {
     // std::cout << hex<<loc << std::endl;
+    if (loc >= 0xff00 && loc <= 0xff7f) {
+      accessed[loc - 0xff00]++;
+    }
+    
     mem[loc] = value;
     
     if (loc == 0xff04) { // timer DIV
