@@ -10,6 +10,7 @@
 
 using namespace std;
 
+#include "sdl_input.h"
 #include "types.h"
 #include "ppu.h"
 
@@ -19,7 +20,7 @@ class MMU {
 public:
   std::vector<int> accessed;
 
-  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xf) {
+  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xf), input() {
     fill(mem.begin(), mem.end(), 0);
     
     mem[0xf000] = 0xff;
@@ -115,33 +116,39 @@ public:
     }
     
     if (loc == 0xff00) { //joypad
+      input.poll();
+      
       byte key_input = 0xf;
       
       byte value = mem[0xff00] | 0xf;
       if ((value & 0x20) == 0) {
-//        if (i++ % 30 < 25) {
-//        int r = rand() % 4;
-//        if (r==0)
-//        key_input ^= 0x8;
-//        else if (r==1)
-//          key_input ^= 0x4;
-//        else if (r==2)
-//          key_input ^= 0x2;
-//        else if (r==3)
-//          key_input ^= 0x1;
-        
-//        }
+        if ((input.state & Buttons::Start) == Buttons::Start) {
+          key_input ^= 0x8;
+        }
+        if ((input.state & Buttons::Select) == Buttons::Select) {
+          key_input ^= 0x4;
+        }
+        if ((input.state & Buttons::B) == Buttons::B) {
+          key_input ^= 0x2;
+        }
+        if ((input.state & Buttons::A) == Buttons::A) {
+          key_input ^= 0x1;
+        }
       } else if ((value & 0x10) == 0) {
-//        int r = rand() % 4;
-//        if (r==0)
-//          key_input ^= 0x8;
-//        else if (r==1)
-//          key_input ^= 0x4;
-//        else if (r==2)
-//          key_input ^= 0x2;
-//        else if (r==3)
-//          key_input ^= 0x1;
+        if ((input.state & Buttons::D) == Buttons::D) {
+          key_input ^= 0x8;
+        }
+        if ((input.state & Buttons::U) == Buttons::U) {
+          key_input ^= 0x4;
+        }
+        if ((input.state & Buttons::L) == Buttons::L) {
+          key_input ^= 0x2;
+        }
+        if ((input.state & Buttons::R) == Buttons::R) {
+          key_input ^= 0x1;
+        }
       }
+      
       joypad = (0xf0 & value) | key_input;
 //      std::cout << "joypad read: " << hex << static_cast<int>(joypad) << std::endl;
       mem[loc] = joypad;
@@ -149,16 +156,13 @@ public:
     }
 
     if (loc <= 0x00ff) {
-      // std::cout << "rom" << std::endl;
       if (rom_mapped)
         return rom[loc];
       else
         return cart[loc];
     } else if (loc <= 0x014f) {
-      // std::cout << "a" << std::endl;
       return cart[loc]; /* header */
     } else if (loc <= 0x3fff) {
-      // std::cout << "here" << std::endl;
       return cart[loc]; /* rom bank 0 0x150 - 0x3fff */
     } else if (loc <= 0x7fff) {
       /* rom bank switchable 0x4000 - 0x7fff */
@@ -185,13 +189,6 @@ public:
       return mem[loc - 0x2000];
     } else if (loc <= 0xfe9f) {
       return mem[loc]; /* 0xfe00 - 0xfe9f */
-    // } else if (loc <= 0xfeff) {
-    // } else if (loc <= 0xff7f) {
-    // } else if (loc <= 0xfffe) {
-    //
-    // } else if (loc == 0xffff) {
-    //
-    //
     } else {
       return mem[loc];
     }
@@ -232,6 +229,8 @@ public:
 
   bool rom_mapped;
   byte joypad;
+  
+  SDLInput input;
   
   int i = 0;
 };

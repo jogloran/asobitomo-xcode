@@ -232,7 +232,8 @@ PPU::rasterise_line() {
   }
   
   if (window_display) {
-    
+    byte wx = cpu.mmu._read_mem(0xff4b);
+    byte wy = cpu.mmu._read_mem(0xff4a);
   }
   
   if (sprite_display) {

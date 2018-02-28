@@ -47,8 +47,8 @@ int main(int argc_, char** argv_) {
   //
   int i = 0;
   bool s=false;
-        bool should_dump = false;
-  while (i++ <= 1000000) {
+  bool should_dump = false;
+  while (true) {
 //  while (cpu.pc != 0x037e) {
 //    if (cpu.pc == 0x0369) { // credits
 //    if (cpu.pc == 0x0502 || cpu.pc == 0x04f3 || cpu.pc == 0x04f5 || cpu.pc == 0x0502 || cpu.pc == 0x0507) {
