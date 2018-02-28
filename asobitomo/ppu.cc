@@ -1,5 +1,6 @@
 #include "ppu.h"
 #include "cpu.h"
+#include "util.h"
 
 #include <numeric>
 #include <iterator>
@@ -134,7 +135,10 @@ struct OAM {
 };
 
 std::ostream& operator<<(std::ostream& out, const OAM& oam) {
-  return out << "OAM(" << hex << static_cast<int>(oam.x) << ", " << static_cast<int>(oam.y) << ", tile_index = " << static_cast<int>(oam.tile_index) << ")";
+  return out << "OAM(" << hex << static_cast<int>(oam.x) << ", "
+    << static_cast<int>(oam.y)
+    << ", tile_index = " << setw(2) << hex << static_cast<int>(oam.tile_index)
+    << ", flags = " << binary(oam.flags) << ")";
 }
 
 void
@@ -157,7 +161,7 @@ PPU::rasterise_line() {
   // according to LCDC bit 4
   byte scx = cpu.mmu._read_mem(0xff43);
   byte scy = cpu.mmu._read_mem(0xff42);
-  
+
   // format of palette is a mapping
   //         LSB
   // 11 10 01 00 <- palette indices
@@ -247,7 +251,7 @@ PPU::rasterise_line() {
 //      std::cout << j << ": " << entry << std::endl;
 
       for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
-        if (entry.x != 0x0 && entry.x < 168 && entry.y != 0x0 && entry.y < 160 &&
+        if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
             line + 16 >= entry.y && line + 16 < entry.y + 8) {
           // sprite is visible on this line
           // get tile data for sprite
@@ -290,6 +294,13 @@ PPU::rasterise_line() {
                          });
           
           std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8); // TODO: doesn't check for sprite_row oob
+//          auto ptr = sprite_row.begin() + entry.x - 8;
+//          for (auto it = decoded.begin(); it != decoded.end(); ) {
+//            if (ptr == sprite_row.end()) {
+//              break;
+//            }
+//            *ptr++ = *it++;
+//          }
         }
       }
     }

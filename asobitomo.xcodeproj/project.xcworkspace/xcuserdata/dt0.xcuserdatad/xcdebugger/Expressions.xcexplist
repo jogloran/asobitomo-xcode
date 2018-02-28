@@ -3,6 +3,14 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "Timer::step(long):timer.cc">
+         <PersistentStrings>
+            <PersistentString
+               value = "divider">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "PPU::rasterise_line():ppu.cc">
          <PersistentStrings>
             <PersistentString

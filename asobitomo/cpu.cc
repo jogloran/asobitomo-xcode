@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "cpu.h"
+#include "util.h"
 
 #include "cpu_macros.h"
 #include "cpu_bc_macros.h"
@@ -178,22 +179,6 @@ std::array<op, 256> CPU::ops {
 
 };
 
-std::string CPU::binary(byte b) {
-  std::stringstream s;
-  int n = 0;
-  while (n++ < 8) {
-    if (b & 0x1) {
-      s << '1';
-    } else {
-      s << '0';
-    }
-    b >>= 1;
-  }
-  auto result = s.str();
-  reverse(result.begin(), result.end());
-  return result;
-}
-
 std::string CPU::op_name_for(word loc) {
   if (mmu[loc] == 0xcb) {
     return cb_op_names[mmu[loc+1]];
@@ -332,4 +317,5 @@ void CPU::step(bool debug)  {
   cycles += ncycles[instr];
 
   ppu.step(cycles - old_cycles);
+  timer.step(cycles - old_cycles);
 }

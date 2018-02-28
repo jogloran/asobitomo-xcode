@@ -54,7 +54,8 @@ typedef void (*op)(CPU&);
 class CPU {
 public:
   CPU(std::string path): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
-    pc(0x0000), sp(0x0000), cycles(0), ppu(*this), mmu(path, ppu), halted(false),
+    pc(0x0000), sp(0x0000), cycles(0), timer(*this),
+    ppu(*this), mmu(path, ppu, timer),  halted(false),
     interrupt_enabled(InterruptState::Disabled) {}
 
   enum class InterruptState {
@@ -98,7 +99,6 @@ public:
   }
 
   std::string op_name_for(word loc);
-  std::string binary(byte b);
   void dump_state();
 
   void step(bool debug = false);
@@ -123,8 +123,10 @@ public:
   word pc, sp;
   long cycles;
 
+  Timer timer;
   PPU ppu;
   MMU mmu;
+  
   bool halted;
 
   InterruptState interrupt_enabled;

@@ -13,7 +13,7 @@ public:
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
   
-  GL() {
+  GL(): buf(fb.size() * 4) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("test", 0, 0, Screen::BUF_WIDTH, Screen::BUF_HEIGHT, 0);
@@ -25,16 +25,15 @@ public:
   
   void blit() {
     static byte pal[] = { 0, 128, 192, 255 };
-
-    std::vector<byte> data(fb.size() * 4);
+    
     int i = 0;
     for (byte b: fb) {
-      data[i++] = pal[b];
-      data[i++] = pal[b];
-      data[i++] = pal[b];
-      data[i++] = 255;
+      buf[i++] = pal[b];
+      buf[i++] = pal[b];
+      buf[i++] = pal[b];
+      buf[i++] = 255;
     }
-    SDL_UpdateTexture(texture_, NULL, data.data(), Screen::BUF_WIDTH * 4);
+    SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
     SDL_RenderClear(renderer_);
     SDL_RenderCopy(renderer_, texture_, NULL, NULL);
     SDL_RenderPresent(renderer_);
@@ -52,4 +51,6 @@ public:
   void draw() {
 
   }
+  
+  std::vector<byte> buf;
 };

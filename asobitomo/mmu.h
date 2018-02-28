@@ -13,6 +13,7 @@ using namespace std;
 #include "sdl_input.h"
 #include "types.h"
 #include "ppu.h"
+#include "timer.h"
 
 extern bool in_title;
 
@@ -20,7 +21,11 @@ class MMU {
 public:
   std::vector<int> accessed;
 
-  MMU(std::string path, PPU& ppu): accessed(0xff7f - 0xff00, 0), bank(0), mem(), cart(32768, 0), rom_mapped(true), ppu(ppu), joypad(0xf), input() {
+  MMU(std::string path, PPU& ppu, Timer& timer):
+    accessed(0xff7f - 0xff00, 0), bank(0), mem(),
+    cart(32768, 0), rom_mapped(true), ppu(ppu), timer(timer),
+    joypad(0xf),
+    input() {
     fill(mem.begin(), mem.end(), 0);
     
     mem[0xf000] = 0xff;
@@ -32,6 +37,19 @@ public:
   void set(word loc, byte value) {
     // std::cout << hex<<loc << std::endl;
     mem[loc] = value;
+    
+    if (loc == 0xff04) { // timer DIV
+      timer.reset_div();
+    }
+    if (loc == 0xff05) { // timer counter
+      timer.counter = value;
+    }
+    if (loc == 0xff06) {
+      timer.modulo = value;
+    }
+    if (loc == 0xff07) {
+      timer.set_tac(value);
+    }
     
     if (loc >= 0x2000 && loc <= 0x3fff) {
       if (value == 0x00) {
@@ -109,6 +127,19 @@ public:
   byte& _read_mem(word loc) {
     if (loc >= 0xff00 && loc <= 0xff7f) {
       accessed[loc - 0xff00]++;
+    }
+    
+    if (loc == 0xff04) { // timer DIV
+      return timer.div();
+    }
+    if (loc == 0xff05) { // timer counter
+      return timer.counter;
+    }
+    if (loc == 0xff06) {
+      return timer.modulo;
+    }
+    if (loc == 0xff07) {
+      return timer.tac();
     }
 
     if (loc == 0xff46) { // DMA
@@ -199,6 +230,7 @@ public:
   static constexpr word CARTRIDGE_TYPE_OFFSET = 0x0147;
 
   PPU& ppu;
+  Timer& timer;
   byte bank;
   std::array<byte, RAM_BYTES> mem;
   std::vector<byte> rom {
