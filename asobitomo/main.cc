@@ -32,8 +32,6 @@ int main(int argc_, char** argv_) {
   CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
 
   copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
-//  cpu.mmu[0xff80] = 0xf; // joypad initialis.ation
-//  cpu.mmu[0xff00] = 0x37;
   
   std::deque<word> history;
   size_t repeating = 0;

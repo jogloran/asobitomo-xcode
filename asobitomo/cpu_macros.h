@@ -108,33 +108,53 @@
 }
 
 #define RLCA() [](CPU& cpu) { \
-  if (cpu.a & 0x80) { \
+  byte hibit = cpu.a >> 7; \
+  if (hibit == 1) { \
     cpu.set_flags(Cf); \
   } else { \
     cpu.unset_flags(Cf); \
   } \
   cpu.a <<= 1; \
-  cpu.unset_flags(Nf | Hf); \
-  if (cpu.a == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.a |= hibit; \
+  cpu.unset_flags(Nf | Hf | Zf); \
 }
 
 #define RRCA() [](CPU& cpu) { \
-  if (cpu.a & 0x1) { \
+  byte lobit = cpu.a & 0x1; \
+  if (lobit) { \
     cpu.set_flags(Cf); \
   } else { \
     cpu.unset_flags(Cf); \
   } \
   cpu.a >>= 1; \
-  cpu.unset_flags(Nf | Hf); \
-  if (cpu.a == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.a |= lobit << 7; \
+  cpu.unset_flags(Nf | Hf | Zf); \
+}
+
+ #define RLA() [](CPU& cpu) { \
+   byte carry = cpu.C(); \
+   byte hibit = cpu.a >> 7; \
+   if (hibit) { \
+     cpu.set_flags(Cf); \
+   } else { \
+     cpu.unset_flags(Cf); \
+   } \
+   cpu.a <<= 1; \
+   cpu.a |= carry; \
+   cpu.unset_flags(Nf | Hf | Zf); \
+ }
+
+#define RRA() [](CPU& cpu) { \
+   byte carry = cpu.C(); \
+   byte lobit = cpu.a & 0x1; \
+   if (lobit) { \
+     cpu.set_flags(Cf); \
+   } else { \
+     cpu.unset_flags(Cf); \
+   } \
+   cpu.a >>= 1; \
+   cpu.a |= carry << 7; \
+   cpu.unset_flags(Nf | Hf | Zf); \
 }
 
 #define ADD_WORD_WORD(hi1, lo1, hi2, lo2) [](CPU& cpu) { \
@@ -607,28 +627,6 @@ CP8_HELPER(a)
   cpu.hi = hl >> 8; \
   cpu.lo = hl & 0xff; \
 }
-
-#define RRA() [](CPU& cpu) { \
-   if (cpu.a & 0x1) { \
-     cpu.set_flags(Cf); \
-   } else { \
-     cpu.unset_flags(Cf); \
-   } \
-   cpu.a >>= 1; \
-   cpu.a |= cpu.C() << 7; \
-   cpu.unset_flags(Nf | Hf); \
-   if (cpu.a == 0) { \
-     cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
-}
-
- #define RLA() [](CPU& cpu) { \
-   cpu.a <<= 1; \
-   cpu.a |= cpu.C() & 0x1; \
-   cpu.unset_flags(Zf | Nf | Hf); \
- }
 
 #define INVALID() [](CPU& cpu) { \
   throw std::runtime_error("Invalid opcode"); \
