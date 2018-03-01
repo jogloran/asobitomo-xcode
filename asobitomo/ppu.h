@@ -30,7 +30,7 @@ public:
   };
   
   PPU(CPU& cpu): raster(), screen(),
-    line(0), mode(Mode::OAM), ncycles(0), vblank_ncycles(0), cpu(cpu), lcd_on(false),
+    line(0), mode(Mode::OAM), ncycles(0), vblank_ncycles(0), cpu(cpu), lcd_on(true),
     window_tilemap_offset(0), window_display(false),
     bg_window_tile_data_offset(0),
     bg_tilemap_offset(0),

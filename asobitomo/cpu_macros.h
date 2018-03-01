@@ -73,7 +73,7 @@
   if ((((cpu.byte & 0xf) + ((cpu.byte - 1) & 0xf)) & 0x10) == 0x10) { \
     cpu.set_flags(Hf); \
   } else { \
-  cpu.unset_flags(Hf); \
+    cpu.unset_flags(Hf); \
   } \
   --cpu.byte; \
   cpu.set_flags(Nf); \
@@ -243,6 +243,82 @@ LD_HL_SPECIAL_helper(a)
   cpu.unset_flags(Nf | Hf); \
 }
 
+#define AND_A8() AND_A8_HELPER(b), \
+AND_A8_HELPER(c), \
+AND_A8_HELPER(d), \
+AND_A8_HELPER(e), \
+AND_A8_HELPER(h), \
+AND_A8_HELPER(l), \
+AND_A8_HL_LOC_HELPER(), \
+AND_A8_HELPER(a)
+
+#define AND_A8_HELPER(src) [](CPU& cpu) { \
+  cpu.a = cpu.a & cpu.src; \
+  cpu.unset_flags(Nf | Cf); \
+  cpu.set_flags(Hf); \
+  if (cpu.a == 0x0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+}
+
+#define AND_A8_HL_LOC_HELPER() [](CPU& cpu) { \
+  word loc = (cpu.h << 8) | cpu.l; \
+  cpu.a = cpu.a & cpu.mmu[loc]; \
+  cpu.unset_flags(Nf | Cf); \
+  cpu.set_flags(Hf); \
+  if (cpu.a == 0x0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+}
+
+#define SUB_A8() SUB_A8_HELPER(b), \
+SUB_A8_HELPER(c), \
+SUB_A8_HELPER(d), \
+SUB_A8_HELPER(e), \
+SUB_A8_HELPER(h), \
+SUB_A8_HELPER(l), \
+SUB_A8_HL_LOC_HELPER(), \
+SUB_A8_HELPER(a)
+
+#define SUB_A8_HELPER(src) [](CPU& cpu) { \
+  int result = static_cast<int>(cpu.a) - cpu.src; \
+  if (result & (1 << 8)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
+  cpu.a = static_cast<byte>(result); \
+  cpu.set_flags(Nf); \
+  if (cpu.a == 0x0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  /* need to set H conditionally */ \
+}
+
+#define SUB_A8_HL_LOC_HELPER() [](CPU& cpu) { \
+  word loc = (cpu.h << 8) | cpu.l; \
+  int result = static_cast<int>(cpu.a) - cpu.mmu[loc]; \
+  if (result & (1 << 8)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
+  cpu.a = static_cast<byte>(result); \
+  cpu.set_flags(Nf); \
+  if (cpu.a == 0x0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  /* need to set H, C conditionally */ \
+}
+
 #define ADD_A8_HELPER(src) [](CPU& cpu) { \
   cpu.a += cpu.src; \
   cpu.unset_flags(Nf); \
@@ -276,12 +352,13 @@ ADD_A8_HELPER(a)
 }
 
 #define ADC_A8_HELPER(src) [](CPU& cpu) { \
-  if (cpu.src + cpu.C() <= 0xff && cpu.src + cpu.C() + cpu.a >= 0x0) { \
+  word result = cpu.a + cpu.src + cpu.C(); \
+  if (result > 0xff) { \
     cpu.set_flags(Cf); \
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.a += (cpu.src + cpu.C()); \
+  cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
@@ -293,7 +370,13 @@ ADD_A8_HELPER(a)
 
 #define ADC_A8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = (cpu.h << 8) | cpu.l; \
-  cpu.a += (cpu.mmu[loc] + cpu.C()); \
+  word result = cpu.a + cpu.mmu[loc] + cpu.C(); \
+  if (result > 0xff) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
+  cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
@@ -345,12 +428,13 @@ GEN8_HL_LOC_HELPER(op), \
 GEN8_HELPER(op, a)
 
 #define SBC_A8_HELPER(src) [](CPU& cpu) { \
-  if (cpu.src + cpu.C() > cpu.a) { \
+  int result = static_cast<int>(cpu.a) - cpu.src - cpu.C(); \
+  if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.a -= (cpu.src + cpu.C()); \
+  cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
@@ -362,12 +446,13 @@ GEN8_HELPER(op, a)
 
 #define SBC_A8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = (cpu.h << 8) | cpu.l; \
-  if (cpu.mmu[loc] + cpu.C() > cpu.a) { \
+  int result = static_cast<int>(cpu.a) - cpu.mmu[loc] - cpu.C(); \
+  if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.a -= (cpu.mmu[loc] + cpu.C()); \
+  cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
@@ -506,21 +591,33 @@ CP8_HELPER(a)
 
 #define SUB_A_d8() [](CPU& cpu) { \
   byte d8 = cpu.mmu[cpu.pc]; \
+  int result = static_cast<int>(cpu.a) - d8; \
   cpu.pc += 1; \
-  cpu.a -= d8; \
+  cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
   } else { \
     cpu.unset_flags(Zf); \
   } \
-  /* TODO: set H, C */ \
+  if (result & (1 << 8)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
+  /* TODO: set H */ \
 }
 
 #define SBC_A_d8() [](CPU& cpu) { \
   byte d8 = cpu.mmu[cpu.pc]; \
   cpu.pc += 1; \
-  cpu.a -= (d8 + cpu.C()); \
+  int result = (static_cast<int>(cpu.a) - d8 - cpu.C()); \
+  if (result & (1 << 8)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
+  cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \

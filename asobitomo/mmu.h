@@ -42,6 +42,13 @@ public:
     
     mem[loc] = value;
     
+    if (loc == 0xff01) {
+      last = value;
+    }
+    if (loc == 0xff02) {
+      std::cout << (char)last;
+    }
+    
     if (loc == 0xff04) { // timer DIV
       timer.reset_div();
     }
@@ -89,12 +96,16 @@ public:
 //      std::cout << "joypad: " << hex << static_cast<int>(mem[loc]) << std::endl;
     }
     
-    if (loc == 0xff81 && value == 128) {
-      std::cout << "ff81 set: " << static_cast<int>(mem[0xff81]) << std::endl;
-    }
-    
     if (loc == 0xc000 + 18 && value == 10) {
       ;
+    }
+    
+    if (loc == 0xc000 + 24 && value == 56) {
+    
+    }
+    
+    if (loc == 0xff93) {
+//      std::cout << "ff93 = " << hex << static_cast<int>(value) << std::endl;
     }
 
     if (loc == 0xff46) {
@@ -266,5 +277,6 @@ public:
   SDLInput input;
   
   int i = 0;
+  char last;
 };
 
