@@ -93,16 +93,13 @@ public:
       std::cout << "ff81 set: " << static_cast<int>(mem[0xff81]) << std::endl;
     }
     
-    if (loc == 0xc001) {
+    if (loc == 0xc000 + 18 && value == 10) {
       ;
     }
 
     if (loc == 0xff46) {
       word src = value << 8;
       for (word addr = 0xfe00; addr < 0xfea0; ++addr) {
-        if (addr == 0xfe01 && (*this)[src] == 0x10) {
-          ;
-        }
         (*this)[addr] = (*this)[src++];
       }
     }

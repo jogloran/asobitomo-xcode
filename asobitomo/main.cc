@@ -40,12 +40,14 @@ int main(int argc_, char** argv_) {
 
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
+    cpu.ppu.screen.off();
 //    cpu.ppu.screen.blit();
   }
   //
   int i = 0;
   bool s=false;
   bool should_dump = false;
+  cpu.ppu.screen.on();
   while (true) {
 //  while (cpu.pc != 0x037e) {
 //    if (cpu.pc == 0x0369) { // credits

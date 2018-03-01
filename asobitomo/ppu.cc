@@ -5,6 +5,57 @@
 #include <numeric>
 #include <iterator>
 #include <algorithm>
+#include <sstream>
+
+void
+compare_oams(OAM* current_oam, OAM* old_oam) {
+  bool first = true;
+  
+  std::stringstream s;
+  for (int i = 0; i < 40; ++i) {
+    OAM cur = current_oam[i];
+    OAM old = old_oam[i];
+    
+    if (cur != old) {
+      if (first) {
+        first = false;
+      } else {
+        s << ", ";
+      }
+      s << "obj " << hex << setw(2) << setfill('0') << i << " [";
+      
+      bool first_change = true;
+      
+      if (cur.x != old.x) {
+        if (first_change) first_change = false;
+        else s << ", ";
+        s << "x " << dec << static_cast<int>(old.x) << " -> " << static_cast<int>(cur.x) << hex;
+      }
+      if (cur.y != old.y) {
+        if (first_change) first_change = false;
+        else s << ", ";
+        s << "y " << dec << static_cast<int>(old.y) << " -> " << static_cast<int>(cur.y) << hex;
+      }
+      if (cur.tile_index != old.tile_index) {
+        if (first_change) first_change = false;
+        else s << ", ";
+        s << "t " << static_cast<int>(old.tile_index) << " -> " << static_cast<int>(cur.tile_index);
+      }
+      if (cur.flags != old.flags) {
+        if (first_change) first_change = false;
+        else s << ", ";
+        s << "f " << static_cast<int>(old.flags) << " -> " << static_cast<int>(cur.flags);
+      }
+      
+      s << "]";
+    }
+  }
+  
+  std::string out = s.str();
+  if (out.size()) {
+    std::cout << s.str() << std::endl;
+  }
+}
 
 template <typename T> std::vector<T>
 flatten(const std::vector<std::vector<T>>& in) {
@@ -127,13 +178,6 @@ PPU::update_stat_register()  {
   cpu.mmu.set(0xff0f, IF);
 }
 
-struct OAM {
-  byte y;
-  byte x;
-  byte tile_index;
-  byte flags;
-};
-
 std::ostream& operator<<(std::ostream& out, const OAM& oam) {
   return out << "OAM(" << hex << static_cast<int>(oam.x) << ", "
     << static_cast<int>(oam.y)
@@ -244,6 +288,11 @@ PPU::rasterise_line() {
     std::array<byte, 160> sprite_row;
     std::fill(sprite_row.begin(), sprite_row.end(), 0);
     
+    compare_oams(oam, old_oam.data());
+    if (oam[4].tile_index == 0xa && old_oam[4].tile_index == 0x85 && oam[5].tile_index == 0x25 && old_oam[5].tile_index == 0x85) {
+      ;
+    }
+    
     // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
@@ -309,6 +358,8 @@ PPU::rasterise_line() {
     std::transform(sprite_row.begin(), sprite_row.end(), raster.begin(), raster.begin(), [](byte sprite_byte, byte raster_byte) {
       return (sprite_byte | raster_byte) & 3;
     });
+    
+    std::copy(oam, oam + 40, old_oam.begin());
   }
   
   

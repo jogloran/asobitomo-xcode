@@ -276,6 +276,11 @@ ADD_A8_HELPER(a)
 }
 
 #define ADC_A8_HELPER(src) [](CPU& cpu) { \
+  if (cpu.src + cpu.C() <= 0xff && cpu.src + cpu.C() + cpu.a >= 0x0) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
   cpu.a += (cpu.src + cpu.C()); \
   cpu.unset_flags(Nf); \
   if (cpu.a == 0x0) { \
@@ -340,6 +345,11 @@ GEN8_HL_LOC_HELPER(op), \
 GEN8_HELPER(op, a)
 
 #define SBC_A8_HELPER(src) [](CPU& cpu) { \
+  if (cpu.src + cpu.C() > cpu.a) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
   cpu.a -= (cpu.src + cpu.C()); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
@@ -352,6 +362,11 @@ GEN8_HELPER(op, a)
 
 #define SBC_A8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = (cpu.h << 8) | cpu.l; \
+  if (cpu.mmu[loc] + cpu.C() > cpu.a) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
   cpu.a -= (cpu.mmu[loc] + cpu.C()); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \

@@ -24,19 +24,21 @@ public:
   }
   
   void blit() {
-    static byte pal[] = { 0, 128, 192, 255 };
-    
-    int i = 0;
-    for (byte b: fb) {
-      buf[i++] = pal[b];
-      buf[i++] = pal[b];
-      buf[i++] = pal[b];
-      buf[i++] = 255;
+    if (should_draw) { 
+      static byte pal[] = { 0, 128, 192, 255 };
+      
+      int i = 0;
+      for (byte b: fb) {
+        buf[i++] = pal[b];
+        buf[i++] = pal[b];
+        buf[i++] = pal[b];
+        buf[i++] = 255;
+      }
+      SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
+      SDL_RenderClear(renderer_);
+      SDL_RenderCopy(renderer_, texture_, NULL, NULL);
+      SDL_RenderPresent(renderer_);
     }
-    SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
-    SDL_RenderClear(renderer_);
-    SDL_RenderCopy(renderer_, texture_, NULL, NULL);
-    SDL_RenderPresent(renderer_);
     
     SDL_PumpEvents();
 

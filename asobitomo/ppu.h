@@ -6,6 +6,21 @@
 
 #include <array>
 
+struct OAM {
+  byte y;
+  byte x;
+  byte tile_index;
+  byte flags;
+  
+  bool operator==(const OAM& other) {
+    return y == other.y && x == other.x && tile_index == other.tile_index && flags == other.flags;
+  }
+  
+  bool operator!=(const OAM& other) {
+    return !(*this == other);
+  }
+};
+
 class CPU;
 
 class PPU {
@@ -20,7 +35,7 @@ public:
     bg_window_tile_data_offset(0),
     bg_tilemap_offset(0),
     sprite_mode(SpriteMode::S8x8), sprite_display(false),
-    bg_display(false) {}
+    bg_display(false), old_oam(40) {}
 
   enum class Mode : byte {
     HBLANK = 0,
@@ -90,4 +105,5 @@ private:
   CPU& cpu;
   
   friend class CPU;
+  std::vector<OAM> old_oam;
 };
