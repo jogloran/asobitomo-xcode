@@ -67,6 +67,20 @@ flatten(const std::vector<std::vector<T>>& in) {
 }
 
 void
+PPU::stat(byte value) {
+  set_lcd_on(value & (1 << 7));
+  set_window_tilemap_offset(value & (1 << 6) ? 0x9c00 : 0x9800);
+  set_window_display(value & (1 << 5));
+  set_bg_window_tile_data_offset(value & (1 << 4) ? 0x8000 : 0x8800);
+  set_bg_tilemap_offset(value & (1 << 3) ? 0x9c00 : 0x9800);
+  set_sprite_mode(value & (1 << 2) ?
+    PPU::SpriteMode::S8x16 :
+    PPU::SpriteMode::S8x8);
+  set_sprite_display(value & (1 << 1));
+  set_bg_display(value & 0x1);
+}
+
+void
 PPU::step(long delta) {
   if (!cpu.ppu.lcd_on) return;
   

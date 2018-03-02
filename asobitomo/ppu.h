@@ -45,6 +45,9 @@ public:
   };
 
   void step(long delta);
+  
+  void stat(byte value);
+  
   void set_lcd_on(bool on) {
     lcd_on = on;
   }

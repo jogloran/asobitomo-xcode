@@ -71,16 +71,8 @@ public:
       }
     }
     
-    if (loc == 0xff40) {
-      // LCD stat
-      ppu.set_lcd_on(value & (1 << 7));
-      ppu.set_window_tilemap_offset(value & (1 << 6) ? 0x9c00 : 0x9800);
-      ppu.set_window_display(value & (1 << 5));
-      ppu.set_bg_window_tile_data_offset(value & (1 << 4) ? 0x8000 : 0x8800);
-      ppu.set_bg_tilemap_offset(value & (1 << 3) ? 0x9c00 : 0x9800);
-      ppu.set_sprite_mode(value & (1 << 2) ? PPU::SpriteMode::S8x16 : PPU::SpriteMode::S8x8);
-      ppu.set_sprite_display(value & (1 << 1));
-      ppu.set_bg_display(value & 0x1);
+    if (loc == 0xff40) { // LCD stat
+      ppu.stat(value);
     }
     
     if (loc == 0xff00) { // joypad
@@ -114,7 +106,6 @@ public:
     return result;
   }
 
-  // const byte& operator[](word loc) const;
   byte& _read_mem(word loc) {
     if (loc >= 0xff00 && loc <= 0xff7f) {
       accessed[loc - 0xff00]++;
