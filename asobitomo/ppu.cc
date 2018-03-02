@@ -190,10 +190,6 @@ PPU::rasterise_line() {
   byte& oam_ref = cpu.mmu._read_mem(0xfe00);
   OAM* oam = reinterpret_cast<OAM*>(&oam_ref);
   
-  // render bg
-  // render window
-  // render sprites
-  
   // bg
   // find bg tiles which intersect this line
   // line / 8 will intersect this line
@@ -282,6 +278,69 @@ PPU::rasterise_line() {
   if (window_display) {
     byte wx = cpu.mmu._read_mem(0xff4b);
     byte wy = cpu.mmu._read_mem(0xff4a);
+    
+    // line is from 0 to 143 and 144 to 153 during vblank
+    // line touches tiles in row (line + scy) / 8
+    //                       columns scx / 8 to scx / 8 + 20
+    // starting and ending at vertical pixel (line + scy) % 8
+    //                        horizontal pixel scx % 8
+    
+    // get the sequence of tiles which are touched
+    auto row_touched = (line + wy) / 8;
+    
+    auto index_touched = row_touched * 32 + ((wx - 7) / 8); // index_touched... +20
+    // y coordinate within a tile is (line + scy) % 8
+    // starting x coordinate for the line of tiles is scx % 8
+    
+    word item = window_tilemap_offset + index_touched;
+    
+    // if bg_window_tile_data_offset is 0x8000,
+    //     tile data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
+    // else if bg_window_tile_data_offset is 0x8800,
+    //     tile data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
+    
+    // there are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
+    
+    std::vector<std::vector<PaletteIndex>> tile_data;
+    auto begin = &cpu.mmu.mem[item];
+    auto end = &cpu.mmu.mem[item] + 20;
+    std::transform(begin, end, std::back_inserter(tile_data),
+                   [this, wy](byte index) {
+                     // 2 bytes per row, 16 bytes per tile
+                     // in each row, first byte is LSB of palette indices
+                     //              second byte is MSB
+                     if (bg_window_tile_data_offset == 0x8000) {
+                       return decode(bg_window_tile_data_offset + index*4,
+                                     (line + wy) % 8);
+                     } else {
+                       return decode(bg_window_tile_data_offset + (128-index)*4,
+                                     (line + wy) % 8);
+                     }
+                   });
+    
+    // map this through the colour map
+    
+    std::vector<PaletteIndex> raster_row = flatten(tile_data);
+    std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(),
+                   [palette](PaletteIndex pidx) {
+                     switch (pidx) {
+                       case 0:
+                         return palette & 3;
+                       case 1:
+                         return (palette >> 2) & 3;
+                       case 2:
+                         return (palette >> 4) & 3;
+                       case 3:
+                         return (palette >> 6) & 3;
+                       default:
+                         throw std::runtime_error("invalid palette index");
+                     }
+                   });
+    
+    // write to raster
+    typedef std::vector<byte>::size_type diff;
+//    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end());
+    std::copy(raster_row.begin(), raster_row.end(), raster.begin());
   }
   
   if (sprite_display) {

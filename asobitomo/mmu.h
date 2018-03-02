@@ -62,6 +62,10 @@ public:
       timer.set_tac(value);
     }
     
+    if (loc >= 0x9800 && loc <= 0x9fff) {
+    ;
+    }
+    
     if (loc >= 0x2000 && loc <= 0x3fff) {
       if (value == 0x00) {
         bank = 1;

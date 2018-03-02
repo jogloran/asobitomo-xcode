@@ -29,7 +29,7 @@ int main(int argc_, char** argv_) {
   argc = argc_; argv = argv_;
   
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/06.gb");
+  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
 
   copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
   
@@ -48,7 +48,7 @@ int main(int argc_, char** argv_) {
   bool s=false;
   bool should_dump = false;
   cpu.ppu.screen.on();
-  while (i++<3000000) {
+  while (true) {
 //  while (cpu.pc != 0x037e) {
 //    if (cpu.pc == 0x0369) { // credits
 //    if (cpu.pc == 0x0502 || cpu.pc == 0x04f3 || cpu.pc == 0x04f5 || cpu.pc == 0x0502 || cpu.pc == 0x0507) {

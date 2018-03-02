@@ -160,21 +160,33 @@
 #define ADD_WORD_WORD(hi1, lo1, hi2, lo2) [](CPU& cpu) { \
   word hl = (cpu.hi1 << 8) | cpu.lo1; \
   word bc = (cpu.hi2 << 8) | cpu.lo2; \
-  hl += bc; \
+  uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
+  hl = static_cast<word>(result); \
   cpu.hi1 = hl >> 8; \
   cpu.lo1 = hl & 0xff; \
   cpu.unset_flags(Nf); \
-  /* set H, C conditionally */ \
+  if (result & (1 << 16)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
+  /* set H conditionally */ \
 }
 
 #define ADD_WORD_WWORD(hi, lo, wword) [](CPU& cpu) { \
   word hl = (cpu.hi << 8) | cpu.lo; \
   word bc = cpu.wword; \
-  hl += bc; \
+  uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
+  hl = static_cast<word>(result); \
   cpu.hi = hl >> 8; \
   cpu.lo = hl & 0xff; \
   cpu.unset_flags(Nf); \
-  /* set H, C conditionally */ \
+  if (result & (1 << 16)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
+  /* set H conditionally */ \
 }
 
 #define LD_REG_LOC(reg, hi, lo) [](CPU& cpu) { \
@@ -397,25 +409,23 @@ ADC_A8_HELPER(a)
 
 #define GEN8_HELPER(op, src) [](CPU& cpu) { \
   cpu.a = cpu.a op cpu.src; \
-  cpu.set_flags(Nf); \
+  cpu.unset_flags(Nf | Hf | Cf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
   } else { \
     cpu.unset_flags(Zf); \
   } \
-  /* need to set H, C conditionally */ \
 }
 
 #define GEN8_HL_LOC_HELPER(op) [](CPU& cpu) { \
   word loc = (cpu.h << 8) | cpu.l; \
   cpu.a = cpu.a op cpu.mmu[loc]; \
-  cpu.set_flags(Nf); /* TODO: N needs to be set depending on the op */ \
+  cpu.unset_flags(Nf | Hf | Cf); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
   } else { \
     cpu.unset_flags(Zf); \
   } \
-  /* need to set H, C conditionally */ \
 }
 
 #define GEN8(op) GEN8_HELPER(op, b), \
@@ -474,11 +484,11 @@ SBC_A8_HELPER(a)
 #define CP8_HELPER(src) [](CPU& cpu) { \
   byte result = (cpu.a - cpu.src); \
   cpu.set_flags(Nf); \
-  if (result == 0) { \
+  if (cpu.a == cpu.src) { \
     cpu.set_flags(Zf); \
   } else { \
     cpu.unset_flags(Zf); \
-    if (result < 0) { \
+    if (cpu.a < cpu.src) { \
       cpu.set_flags(Cf); \
     } else { \
       cpu.unset_flags(Cf); \
@@ -491,11 +501,11 @@ SBC_A8_HELPER(a)
   word loc = (cpu.h << 8) | cpu.l; \
   byte result = (cpu.a - cpu.mmu[loc]); \
   cpu.set_flags(Nf); \
-  if (result == 0) { \
+  if (cpu.a == cpu.mmu[loc]) { \
     cpu.set_flags(Zf); \
   } else { \
     cpu.unset_flags(Zf); \
-    if (result < 0) { \
+    if (cpu.a < cpu.mmu[loc]) { \
       cpu.set_flags(Cf); \
     } else { \
       cpu.unset_flags(Cf); \
