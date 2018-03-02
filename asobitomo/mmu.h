@@ -27,6 +27,7 @@ public:
     joypad(0xf),
     input() {
     fill(mem.begin(), mem.end(), 0);
+    std::copy(rom.begin(), rom.end(), mem.begin());
     
     mem[0xf000] = 0xff;
 
@@ -62,10 +63,6 @@ public:
       timer.set_tac(value);
     }
     
-    if (loc >= 0x9800 && loc <= 0x9fff) {
-    ;
-    }
-    
     if (loc >= 0x2000 && loc <= 0x3fff) {
       if (value == 0x00) {
         bank = 1;
@@ -87,32 +84,10 @@ public:
     }
     
     if (loc == 0xff00) { // joypad
-      // code will write to 0xff00 bits 4 (select direction) and 5 (select buttons)
-      // then expect to read from 0xff00 bits 0-3 to get a button press
-//      if ((value & (1 << 4))) {
-//        mem[loc] = 0x1f;
-//      } else if ((value & (1 << 5))) {
-//        mem[loc] = 0x27;
-//      } else {
-//        mem[loc] = 0x0f;
-//      }
       mem[loc] = value | 0xf;
-//      std::cout << "joypad: " << hex << static_cast<int>(mem[loc]) << std::endl;
-    }
-    
-    if (loc == 0xc000 + 18 && value == 10) {
-      ;
-    }
-    
-    if (loc == 0xc000 + 24 && value == 56) {
-    
-    }
-    
-    if (loc == 0xff93) {
-//      std::cout << "ff93 = " << hex << static_cast<int>(value) << std::endl;
     }
 
-    if (loc == 0xff46) {
+    if (loc == 0xff46) { // DMA
       word src = value << 8;
       for (word addr = 0xfe00; addr < 0xfea0; ++addr) {
         (*this)[addr] = (*this)[src++];

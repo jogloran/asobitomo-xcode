@@ -56,7 +56,8 @@ public:
   CPU(std::string path): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
     pc(0x0000), sp(0x0000), cycles(0), timer(*this),
     ppu(*this), mmu(path, ppu, timer),  halted(false),
-    interrupt_enabled(InterruptState::Disabled) {}
+    interrupt_enabled(InterruptState::Disabled) {
+  }
 
   enum class InterruptState {
     Disabled,

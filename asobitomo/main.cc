@@ -29,9 +29,9 @@ int main(int argc_, char** argv_) {
   argc = argc_; argv = argv_;
   
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/04.gb");
+  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
 
-  copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
+  
   
   std::deque<word> history;
   size_t repeating = 0;
@@ -45,46 +45,12 @@ int main(int argc_, char** argv_) {
   }
   //
   int i = 0;
-  bool s=false;
   bool should_dump = false;
   cpu.ppu.screen.on();
   while (true) {
-//  while (cpu.pc != 0x037e) {
-//    if (cpu.pc == 0x0369) { // credits
-//    if (cpu.pc == 0x0502 || cpu.pc == 0x04f3 || cpu.pc == 0x04f5 || cpu.pc == 0x0502 || cpu.pc == 0x0507) {
-    if (cpu.pc == 0x4f5) {
-//      should_dump = true;
-
-//      cpu.dump_state();
-    }
-    
-    if (s) {
-//      s = true;
-//      cpu.dump_state();
-    }
     if (cpu.pc == 0x479) {
       in_title = true;
       ASOBITOMO_DEBUG = true;
-      //      should_dump = true;
-//      cpu.ppu.screen.blit();
-//      ASOBITOMO_DEBUG = true;
-//      cpu.ppu.screen.blit();
-    }
-    
-    if (cpu.pc == 0x2b48) {
-//      cpu.dump_state();
-    }
-    
-//    if (cpu.pc == 0x04a2 && cpu.mmu._read_mem(0xff81) != 0x0) {
-//      should_dump = true;
-//      cpu.dump_state();
-//    }
-    if (cpu.pc == 0x02d3) {
-//      should_dump = true;
-    }
-    
-    if (cpu.pc >= 0x04a2 && cpu.pc <= 0x0501) {
-//      cpu.dump_state();
     }
     
     history.emplace_back(cpu.pc);
