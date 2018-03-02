@@ -355,8 +355,8 @@ PPU::rasterise_line() {
     // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
-      if (entry.x != 0)
-      std::cout << j << ": " << entry << std::endl;
+//      if (entry.x != 0)
+//      std::cout << j << ": " << entry << std::endl;
 
       for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
         if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&

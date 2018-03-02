@@ -29,7 +29,7 @@ int main(int argc_, char** argv_) {
   argc = argc_; argv = argv_;
   
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
+  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/04.gb");
 
   copy(cpu.mmu.rom.begin(), cpu.mmu.rom.end(), cpu.mmu.mem.begin());
   
