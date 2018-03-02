@@ -36,12 +36,11 @@ public:
   }
 
   void set(word loc, byte value) {
-    // std::cout << hex<<loc << std::endl;
+    mem[loc] = value;
+    
     if (loc >= 0xff00 && loc <= 0xff7f) {
       accessed[loc - 0xff00]++;
     }
-    
-    mem[loc] = value;
     
     if (loc == 0xff01) {
       last = value;
@@ -96,14 +95,7 @@ public:
       throw std::range_error("invalid location");
     }
 
-    byte& result = _read_mem(loc);
-    // cerr << "mmu["
-    //   << setfill('0') << setw(4) <<
-    //   hex << loc << dec
-    //   << "] = " << setfill('0') << setw(2) <<
-    //   hex << static_cast<int>(result) << dec << endl;
-
-    return result;
+    return _read_mem(loc);
   }
 
   byte& _read_mem(word loc) {

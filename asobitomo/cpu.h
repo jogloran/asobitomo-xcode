@@ -55,7 +55,8 @@ class CPU {
 public:
   CPU(std::string path): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
     pc(0x0000), sp(0x0000), cycles(0), timer(*this),
-    ppu(*this), mmu(path, ppu, timer),  halted(false),
+    ppu(*this), mmu(path, ppu, timer),
+    halted(false), interrupt_flags_before_halt(0),
     interrupt_enabled(InterruptState::Disabled) {
   }
 
@@ -90,12 +91,15 @@ public:
   word get_word(byte hi, byte lo) {
     return (hi << 8) | lo;
   }
-
+  
+  bool wake_if_interrupt_requested();
   void halt() {
+    interrupt_flags_before_halt = mmu[0xff0f];
     halted = true;
   }
 
   void stop() {
+    pc += 1;
     halted = true;
   }
 
@@ -129,6 +133,7 @@ public:
   MMU mmu;
   
   bool halted;
+  byte interrupt_flags_before_halt;
 
   InterruptState interrupt_enabled;
   std::string ppu_state_as_string(PPU::Mode mode);

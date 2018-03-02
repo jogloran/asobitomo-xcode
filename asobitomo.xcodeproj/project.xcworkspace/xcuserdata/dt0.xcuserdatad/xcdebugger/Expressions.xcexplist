@@ -80,21 +80,24 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "MMU::_read_mem(unsigned short):mmu.h">
+         contextName = "CPU::step(bool):cpu.cc">
          <PersistentStrings>
             <PersistentString
-               value = "joypad">
+               value = "pc">
+            </PersistentString>
+            <PersistentString
+               value = "cycles">
+            </PersistentString>
+            <PersistentString
+               value = "interrupt_enabled">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "CPU::step(bool):cpu.cc">
+         contextName = "MMU::_read_mem(unsigned short):mmu.h">
          <PersistentStrings>
             <PersistentString
-               value = "interrupt_enabled">
-            </PersistentString>
-            <PersistentString
-               value = "pc">
+               value = "joypad">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -105,10 +108,10 @@
          contextName = "main:main.cc">
          <PersistentStrings>
             <PersistentString
-               value = "cpu.ppu.ncycles">
+               value = "cpu.pc">
             </PersistentString>
             <PersistentString
-               value = "cpu.pc">
+               value = "cpu.ppu.ncycles">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

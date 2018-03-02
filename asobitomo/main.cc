@@ -30,8 +30,6 @@ int main(int argc_, char** argv_) {
   
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
   CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
-
-  
   
   std::deque<word> history;
   size_t repeating = 0;
@@ -48,17 +46,12 @@ int main(int argc_, char** argv_) {
   bool should_dump = false;
   cpu.ppu.screen.on();
   while (true) {
-    if (cpu.pc == 0x479) {
-      in_title = true;
-      ASOBITOMO_DEBUG = true;
-    }
-    
-    history.emplace_back(cpu.pc);
-    if (history.size() >= 20) {
-      history.pop_front();
-    }
-    
     if (debug) {
+      history.emplace_back(cpu.pc);
+      if (history.size() >= 20) {
+        history.pop_front();
+      }
+      
       auto period = history_repeating(history);
       if (period) {
         repeating++;

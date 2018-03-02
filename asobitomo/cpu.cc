@@ -292,30 +292,41 @@ void CPU::fire_interrupts() {
   pc = handler;
 }
 
+bool CPU::wake_if_interrupt_requested() {
+  if (interrupt_flags_before_halt != mmu[0xff0f]) {
+    halted = false;
+    return true;
+  }
+  return false;
+}
+
 void CPU::step(bool debug)  {
+  bool awakened_by_interrupt = false;
   if (halted) {
-    throw std::runtime_error("cpu halted");
+    awakened_by_interrupt = wake_if_interrupt_requested();
   }
 
   update_interrupt_state();
   fire_interrupts();
   
-  if (!mmu.rom_mapped && pc == 0x40) {
-    ;
+  if (halted) {
+    ppu.screen.blit();
+    
+    ppu.step(4);
+  } else {
+    byte instr = mmu[pc];
+
+    if (debug) {
+      dump_state();
+    }
+
+    ++pc;
+
+    long old_cycles = cycles;
+    ops[instr](*this);
+    cycles += ncycles[instr];
+    
+    ppu.step(cycles - old_cycles);
+    timer.step(cycles - old_cycles);
   }
-
-  byte instr = mmu[pc];
-
-  if (debug) {
-    dump_state();
-  }
-
-  ++pc;
-
-  long old_cycles = cycles;
-  ops[instr](*this);
-  cycles += ncycles[instr];
-
-  ppu.step(cycles - old_cycles);
-  timer.step(cycles - old_cycles);
 }
