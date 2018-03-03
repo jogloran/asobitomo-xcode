@@ -204,38 +204,59 @@ std::string CPU::ppu_state_as_string(PPU::Mode mode) {
 void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<
-    "pc: 0x" << setw(4) << hex << pc << ' ' <<
-    "sp: 0x" <<                   sp << ' ' <<
-    "op: 0x" << setw(2) << hex << static_cast<int>(instr) << ' ' <<
-    "(" << op_name_for(pc) << ")" << endl;
-  cout << "LY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-    << "\tLYC: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45)) 
-    << "\tSCY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff42))
-    << "\tSCX: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff43)) << endl;
-  cout << "LCDC: " << binary(mmu._read_mem(0xff40))
-    << "\t\tSTAT: " << binary(mmu._read_mem(0xff41))
-    << " (" << ppu_state_as_string(ppu.mode) << ")" << endl;
-  cout << "IF: " << binary(mmu._read_mem(0xff0f))
-    << "\t\tIE: " << binary(mmu._read_mem(0xffff)) << endl;
-  cout << "Interrupts: " << interrupt_state_as_string(interrupt_enabled) << endl;
-  cout << "0xff00: " << setw(2) << hex << binary(mmu._read_mem(0xff00))
-    << "\t\t0xff81: " << setw(2) << hex << binary(mmu._read_mem(0xff81)) << endl;
-  cout <<
-    "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
-    "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
-    "b: " << setw(2) << hex << static_cast<int>(b) << ' ' <<
-    "c: " << setw(2) << hex << static_cast<int>(c) << ' ' << endl;
-  cout <<
-    "d: " << setw(2) << hex << static_cast<int>(d) << ' ' <<
-    "e: " << setw(2) << hex << static_cast<int>(e) << ' ' <<
-    "h: " << setw(2) << hex << static_cast<int>(h) << ' ' <<
-    "l: " << setw(2) << hex << static_cast<int>(l) << ' ' << endl;
-  cout <<
-    "Z: " << setw(2) << hex << static_cast<int>(Z()) << ' ' <<
-    "N: " << setw(2) << hex << static_cast<int>(N()) << ' ' <<
-    "H: " << setw(2) << hex << static_cast<int>(H()) << ' ' <<
-    "C: " << setw(2) << hex << static_cast<int>(C()) << ' ' << endl;
-  cout << endl;
+    "[0x" << setw(4) << hex << pc << "]"
+//    "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
+//    "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
+//    "b: " << setw(2) << hex << static_cast<int>(b) << ' ' <<
+//    "c: " << setw(2) << hex << static_cast<int>(c) << ' ' <<
+//    "d: " << setw(2) << hex << static_cast<int>(d) << ' ' <<
+//    "e: " << setw(2) << hex << static_cast<int>(e) << ' ' <<
+//    "h: " << setw(2) << hex << static_cast<int>(h) << ' ' <<
+//    "l: " << setw(2) << hex << static_cast<int>(l) << ' ' <<
+    << " LY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
+    << " LYC: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
+    << " LCDC: " << binary(mmu._read_mem(0xff40))
+    << " STAT: " << binary(mmu._read_mem(0xff41))
+    << " IF: " << binary(mmu._read_mem(0xff0f))
+    << " IE: " << binary(mmu._read_mem(0xffff))
+    << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
+    << " (" << ppu_state_as_string(ppu.mode) << ") " <<
+      setw(2) << static_cast<int>(instr) <<
+      " (" << op_name_for(pc) << ")" <<
+      endl;
+//  cout << setfill('0') <<
+//    "pc: 0x" << setw(4) << hex << pc << ' ' <<
+//    "sp: 0x" <<                   sp << ' ' <<
+//    "op: 0x" << setw(2) << hex << static_cast<int>(instr) << ' ' <<
+//    "(" << op_name_for(pc) << ")" << endl;
+//  cout << "LY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
+//    << "\tLYC: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
+//    << "\tSCY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff42))
+//    << "\tSCX: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff43)) << endl;
+//  cout << "LCDC: " << binary(mmu._read_mem(0xff40))
+//    << "\t\tSTAT: " << binary(mmu._read_mem(0xff41))
+//    << " (" << ppu_state_as_string(ppu.mode) << ")" << endl;
+//  cout << "IF: " << binary(mmu._read_mem(0xff0f))
+//    << "\t\tIE: " << binary(mmu._read_mem(0xffff)) << endl;
+//  cout << "Interrupts: " << interrupt_state_as_string(interrupt_enabled) << endl;
+//  cout << "0xff00: " << setw(2) << hex << binary(mmu._read_mem(0xff00))
+//    << "\t\t0xff81: " << setw(2) << hex << binary(mmu._read_mem(0xff81)) << endl;
+//  cout <<
+//    "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
+//    "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
+//    "b: " << setw(2) << hex << static_cast<int>(b) << ' ' <<
+//    "c: " << setw(2) << hex << static_cast<int>(c) << ' ' << endl;
+//  cout <<
+//    "d: " << setw(2) << hex << static_cast<int>(d) << ' ' <<
+//    "e: " << setw(2) << hex << static_cast<int>(e) << ' ' <<
+//    "h: " << setw(2) << hex << static_cast<int>(h) << ' ' <<
+//    "l: " << setw(2) << hex << static_cast<int>(l) << ' ' << endl;
+//  cout <<
+//    "Z: " << setw(2) << hex << static_cast<int>(Z()) << ' ' <<
+//    "N: " << setw(2) << hex << static_cast<int>(N()) << ' ' <<
+//    "H: " << setw(2) << hex << static_cast<int>(H()) << ' ' <<
+//    "C: " << setw(2) << hex << static_cast<int>(C()) << ' ' << endl;
+//  cout << endl;
 }
 
 
@@ -292,9 +313,36 @@ void CPU::fire_interrupts() {
   pc = handler;
 }
 
+static std::string interrupt_names[] {
+  "vblank",
+  "stat",
+  "timer",
+  "serial",
+  "joypad",
+};
+
+static std::string interrupt_flags_to_description(byte flags) {
+  std::stringstream s;
+  bool first = true;
+  
+  int i = 0;
+  for (auto name : interrupt_names) {
+    if (flags & (1 << i)) {
+      if (!first) s << ", ";
+      else first = false;
+      
+      s << name;
+    }
+    ++i;
+  }
+  
+  return s.str();
+}
+
 bool CPU::wake_if_interrupt_requested() {
   if (interrupt_flags_before_halt != mmu[0xff0f]) {
     halted = false;
+//    std::cout << ">>> Awakened by " << interrupt_flags_to_description(mmu[0xff0f]) << std::endl;
     return true;
   }
   return false;
@@ -310,9 +358,10 @@ void CPU::step(bool debug)  {
   fire_interrupts();
   
   if (halted) {
-    ppu.screen.blit();
-    
     ppu.step(4);
+    timer.step(4);
+    
+    cycles += 4;
   } else {
     byte instr = mmu[pc];
 

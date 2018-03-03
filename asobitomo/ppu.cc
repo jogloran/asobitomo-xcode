@@ -82,9 +82,11 @@ PPU::stat(byte value) {
 
 void
 PPU::step(long delta) {
-  if (!cpu.ppu.lcd_on) return;
-  
   ncycles += delta;
+  
+  // Games don't seem to work without the LCD on check being commented out --
+  // this is improper
+//  if (!cpu.ppu.lcd_on) return;
   
   /* 456*144 + 4560 = 70224
    *                                    \
@@ -165,7 +167,7 @@ PPU::update_stat_register()  {
   if (lyc == line) {
     stat |= 0x4; // coincidence flag (bit 2)
   } else {
-    stat &= 0xfb;
+    stat &= ~0x4;
   }
   
   cpu.mmu[0xff41] = static_cast<byte>(mode);
@@ -248,18 +250,23 @@ PPU::rasterise_line() {
     // there are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
     
     std::vector<std::vector<PaletteIndex>> tile_data;
+    // These are pointers into the tile map
     auto begin = &cpu.mmu.mem[item];
     auto end = &cpu.mmu.mem[item] + 20;
     std::transform(begin, end, std::back_inserter(tile_data),
                    [this, scy](byte index) {
+                     // This takes each tile map index and retrieves
+                     // the corresponding line of the corresponding tile
                      // 2 bytes per row, 16 bytes per tile
                      // in each row, first byte is LSB of palette indices
                      //              second byte is MSB
                      if (bg_window_tile_data_offset == 0x8000) {
-                       return decode(bg_window_tile_data_offset + index*4,
+                       return decode(bg_window_tile_data_offset + index*16,
                                      (line + scy) % 8);
                      } else {
-                       return decode(bg_window_tile_data_offset + (128-index)*4,
+                       // add 0x800 to interpret the tile map index as a signed index starting in the middle
+                       // of the tile data range (0x8800-97FF)
+                       return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
                                      (line + scy) % 8);
                      }
                    });
@@ -361,17 +368,13 @@ PPU::rasterise_line() {
     std::array<byte, 160> sprite_row;
     std::fill(sprite_row.begin(), sprite_row.end(), 0);
     
-    compare_oams(oam, old_oam.data());
-    if (oam[4].tile_index == 0xa && old_oam[4].tile_index == 0x85 && oam[5].tile_index == 0x25 && old_oam[5].tile_index == 0x85) {
-      ;
-    }
-    
+//    compare_oams(oam, old_oam.data());
     // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
 //      if (entry.x != 0)
 //      std::cout << j << ": " << entry << std::endl;
-
+  
       for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
         if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
             line + 16 >= entry.y && line + 16 < entry.y + 8) {
@@ -444,9 +447,8 @@ PPU::decode(word start_loc, byte start_y) {
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows
   
-  // the relevant line is bg_window_tile_data_offset + static_cast<sbyte>(start_loc)*4 + start_y (+ 1)
-  byte b1 = cpu.mmu._read_mem(bg_window_tile_data_offset + (start_loc)*4 + start_y*2);
-  byte b2 = cpu.mmu._read_mem(bg_window_tile_data_offset + (start_loc)*4 + start_y*2 + 1);
+  byte b1 = cpu.mmu._read_mem(start_loc + start_y*2);
+  byte b2 = cpu.mmu._read_mem(start_loc + start_y*2 + 1);
   
   // b1/b2 is packed:
   // b1            b2
@@ -474,3 +476,43 @@ PPU::unpack_bits(byte lsb, byte msb) {
   return result;
 }
 
+void
+PPU::set_lcd_on(bool on) {
+//  std::cout << "lcd " << on << " at 0x" << hex << setw(4) << setfill('0') << cpu.pc << std::endl;
+  lcd_on = on;
+}
+
+void
+PPU::set_window_tilemap_offset(word offset) {
+  window_tilemap_offset = offset;
+}
+
+void
+PPU::set_bg_window_tile_data_offset(word offset) {
+  bg_window_tile_data_offset = offset;
+}
+
+void
+PPU::set_window_display(bool on) {
+  window_display = on;
+}
+
+void
+PPU::set_bg_tilemap_offset(word offset) {
+  bg_tilemap_offset = offset;
+}
+
+void
+PPU::set_sprite_mode(SpriteMode mode) {
+  sprite_mode = mode;
+}
+
+void
+PPU::set_sprite_display(bool on) {
+  sprite_display = on;
+}
+
+void
+PPU::set_bg_display(bool on) {
+  bg_display = on;
+}

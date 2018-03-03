@@ -48,30 +48,15 @@ public:
   
   void stat(byte value);
   
-  void set_lcd_on(bool on) {
-    lcd_on = on;
-  }
-  void set_window_tilemap_offset(word offset) {
-    window_tilemap_offset = offset;
-  }
-  void set_bg_window_tile_data_offset(word offset) {
-    bg_window_tile_data_offset = offset;
-  }
-  void set_window_display(bool on) {
-    window_display = on;
-  }
-  void set_bg_tilemap_offset(word offset) {
-    bg_tilemap_offset = offset;
-  }
-  void set_sprite_mode(SpriteMode mode) {
-    sprite_mode = mode;
-  }
-  void set_sprite_display(bool on) {
-    sprite_display = on;
-  }
-  void set_bg_display(bool on) {
-    bg_display = on;
-  }
+  void set_lcd_on(bool on);
+  void set_window_tilemap_offset(word offset);
+  void set_bg_window_tile_data_offset(word offset);
+  void set_window_display(bool on);
+  void set_bg_tilemap_offset(word offset);
+  void set_sprite_mode(SpriteMode mode);
+  void set_sprite_display(bool on);
+  void set_bg_display(bool on);
+
   void rasterise_line();
   
   typedef byte PaletteIndex;

@@ -39,7 +39,8 @@ public:
       SDL_RenderCopy(renderer_, texture_, NULL, NULL);
       SDL_RenderPresent(renderer_);
     }
-    
+
+// this slows emulator way down
     SDL_PumpEvents();
 
     SDL_Event event;

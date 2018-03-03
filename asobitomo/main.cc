@@ -29,19 +29,18 @@ int main(int argc_, char** argv_) {
   argc = argc_; argv = argv_;
   
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
+  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/test.gb");
   
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
   const bool debug = false;
 
+  cpu.ppu.screen.off();
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
-    cpu.ppu.screen.off();
-//    cpu.ppu.screen.blit();
   }
-  //
+
   int i = 0;
   bool should_dump = false;
   cpu.ppu.screen.on();
@@ -65,6 +64,11 @@ int main(int argc_, char** argv_) {
         should_dump = true;
       }
       last_period = period;
+    }
+    
+    if (i >= 2000000-100) {
+      ASOBITOMO_DEBUG = true;
+//      should_dump = true;
     }
     
     cpu.step(should_dump);

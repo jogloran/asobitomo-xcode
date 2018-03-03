@@ -787,9 +787,9 @@ CP8_HELPER(a)
   cpu.lo = hl & 0xff; \
 }
 
-#define INVALID() [](CPU& cpu) { \
-  throw std::runtime_error("Invalid opcode"); \
-}
+#define INVALID() [](CPU& cpu) {}
+////  throw std::runtime_error("Invalid opcode"); \
+//}
 
 #define UNIMPL() [](CPU& cpu) { \
   throw std::runtime_error("Unimplemented opcode"); \

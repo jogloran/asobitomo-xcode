@@ -2,18 +2,27 @@
 #include "cpu.h"
 
 void
+Timer::inc_tima() {
+  if (counter == 0xff) {
+    counter = modulo;
+    fire_timer_interrupt();
+  } else {
+    ++counter;
+  }
+}
+
+void
 Timer::step(long delta) {
+  // increment divider_hi once every 256 cycles
   divider += delta;
   divider_hi = divider >> 8;
   
-  if (!enabled) return;
-  
-  bool overflowed = (divider & ((1 << speed) - 1)) == 0;
-  if (overflowed) {
-    ++counter;
-    if (counter == 0) {
-      fire_timer_interrupt();
-      counter = modulo;
+  if (enabled) {
+    counter_cycles += delta;
+    if (counter_cycles >= speed) {
+      inc_tima();
+//      std::cout << "counter: " << dec << static_cast<int>(counter) << ", cycles = " << dec << counter_cycles << " (+" << delta << ")" << std::endl;
+      counter_cycles -= speed;
     }
   }
 }
@@ -25,7 +34,7 @@ Timer::div() {
 
 void
 Timer::reset_div() {
-  divider_hi = divider = 0;
+  divider = 0;
 }
 
 void
@@ -47,20 +56,21 @@ Timer::set_tac(byte value) {
   byte frequency_selector = value & 0x3;
   switch (frequency_selector) {
   case 0:
-    speed = 4;
+    speed = 1024;
     break;
   case 1:
-    speed = 10;
+    speed = 256;
     break;
   case 2:
-    speed = 8;
+    speed = 64;
     break;
   case 3:
-    speed = 6;
+    speed = 16;
     break;
   default:
     break;
   }
   
+  std::cout << "Timer setting speed: " << static_cast<int>(frequency_selector) << std::endl;
   tac_ = value;
 }
