@@ -4,7 +4,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <GLUT/glut.h>
 #include <SDL2/SDL.h>
 
 class GL : public Screen {
@@ -13,26 +12,32 @@ public:
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
   
-  GL(): buf(fb.size() * 4) {
+  GL(int scale=4): buf(fb.size() * 4), scale_(scale) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
-    window_ = SDL_CreateWindow("test", 0, 0, Screen::BUF_WIDTH, Screen::BUF_HEIGHT, 0);
+    window_ = SDL_CreateWindow("test", 0, 0,
+      Screen::BUF_WIDTH*scale_, Screen::BUF_HEIGHT*scale_, 0);
     renderer_ = SDL_CreateRenderer(window_, -1, 0);
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
-//    SDL_RenderSetLogicalSize(renderer_, Screen::BUF_WIDTH, Screen::BUF_HEIGHT);
+    SDL_RenderSetLogicalSize(renderer_, Screen::BUF_WIDTH, Screen::BUF_HEIGHT);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, Screen::BUF_WIDTH, Screen::BUF_HEIGHT);
   }
   
   void blit() {
     if (should_draw) { 
-      static byte pal[] = { 0, 128, 192, 255 };
+      static byte pal[4][4] = {
+        {15, 39, 25, 255},
+        {68, 130, 79, 255},
+        {108, 162, 68, 255},
+        {238, 253, 210, 255},
+      };
       
       int i = 0;
       for (byte b: fb) {
-        buf[i++] = pal[b];
-        buf[i++] = pal[b];
-        buf[i++] = pal[b];
-        buf[i++] = 255;
+        buf[i++] = pal[b][0];
+        buf[i++] = pal[b][1];
+        buf[i++] = pal[b][2];
+        buf[i++] = pal[b][3];
       }
       SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
       SDL_RenderClear(renderer_);
@@ -51,9 +56,6 @@ public:
     }
   }
   
-  void draw() {
-
-  }
-  
   std::vector<byte> buf;
+  int scale_;
 };

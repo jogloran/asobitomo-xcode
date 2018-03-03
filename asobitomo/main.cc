@@ -29,7 +29,7 @@ int main(int argc_, char** argv_) {
   argc = argc_; argv = argv_;
   
 //  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/test.gb");
+  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
   
   std::deque<word> history;
   size_t repeating = 0;
@@ -66,16 +66,10 @@ int main(int argc_, char** argv_) {
       last_period = period;
     }
     
-    if (i >= 2000000-100) {
-      ASOBITOMO_DEBUG = true;
-//      should_dump = true;
-    }
-    
     cpu.step(should_dump);
   }
 
   cpu.dump_state();
-  cpu.ppu.screen.draw();
 
   std::ofstream out("vram");
   copy(cpu.mmu.mem.begin() + 0x8000, cpu.mmu.mem.begin() + 0xa000, ostream_iterator<unsigned int>(out, " "));
