@@ -8,6 +8,9 @@
             <PersistentString
                value = "divider">
             </PersistentString>
+            <PersistentString
+               value = "modulo">
+            </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
@@ -50,6 +53,9 @@
          contextName = "PPU::rasterise_line()::$_0::operator()(unsigned char) const:ppu.cc">
          <PersistentStrings>
             <PersistentString
+               value = "">
+            </PersistentString>
+            <PersistentString
                value = "(line + scy) % 8">
             </PersistentString>
          </PersistentStrings>
@@ -64,7 +70,7 @@
                value = "bg_window_tile_data_offset">
             </PersistentString>
             <PersistentString
-               value = "start_loc + start_y*2">
+               value = "bg_tilemap_offset">
             </PersistentString>
             <PersistentString
                value = "unpack_bits(b1 ,b2)">
@@ -89,6 +95,9 @@
                value = "cycles">
             </PersistentString>
             <PersistentString
+               value = "bg_window_tile_data_offset + (start_loc)*4 + start_y*2">
+            </PersistentString>
+            <PersistentString
                value = "interrupt_enabled">
             </PersistentString>
          </PersistentStrings>
@@ -108,10 +117,10 @@
          contextName = "main:main.cc">
          <PersistentStrings>
             <PersistentString
-               value = "cpu.pc">
+               value = "cpu.ppu.ncycles">
             </PersistentString>
             <PersistentString
-               value = "cpu.ppu.ncycles">
+               value = "cpu.pc">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

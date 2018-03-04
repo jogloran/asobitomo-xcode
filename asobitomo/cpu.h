@@ -152,6 +152,6 @@ public:
     cpu._handle_cb();
   }
 
-  static std::array<op, 256> cb_ops;
-  static std::array<op, 256> ops;
+  static std::array<op, NINSTR> cb_ops;
+  static std::array<op, NINSTR> ops;
 };

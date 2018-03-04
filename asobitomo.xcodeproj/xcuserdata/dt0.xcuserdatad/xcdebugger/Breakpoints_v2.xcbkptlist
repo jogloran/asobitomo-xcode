@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "asobitomo/ppu.cc"
-            timestampString = "541671482.542309"
+            timestampString = "541806931.8860199"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "257"
-            endingLineNumber = "257"
+            startingLineNumber = "262"
+            endingLineNumber = "262"
             landmarkName = "PPU::rasterise_line()"
             landmarkType = "7">
          </BreakpointContent>
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "asobitomo/ppu.cc"
-            timestampString = "541671482.542648"
+            timestampString = "541806931.886299"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "282"
-            endingLineNumber = "282"
+            startingLineNumber = "289"
+            endingLineNumber = "289"
             landmarkName = "PPU::rasterise_line()"
             landmarkType = "7">
          </BreakpointContent>
@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "asobitomo/main.cc"
-            timestampString = "541671482.542874"
+            timestampString = "541806931.88644"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "72"
-            endingLineNumber = "72"
+            startingLineNumber = "69"
+            endingLineNumber = "69"
             landmarkName = "main(int argc_, char** argv_)"
             landmarkType = "9">
          </BreakpointContent>
@@ -54,16 +54,64 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "asobitomo/cpu.cc"
-            timestampString = "541671482.543117"
+            timestampString = "541806931.8868231"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "297"
-            endingLineNumber = "297"
-            landmarkName = "CPU::wake_if_interrupt_requested()"
+            startingLineNumber = "329"
+            endingLineNumber = "329"
+            landmarkName = "interrupt_flags_to_description(byte flags)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "interrupt_flags_to_description(unsigned char)"
+                  moduleName = "asobitomo"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dt0/my/asobitomo-xcode/asobitomo/cpu.cc"
+                  timestampString = "541719184.360773"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "309"
+                  endingLineNumber = "309"
+                  offsetFromSymbolStart = "1467">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "interrupt_flags_to_description(unsigned char)"
+                  moduleName = "asobitomo"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dt0/my/asobitomo-xcode/asobitomo/cpu.cc"
+                  timestampString = "541719184.3631721"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "309"
+                  endingLineNumber = "309"
+                  offsetFromSymbolStart = "1508">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "asobitomo/ppu.cc"
+            timestampString = "541806931.886921"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "269"
+            endingLineNumber = "269"
+            landmarkName = "PPU::rasterise_line()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
