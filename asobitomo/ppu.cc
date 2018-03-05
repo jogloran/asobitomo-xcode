@@ -418,7 +418,9 @@ PPU::rasterise_line() {
                            }
                          });
           
-          std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8); // TODO: doesn't check for sprite_row oob
+//          std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8); // TODO: doesn't check for sprite_row oob
+//            size_t nelements = sprite_row.end() - (sprite_row.begin() + entry.x - 8);
+            std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8);
 //          auto ptr = sprite_row.begin() + entry.x - 8;
 //          for (auto it = decoded.begin(); it != decoded.end(); ) {
 //            if (ptr == sprite_row.end()) {

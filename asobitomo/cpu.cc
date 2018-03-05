@@ -205,19 +205,18 @@ std::string CPU::ppu_state_as_string(PPU::Mode mode) {
   return mode_strings[static_cast<int>(mode)];
 }
 
+struct two_word_fmt {
+};
+
 void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<
-    "[0x" << setw(4) << hex << pc << "]"
-//    "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
-//    "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
-//    "b: " << setw(2) << hex << static_cast<int>(b) << ' ' <<
-//    "c: " << setw(2) << hex << static_cast<int>(c) << ' ' <<
-//    "d: " << setw(2) << hex << static_cast<int>(d) << ' ' <<
-//    "e: " << setw(2) << hex << static_cast<int>(e) << ' ' <<
-//    "h: " << setw(2) << hex << static_cast<int>(h) << ' ' <<
-//    "l: " << setw(2) << hex << static_cast<int>(l) << ' ' <<
-    << " LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
+    "[0x" << setw(4) << hex << pc << "] "
+    "af: " << setw(2) << hex << static_cast<int>(a) << rang::style::bold << static_cast<int>(f) << ' ' <<
+    "bc: " << setw(2) << hex << static_cast<int>(b) << static_cast<int>(c) << ' ' <<
+    "de: " << setw(2) << hex << static_cast<int>(d) << static_cast<int>(e) << ' ' <<
+    "hl: " << setw(2) << hex << static_cast<int>(h) << static_cast<int>(l) << ' '
+    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
     << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
     << " LCDC: " << binary(mmu._read_mem(0xff40))
     << " STAT: " << binary(mmu._read_mem(0xff41))
@@ -308,7 +307,7 @@ void CPU::fire_interrupts() {
   }
 
   interrupt_enabled = InterruptState::Disabled;
-//  std::cout << "<><> handling interrupt: " << hex << handled_interrupt << std::endl;
+
   mmu.set(0xff0f, interrupt_flags & ~handled_interrupt);
   mmu[sp - 1] = pc >> 8;
   mmu[sp] = pc & 0xff;
