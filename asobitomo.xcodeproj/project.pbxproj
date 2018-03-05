@@ -13,6 +13,7 @@
 		090794922046A07A0063686E /* util.cc in Sources */ = {isa = PBXBuildFile; fileRef = 090794912046A07A0063686E /* util.cc */; };
 		093DACDE2044F43A0087724B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDD2044F43A0087724B /* GLUT.framework */; };
 		093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDF2044F4F80087724B /* OpenGL.framework */; };
+		09E2D510204D2BA400D90FDB /* libgflags.2.2.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
 		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
 		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
@@ -48,6 +49,7 @@
 		093DACDD2044F43A0087724B /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		093DACDF2044F4F80087724B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		09670602204B87240023DA60 /* rang.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = rang.hpp; sourceTree = "<group>"; };
+		09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgflags.2.2.1.dylib; path = ../../../../usr/local/Cellar/gflags/2.2.1/lib/libgflags.2.2.1.dylib; sourceTree = "<group>"; };
 		09F0BA45204620C600936CF1 /* sdl_input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sdl_input.h; sourceTree = "<group>"; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
@@ -70,6 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09E2D510204D2BA400D90FDB /* libgflags.2.2.1.dylib in Frameworks */,
 				093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */,
 				093DACDE2044F43A0087724B /* GLUT.framework in Frameworks */,
 			);
@@ -81,6 +84,7 @@
 		093DACDC2044F43A0087724B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */,
 				093DACDF2044F4F80087724B /* OpenGL.framework */,
 				093DACDD2044F43A0087724B /* GLUT.framework */,
 			);
@@ -316,7 +320,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/gflags/2.2.1/lib,
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-D_THREAD_SAFE",
@@ -331,7 +338,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/gflags/2.2.1/lib,
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-D_THREAD_SAFE",

@@ -7,6 +7,11 @@
 #include "types.h"
 #include "cpu.h"
 
+#include <gflags/gflags.h>
+
+DEFINE_bool(dis, false, "Dump disassembly");
+DEFINE_bool(dis_detect_loops, false, "When dumping disassembly, detect and condense loops");
+
 using namespace std;
 
 size_t history_repeating(std::deque<word> history) {
@@ -21,31 +26,32 @@ size_t history_repeating(std::deque<word> history) {
   return 0;
 }
 
-int argc;
-char** argv;
 bool in_title = false;
 
-int main(int argc_, char** argv_) {
-  argc = argc_; argv = argv_;
+int main(int argc, char** argv) {
+  gflags::SetUsageMessage("A Game Boy emulator");
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
   
-//  CPU cpu("/Users/dt0/my/asobitomo/Tetris.gb");
-  CPU cpu("/Users/dt0/my/asobitomo-xcode/asobitomo/Tetris.gb");
+  if (argc != 2) {
+    std::cerr << "Expecting a ROM filename." << std::endl;
+    exit(1);
+  }
+  CPU cpu(argv[1]);
   
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
-  const bool debug = true;
+  const bool debug = FLAGS_dis_detect_loops;
 
   cpu.ppu.screen.off();
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
   }
 
-  int i = 0;
-  bool should_dump = true;
+  bool should_dump = FLAGS_dis;
   cpu.ppu.screen.on();
   while (true) {
-    if (debug) {
+    if (should_dump && FLAGS_dis_detect_loops) {
       history.emplace_back(cpu.pc);
       if (history.size() >= 20) {
         history.pop_front();
