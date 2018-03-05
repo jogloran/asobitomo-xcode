@@ -7,6 +7,8 @@
 #include "cpu_bc_macros.h"
 #include "op_names.h"
 
+#include "rang.hpp"
+
 bool ASOBITOMO_DEBUG = false;
 
 std::array<op, 256> CPU::cb_ops  {
@@ -222,9 +224,9 @@ void CPU::dump_state() {
     << " IF: " << binary(mmu._read_mem(0xff0f))
     << " IE: " << binary(mmu._read_mem(0xffff))
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
-    << " (" << ppu_state_as_string(ppu.mode) << ") " <<
-      " " << op_name_for(pc) <<
-      endl;
+    << " (" << ppu_state_as_string(ppu.mode) << ") "
+    << dec << rang::fg::blue
+    << " " << op_name_for(pc) << rang::fg::reset << endl;
 //  cout << setfill('0') <<
 //    "pc: 0x" << setw(4) << hex << pc << ' ' <<
 //    "sp: 0x" <<                   sp << ' ' <<
