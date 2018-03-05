@@ -34,7 +34,7 @@ int main(int argc_, char** argv_) {
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
-  const bool debug = false;
+  const bool debug = true;
 
   cpu.ppu.screen.off();
   while (!cpu.halted && cpu.pc != 0x100) {
@@ -42,7 +42,7 @@ int main(int argc_, char** argv_) {
   }
 
   int i = 0;
-  bool should_dump = false;
+  bool should_dump = true;
   cpu.ppu.screen.on();
   while (true) {
     if (debug) {

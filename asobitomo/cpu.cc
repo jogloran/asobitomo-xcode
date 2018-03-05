@@ -183,13 +183,15 @@ std::string CPU::op_name_for(word loc) {
   if (mmu[loc] == 0xcb) {
     return cb_op_names[mmu[loc+1]];
   } else {
-    return op_names[mmu[loc]];
+//    return op_names[mmu[loc]];
+    auto op = op_names[mmu[loc]];
+    return op.instruction_at_pc(*this);
   }
 }
 
 std::string CPU::interrupt_state_as_string(InterruptState state) {
   static std::string state_strings[] {
-    "Disabled", "Disable Next", "Enable Next", "Enabled",
+    "-", "-?", "+?", "+",
   };
   return state_strings[static_cast<int>(state)];
 }
@@ -213,16 +215,15 @@ void CPU::dump_state() {
 //    "e: " << setw(2) << hex << static_cast<int>(e) << ' ' <<
 //    "h: " << setw(2) << hex << static_cast<int>(h) << ' ' <<
 //    "l: " << setw(2) << hex << static_cast<int>(l) << ' ' <<
-    << " LY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-    << " LYC: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
+    << " LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
+    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
     << " LCDC: " << binary(mmu._read_mem(0xff40))
     << " STAT: " << binary(mmu._read_mem(0xff41))
     << " IF: " << binary(mmu._read_mem(0xff0f))
     << " IE: " << binary(mmu._read_mem(0xffff))
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
     << " (" << ppu_state_as_string(ppu.mode) << ") " <<
-      setw(2) << static_cast<int>(instr) <<
-      " (" << op_name_for(pc) << ")" <<
+      " " << op_name_for(pc) <<
       endl;
 //  cout << setfill('0') <<
 //    "pc: 0x" << setw(4) << hex << pc << ' ' <<
