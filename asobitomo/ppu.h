@@ -70,7 +70,7 @@ public:
   
   std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */);
   std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb);
-    GL screen;
+  GL screen;
 public:
 
   std::array<byte, 160> raster;

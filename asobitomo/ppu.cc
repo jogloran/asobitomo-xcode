@@ -290,7 +290,7 @@ PPU::rasterise_line() {
     
     // write to raster
     typedef std::vector<byte>::size_type diff;
-    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end()); // TODO: need bounds check
+    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end());
     std::copy(raster_row.begin(), raster_row.end(), raster.begin());
   }
   
@@ -422,7 +422,6 @@ PPU::rasterise_line() {
                            }
                          });
           
-          // check for sprite_row oob
           if (entry.flags & (1 << 5)) {
             std::reverse(decoded.begin(), decoded.end());
           }

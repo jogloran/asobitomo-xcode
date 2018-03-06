@@ -3,6 +3,8 @@
 #include "screen.h"
 #include <iostream>
 #include <sstream>
+#include <chrono>
+#include <thread>
 
 #include <SDL2/SDL.h>
 
@@ -12,7 +14,7 @@ public:
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
   
-  GL(int scale=4): buf(fb.size() * 4), scale_(scale) {
+  GL(int scale=4): buf(fb.size() * 4), scale_(scale), last_(std::chrono::system_clock::now()) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("test", 0, 0,
@@ -43,6 +45,16 @@ public:
       SDL_RenderClear(renderer_);
       SDL_RenderCopy(renderer_, texture_, NULL, NULL);
       SDL_RenderPresent(renderer_);
+      
+      auto now = std::chrono::system_clock::now();
+      std::chrono::duration<double, std::milli> elapsed = now - last_;
+//      std::cout << elapsed.count() << std::endl;
+      if (elapsed.count() < 16.75) {
+        std::chrono::duration<double, std::milli> delta(16.75 - elapsed.count());
+        auto as_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+        std::this_thread::sleep_for(std::chrono::milliseconds(as_ms));
+      }
+      last_ = std::chrono::system_clock::now();
     }
 
 // this slows emulator way down
@@ -58,4 +70,6 @@ public:
   
   std::vector<byte> buf;
   int scale_;
+  
+  std::chrono::time_point<std::chrono::system_clock> last_;
 };
