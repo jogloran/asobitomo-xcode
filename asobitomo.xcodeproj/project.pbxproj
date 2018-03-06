@@ -50,6 +50,8 @@
 		093DACDF2044F4F80087724B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		09670602204B87240023DA60 /* rang.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = rang.hpp; sourceTree = "<group>"; };
 		09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgflags.2.2.1.dylib; path = ../../../../usr/local/Cellar/gflags/2.2.1/lib/libgflags.2.2.1.dylib; sourceTree = "<group>"; };
+		09E2D511204F5BCA00D90FDB /* mbc_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc_types.h; sourceTree = "<group>"; };
+		09E2D512204F5BE900D90FDB /* header_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = header_type.h; sourceTree = "<group>"; };
 		09F0BA45204620C600936CF1 /* sdl_input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sdl_input.h; sourceTree = "<group>"; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
@@ -136,6 +138,8 @@
 				0907948F20468C190063686E /* timer.h */,
 				090794902046A0650063686E /* util.h */,
 				090794912046A07A0063686E /* util.cc */,
+				09E2D511204F5BCA00D90FDB /* mbc_types.h */,
+				09E2D512204F5BE900D90FDB /* header_type.h */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
