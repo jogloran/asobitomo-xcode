@@ -13,6 +13,7 @@
 DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(dis_detect_loops, false, "When dumping disassembly, detect and condense loops");
 DEFINE_bool(headless, false, "No display");
+DEFINE_int32(run_for_n, -1, "Run for n instructions");
 
 using namespace std;
 
@@ -52,10 +53,13 @@ int main(int argc, char** argv) {
   }
 
   bool should_dump = FLAGS_dis;
+  int run_for_n = FLAGS_run_for_n;
   
   if (!FLAGS_headless)
     cpu.ppu.screen.on();
-  while (true) {
+  
+  long ninstrs = 0;
+  while (ninstrs == -1 || ninstrs < run_for_n) {
     if (should_dump && FLAGS_dis_detect_loops) {
       history.emplace_back(cpu.pc);
       if (history.size() >= 20) {
@@ -78,6 +82,7 @@ int main(int argc, char** argv) {
     }
     
     cpu.step(should_dump);
+    ++ninstrs;
   }
 
   cpu.dump_state();

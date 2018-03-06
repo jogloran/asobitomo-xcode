@@ -205,17 +205,34 @@ std::string CPU::ppu_state_as_string(PPU::Mode mode) {
   return mode_strings[static_cast<int>(mode)];
 }
 
-struct two_word_fmt {
+struct two_byte_fmt_manip {
+public:
+  two_byte_fmt_manip(byte b1, byte b2): b1_(b1), b2_(b2) {}
+  void operator()(std::ostream& out) const {
+    out << dec << rang::style::bold << rang::fgB::gray << setw(2) << setfill('0') << hex << static_cast<int>(b1_) << rang::style::reset << rang::fg::reset
+        << dec <<                      rang::fgB::black << setw(2) << setfill('0') << hex << static_cast<int>(b2_) << rang::style::reset << rang::fg::reset;
+  }
+  
+private:
+  byte b1_, b2_;
 };
+
+two_byte_fmt_manip two_byte_fmt(byte b1, byte b2) {
+  return two_byte_fmt_manip(b1, b2);
+}
+std::ostream& operator<<(std::ostream& out, const two_byte_fmt_manip& manip) {
+  manip(out);
+  return out;
+}
 
 void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<
     "[0x" << setw(4) << hex << pc << "] "
-    "af: " << setw(2) << hex << static_cast<int>(a) << rang::style::bold << static_cast<int>(f) << ' ' <<
-    "bc: " << setw(2) << hex << static_cast<int>(b) << static_cast<int>(c) << ' ' <<
-    "de: " << setw(2) << hex << static_cast<int>(d) << static_cast<int>(e) << ' ' <<
-    "hl: " << setw(2) << hex << static_cast<int>(h) << static_cast<int>(l) << ' '
+    "af " << two_byte_fmt(a, f) << ' ' <<
+    "bc " << two_byte_fmt(b, c) << ' ' <<
+    "de " << two_byte_fmt(d, e) << ' ' <<
+    "hl " << two_byte_fmt(h, l) << ' '
     << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
     << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
     << " LCDC: " << binary(mmu._read_mem(0xff40))
@@ -223,8 +240,8 @@ void CPU::dump_state() {
     << " IF: " << binary(mmu._read_mem(0xff0f))
     << " IE: " << binary(mmu._read_mem(0xffff))
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
-    << " (" << ppu_state_as_string(ppu.mode) << ") "
-    << dec << rang::fg::blue
+    << " (" << ppu_state_as_string(ppu.mode) << ")"
+    << "\t" << dec << rang::fg::blue
     << " " << op_name_for(pc) << rang::fg::reset << endl;
 //  cout << setfill('0') <<
 //    "pc: 0x" << setw(4) << hex << pc << ' ' <<
