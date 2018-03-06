@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     cpu.ppu.screen.on();
   
   long ninstrs = 0;
-  while (ninstrs == -1 || ninstrs < run_for_n) {
+  while (run_for_n == -1 || ninstrs < run_for_n) {
     if (should_dump && FLAGS_dis_detect_loops) {
       history.emplace_back(cpu.pc);
       if (history.size() >= 20) {

@@ -17,6 +17,61 @@ using namespace std;
 
 extern bool in_title;
 
+enum class MBC : byte {
+  ROM = 0x00,
+  MBC1 = 0x01,
+  MBC1_RAM = 0x02,
+  MBC1_RAM_BATTERY = 0x03,
+  MBC2 = 0x05,
+  MBC2_BATTERY = 0x06,
+  ROM_RAM = 0x08,
+  ROM_RAM_BATTERY = 0x09,
+  MMM01 = 0x0B,
+  MMM01_RAM = 0x0C,
+  MMM01_RAM_BATTERY = 0x0D,
+  MBC3_TIMER_BATTERY = 0x0F,
+  MBC3_TIMER_RAM_BATTERY = 0x10,
+  MBC3 = 0x11,
+  MBC3_RAM = 0x12,
+  MBC3_RAM_BATTERY = 0x13,
+  MBC5 = 0x19,
+  MBC5_RAM = 0x1A,
+  MBC5_RAM_BATTERY = 0x1B,
+  MBC5_RUMBLE = 0x1C,
+  MBC5_RUMBLE_RAM = 0x1D,
+  MBC5_RUMBLE_RAM_BATTERY = 0x1E,
+  MBC6 = 0x20,
+  MBC7_SENSOR_RUMBLE_RAM_BATTERY = 0x22,
+  POCKET_CAMERA = 0xFC,
+  BANDAI_TAMA5 = 0xFD,
+  HuC3 = 0xFE,
+  HuC1_RAM_BATTERY = 0xFF
+};
+
+struct Header {
+  byte nops[4];
+  byte logo[0x30];
+  union {
+    struct {
+      byte manufacturer[0x4];
+      byte cgb;
+    };
+    struct {
+      byte title[0x10];
+    };
+  } title_or_manufacturer;
+  byte licensee[2];
+  byte sgb;
+  MBC cartridge_type;
+  byte rom_size;
+  byte ram_size;
+  byte destination;
+  byte old_licensee;
+  byte version;
+  byte checksum;
+  byte global_checksum[2];
+} __attribute__((packed, aligned(1)));
+
 class MMU {
 public:
   std::vector<int> accessed;
@@ -31,8 +86,25 @@ public:
     
     mem[0xf000] = 0xff;
 
+    byte header_bytes[0x50];
     std::ifstream f(path);
-    f.read((char*)cart.data(), 32768);
+    f.seekg(0x100);
+    f.read((char*)header_bytes, 0x50);
+    Header* h = reinterpret_cast<Header*>(header_bytes);
+      
+    long rom_size = 1 << (15 + h->rom_size);
+    cart.resize(rom_size);
+      
+    f.seekg(0);
+    f.read((char*)cart.data(), rom_size);
+    
+//      std::cout << dec << sizeof(Header) << std::endl;
+//      std::cout << dec << offsetof(Header, rom_size) << std::endl;
+//      std::cout << h->title_or_manufacturer.title << std::endl;
+//      std::cout << hex << setw(2) << setfill('0') << (h->cartridge_type == MBC::ROM) << std::endl;
+//      std::cout << hex << setw(2) << setfill('0') << static_cast<int>(h->rom_size) << std::endl;
+//      std::cout << hex << setw(2) << setfill('0') << static_cast<int>(h->ram_size) << std::endl;
+//      exit(1);
   }
 
   void set(word loc, byte value) {
@@ -62,11 +134,31 @@ public:
       timer.set_tac(value);
     }
     
+    // ROM bank select lower 5 bits (bits 0-4)
     if (loc >= 0x2000 && loc <= 0x3fff) {
       if (value == 0x00) {
         bank = 1;
+      } else if (value == 0x20 || value == 0x40 || value == 0x60) {
+        bank = value + 0x1;
       } else {
         bank = value & 0x1f;
+      }
+    }
+    
+    // RAM bank select or ROM bank select
+    if (loc >= 0x4000 && loc <= 0x5fff) {
+      
+    }
+    
+    // RAM/ROM bank select:
+    // writing 0 (the default) means 4000-5fff selects
+    // upper 2 bits (bits 5 and 6) of ROM bank number
+    // writing 1 means 4000-5fff selects a RAM bank 00-03
+    if (loc >= 0x6000 && loc <= 0x7fff) {
+      if (value == 0x0) {
+        
+      } else if (value == 0x1) {
+        
       }
     }
     
