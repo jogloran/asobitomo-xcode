@@ -29,6 +29,15 @@ public:
     S8x8, S8x16
   };
   
+  typedef byte PaletteIndex;
+  struct RenderedSprite {
+    RenderedSprite(const OAM& oam, byte oam_index, const std::vector<PPU::PaletteIndex>& pixels): oam_(oam), oam_index_(oam_index), pixels_(pixels) {}
+    OAM oam_;
+    byte oam_index_;
+    std::vector<PaletteIndex> pixels_;
+  };
+
+  
   PPU(CPU& cpu): raster(), screen(),
     line(0), mode(Mode::OAM), ncycles(0), vblank_ncycles(0), cpu(cpu), lcd_on(true),
     window_tilemap_offset(0), window_display(false),
@@ -59,10 +68,9 @@ public:
 
   void rasterise_line();
   
-  typedef byte PaletteIndex;
   std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */);
   std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb);
-    GL screen;
+  GL screen;
 public:
 
   std::array<byte, 160> raster;

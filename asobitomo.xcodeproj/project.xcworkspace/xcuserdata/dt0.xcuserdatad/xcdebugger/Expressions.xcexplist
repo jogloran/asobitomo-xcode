@@ -17,13 +17,16 @@
          contextName = "PPU::rasterise_line():ppu.cc">
          <PersistentStrings>
             <PersistentString
-               value = "line">
-            </PersistentString>
-            <PersistentString
                value = "bg_tilemap_offset">
             </PersistentString>
             <PersistentString
                value = "bg_window_tile_data_offset">
+            </PersistentString>
+            <PersistentString
+               value = "line">
+            </PersistentString>
+            <PersistentString
+               value = "*sprite_ptr">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -67,10 +70,10 @@
                value = "bg_window_tile_data_offset + static_cast&lt;sbyte&gt;(start_loc)*4 + start_y*2">
             </PersistentString>
             <PersistentString
-               value = "bg_window_tile_data_offset">
+               value = "bg_tilemap_offset">
             </PersistentString>
             <PersistentString
-               value = "bg_tilemap_offset">
+               value = "bg_window_tile_data_offset">
             </PersistentString>
             <PersistentString
                value = "unpack_bits(b1 ,b2)">
@@ -89,13 +92,13 @@
          contextName = "CPU::step(bool):cpu.cc">
          <PersistentStrings>
             <PersistentString
-               value = "pc">
+               value = "bg_window_tile_data_offset + (start_loc)*4 + start_y*2">
             </PersistentString>
             <PersistentString
                value = "cycles">
             </PersistentString>
             <PersistentString
-               value = "bg_window_tile_data_offset + (start_loc)*4 + start_y*2">
+               value = "pc">
             </PersistentString>
             <PersistentString
                value = "interrupt_enabled">
@@ -117,10 +120,10 @@
          contextName = "main:main.cc">
          <PersistentStrings>
             <PersistentString
-               value = "cpu.ppu.ncycles">
+               value = "cpu.pc">
             </PersistentString>
             <PersistentString
-               value = "cpu.pc">
+               value = "cpu.ppu.ncycles">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

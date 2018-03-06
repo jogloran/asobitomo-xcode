@@ -171,8 +171,8 @@ public:
       return cart[loc]; /* rom bank 0 0x150 - 0x3fff */
     } else if (loc <= 0x7fff) {
       /* rom bank switchable 0x4000 - 0x7fff */
-//      return cart[bank * 0x4000 + loc];
-      return cart[loc]; /* TODO: this only works on non-MBC */
+      return cart[bank * 0x4000 + (loc - 0x4000)];
+//      return cart[loc]; /* TODO: this only works on non-MBC */
     } else if (loc <= 0x97ff) {
       return mem[loc]; /* RAM 0x8000 - 0x97ff */
     } else if (loc <= 0x9bff) {

@@ -218,13 +218,11 @@ PPU::rasterise_line() {
   byte scx = cpu.mmu._read_mem(0xff43);
   byte scy = cpu.mmu._read_mem(0xff42);
 
-  // format of palette is a mapping
-  //         LSB
-  // 11 10 01 00 <- palette indices
-  //  v  v  v  v
-  // 01 00 11 00 <- colour values
+  // Background palette
   byte palette = cpu.mmu._read_mem(0xff47);
-//  auto colour_map = interpret_colour_map(palette);
+  // For the sprite palettes, the lowest two bits should always map to 0
+  byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
+  byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
   if (bg_display) {
     // line is from 0 to 143 and 144 to 153 during vblank
@@ -252,7 +250,7 @@ PPU::rasterise_line() {
     std::vector<std::vector<PaletteIndex>> tile_data;
     // These are pointers into the tile map
     auto begin = &cpu.mmu.mem[item];
-    auto end = &cpu.mmu.mem[item] + 20;
+    auto end = &cpu.mmu.mem[item] + 20; // TODO: I think scx means we cannot just take 20 elements starting from begin
     std::transform(begin, end, std::back_inserter(tile_data),
                    [this, scy](byte index) {
                      // This takes each tile map index and retrieves
@@ -292,7 +290,7 @@ PPU::rasterise_line() {
     
     // write to raster
     typedef std::vector<byte>::size_type diff;
-    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end()); // TODO: need bounds check
+//    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end());
     std::copy(raster_row.begin(), raster_row.end(), raster.begin());
   }
   
@@ -364,6 +362,7 @@ PPU::rasterise_line() {
 //    std::copy(raster_row.begin(), raster_row.end(), raster.begin());
   }
   
+  std::vector<RenderedSprite> visible;
   if (sprite_display) {
     std::array<byte, 160> sprite_row;
     std::fill(sprite_row.begin(), sprite_row.end(), 0);
@@ -393,6 +392,9 @@ PPU::rasterise_line() {
           
           // need to get the relevant row in the tile
           byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
+          if (entry.flags & (1 << 6)) {
+            row_offset_within_tile = 8 - row_offset_within_tile; // TODO: account for 8x16 tiles
+          }
           word tile_data_address = tile_data + row_offset_within_tile * 2;
           byte b1 = cpu.mmu._read_mem(tile_data_address);
           byte b2 = cpu.mmu._read_mem(tile_data_address + 1);
@@ -401,41 +403,67 @@ PPU::rasterise_line() {
           // when line = 115, we have 112 <= line < 120, so we are inside the sprite.
           // we are on row index 3 of the sprite, so the row offset is (line - (entry.y - 16)) % 8
           
+          // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2);
+          byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
           std::transform(decoded.begin(), decoded.end(), decoded.begin(),
-                         [palette](PaletteIndex pidx) {
+                         [sprite_palette](PaletteIndex pidx) {
                            switch (pidx) {
                              case 0:
-                               return palette & 3;
+                               return sprite_palette & 3;
                              case 1:
-                               return (palette >> 2) & 3;
+                               return (sprite_palette >> 2) & 3;
                              case 2:
-                               return (palette >> 4) & 3;
+                               return (sprite_palette >> 4) & 3;
                              case 3:
-                               return (palette >> 6) & 3;
+                               return (sprite_palette >> 6) & 3;
                              default:
                                throw std::runtime_error("invalid palette index");
                            }
                          });
           
-//          std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8); // TODO: doesn't check for sprite_row oob
-//            size_t nelements = sprite_row.end() - (sprite_row.begin() + entry.x - 8);
-            std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8);
-//          auto ptr = sprite_row.begin() + entry.x - 8;
-//          for (auto it = decoded.begin(); it != decoded.end(); ) {
-//            if (ptr == sprite_row.end()) {
-//              break;
-//            }
-//            *ptr++ = *it++;
-//          }
+          if (entry.flags & (1 << 5)) {
+            std::reverse(decoded.begin(), decoded.end());
+          }
+          
+          visible.emplace_back(RenderedSprite(entry, j, decoded));
+          break;
         }
       }
     }
-    
-//    std::copy(sprite_row.begin(), sprite_row.end(), raster.begin());
-    std::transform(sprite_row.begin(), sprite_row.end(), raster.begin(), raster.begin(), [](byte sprite_byte, byte raster_byte) {
-      return (sprite_byte | raster_byte) & 3;
+
+    std::sort(visible.begin(), visible.end(), [](RenderedSprite s1, RenderedSprite s2) {
+      return s1.oam_.x == s2.oam_.x ? s1.oam_index_ < s2.oam_index_ : s1.oam_.x < s2.oam_.x;
     });
+    
+    int sprites_rendered = 0;
+    for (auto sprite : visible) {
+      if (sprites_rendered++ == 10) {
+        break;
+      }
+      
+      auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
+      auto sprite_ptr = sprite.pixels_.begin();
+
+      bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
+
+      while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
+        auto raster_byte = *raster_ptr;
+        auto sprite_byte = *sprite_ptr;
+
+        if (raster_byte == 0) {
+          *raster_ptr = sprite_byte;
+        } else {
+          if (sprite_behind_bg && sprite_byte == 0) {
+            ;
+          } else if (sprite_byte != 0) {
+            *raster_ptr = sprite_byte;
+          }
+        }
+
+        ++raster_ptr; ++sprite_ptr;
+      }
+    }
     
     std::copy(oam, oam + 40, old_oam.begin());
   }
