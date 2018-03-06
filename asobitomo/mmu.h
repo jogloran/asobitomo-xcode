@@ -49,14 +49,6 @@ public:
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);
-    
-//      std::cout << dec << sizeof(Header) << std::endl;
-//      std::cout << dec << offsetof(Header, rom_size) << std::endl;
-//      std::cout << h->title_or_manufacturer.title << std::endl;
-//      std::cout << hex << setw(2) << setfill('0') << (h->cartridge_type == MBC::ROM) << std::endl;
-//      std::cout << hex << setw(2) << setfill('0') << static_cast<int>(h->rom_size) << std::endl;
-//      std::cout << hex << setw(2) << setfill('0') << static_cast<int>(h->ram_size) << std::endl;
-//      exit(1);
   }
 
   void set(word loc, byte value) {
