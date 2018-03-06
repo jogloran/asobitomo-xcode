@@ -48,7 +48,6 @@ public:
       
       auto now = std::chrono::system_clock::now();
       std::chrono::duration<double, std::milli> elapsed = now - last_;
-//      std::cout << elapsed.count() << std::endl;
       if (elapsed.count() < 16.75) {
         std::chrono::duration<double, std::milli> delta(16.75 - elapsed.count());
         auto as_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);

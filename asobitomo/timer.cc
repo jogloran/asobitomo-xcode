@@ -71,6 +71,6 @@ Timer::set_tac(byte value) {
     break;
   }
   
-  std::cout << "Timer setting speed: " << static_cast<int>(frequency_selector) << std::endl;
+//  std::cout << "Timer setting speed: " << static_cast<int>(frequency_selector) << std::endl;
   tac_ = value;
 }

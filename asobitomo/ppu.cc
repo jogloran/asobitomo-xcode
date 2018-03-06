@@ -250,7 +250,7 @@ PPU::rasterise_line() {
     std::vector<std::vector<PaletteIndex>> tile_data;
     // These are pointers into the tile map
     auto begin = &cpu.mmu.mem[item];
-    auto end = &cpu.mmu.mem[item] + 20;
+    auto end = &cpu.mmu.mem[item] + 20; // TODO: I think scx means we cannot just take 20 elements starting from begin
     std::transform(begin, end, std::back_inserter(tile_data),
                    [this, scy](byte index) {
                      // This takes each tile map index and retrieves
@@ -290,7 +290,7 @@ PPU::rasterise_line() {
     
     // write to raster
     typedef std::vector<byte>::size_type diff;
-    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end());
+//    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end());
     std::copy(raster_row.begin(), raster_row.end(), raster.begin());
   }
   
@@ -450,7 +450,7 @@ PPU::rasterise_line() {
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
         auto raster_byte = *raster_ptr;
         auto sprite_byte = *sprite_ptr;
-        
+
         if (raster_byte == 0) {
           *raster_ptr = sprite_byte;
         } else {
@@ -460,15 +460,9 @@ PPU::rasterise_line() {
             *raster_ptr = sprite_byte;
           }
         }
-        
+
         ++raster_ptr; ++sprite_ptr;
       }
-      
-//      std::transform(raster.begin() + sprite.oam_.x - 8, raster.begin() + sprite.oam_.x,
-//        sprite.pixels_.begin(), raster.begin() + sprite.oam_.x - 8, [](byte sprite_byte, byte raster_byte) -> PPU::PaletteIndex {
-//          if (sprite_byte == 0) return raster_byte;
-//          return (sprite_byte | raster_byte) & 3;
-//        });
     }
     
     std::copy(oam, oam + 40, old_oam.begin());
