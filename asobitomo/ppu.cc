@@ -218,13 +218,11 @@ PPU::rasterise_line() {
   byte scx = cpu.mmu._read_mem(0xff43);
   byte scy = cpu.mmu._read_mem(0xff42);
 
-  // format of palette is a mapping
-  //         LSB
-  // 11 10 01 00 <- palette indices
-  //  v  v  v  v
-  // 01 00 11 00 <- colour values
+  // Background palette
   byte palette = cpu.mmu._read_mem(0xff47);
-//  auto colour_map = interpret_colour_map(palette);
+  // For the sprite palettes, the lowest two bits should always map to 0
+  byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
+  byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
   if (bg_display) {
     // line is from 0 to 143 and 144 to 153 during vblank
@@ -364,6 +362,7 @@ PPU::rasterise_line() {
 //    std::copy(raster_row.begin(), raster_row.end(), raster.begin());
   }
   
+  std::vector<RenderedSprite> visible;
   if (sprite_display) {
     std::array<byte, 160> sprite_row;
     std::fill(sprite_row.begin(), sprite_row.end(), 0);
@@ -406,37 +405,72 @@ PPU::rasterise_line() {
           
           // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2);
+          byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
           std::transform(decoded.begin(), decoded.end(), decoded.begin(),
-                         [palette]44444(PaletteIndex pidx) {
+                         [sprite_palette](PaletteIndex pidx) {
                            switch (pidx) {
                              case 0:
-                               return palette & 3;
+                               return sprite_palette & 3;
                              case 1:
-                               return (palette >> 2) & 3;
+                               return (sprite_palette >> 2) & 3;
                              case 2:
-                               return (palette >> 4) & 3;
+                               return (sprite_palette >> 4) & 3;
                              case 3:
-                               return (palette >> 6) & 3;
+                               return (sprite_palette >> 6) & 3;
                              default:
                                throw std::runtime_error("invalid palette index");
                            }
                          });
           
           // check for sprite_row oob
-          
-          if (entry.flags & (1 << 5)) { // horizontal flip
-            std::copy_n(decoded.rbegin(), std::min(8, 160 - (entry.x - 8)), sprite_row.begin() + entry.x - 8);
-          } else {
-            std::copy_n(decoded.begin(), std::min(8, 160 - (entry.x - 8)), sprite_row.begin() + entry.x - 8);
+          if (entry.flags & (1 << 5)) {
+            std::reverse(decoded.begin(), decoded.end());
           }
+          
+          visible.emplace_back(RenderedSprite(entry, j, decoded));
+          break;
         }
       }
     }
-    
-    // raster already contains the background contents
-    std::transform(sprite_row.begin(), sprite_row.end(), raster.begin(), raster.begin(), [](byte sprite_byte, byte raster_byte) {
-      return (sprite_byte | raster_byte) & 3;
+
+    std::sort(visible.begin(), visible.end(), [](RenderedSprite s1, RenderedSprite s2) {
+      return s1.oam_.x == s2.oam_.x ? s1.oam_index_ < s2.oam_index_ : s1.oam_.x < s2.oam_.x;
     });
+    
+    int sprites_rendered = 0;
+    for (auto sprite : visible) {
+      if (sprites_rendered++ == 10) {
+        break;
+      }
+      
+      auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
+      auto sprite_ptr = sprite.pixels_.begin();
+
+      bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
+
+      while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
+        auto raster_byte = *raster_ptr;
+        auto sprite_byte = *sprite_ptr;
+        
+        if (raster_byte == 0) {
+          *raster_ptr = sprite_byte;
+        } else {
+          if (sprite_behind_bg && sprite_byte == 0) {
+            ;
+          } else if (sprite_byte != 0) {
+            *raster_ptr = sprite_byte;
+          }
+        }
+        
+        ++raster_ptr; ++sprite_ptr;
+      }
+      
+//      std::transform(raster.begin() + sprite.oam_.x - 8, raster.begin() + sprite.oam_.x,
+//        sprite.pixels_.begin(), raster.begin() + sprite.oam_.x - 8, [](byte sprite_byte, byte raster_byte) -> PPU::PaletteIndex {
+//          if (sprite_byte == 0) return raster_byte;
+//          return (sprite_byte | raster_byte) & 3;
+//        });
+    }
     
     std::copy(oam, oam + 40, old_oam.begin());
   }
