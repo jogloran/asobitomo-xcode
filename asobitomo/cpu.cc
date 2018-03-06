@@ -205,14 +205,11 @@ std::string CPU::ppu_state_as_string(PPU::Mode mode) {
   return mode_strings[static_cast<int>(mode)];
 }
 
-struct two_word_fmt {
-};
-
 void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<
     "[0x" << setw(4) << hex << pc << "] "
-    "af: " << setw(2) << hex << static_cast<int>(a) << rang::style::bold << static_cast<int>(f) << ' ' <<
+    "af: " << setw(2) << hex << static_cast<int>(a) << static_cast<int>(f) << ' ' <<
     "bc: " << setw(2) << hex << static_cast<int>(b) << static_cast<int>(c) << ' ' <<
     "de: " << setw(2) << hex << static_cast<int>(d) << static_cast<int>(e) << ' ' <<
     "hl: " << setw(2) << hex << static_cast<int>(h) << static_cast<int>(l) << ' '

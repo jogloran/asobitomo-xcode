@@ -393,6 +393,9 @@ PPU::rasterise_line() {
           
           // need to get the relevant row in the tile
           byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
+          if (entry.flags & (1 << 6)) {
+            row_offset_within_tile = 8 - row_offset_within_tile; // TODO: account for 8x16 tiles
+          }
           word tile_data_address = tile_data + row_offset_within_tile * 2;
           byte b1 = cpu.mmu._read_mem(tile_data_address);
           byte b2 = cpu.mmu._read_mem(tile_data_address + 1);
@@ -401,9 +404,10 @@ PPU::rasterise_line() {
           // when line = 115, we have 112 <= line < 120, so we are inside the sprite.
           // we are on row index 3 of the sprite, so the row offset is (line - (entry.y - 16)) % 8
           
+          // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2);
           std::transform(decoded.begin(), decoded.end(), decoded.begin(),
-                         [palette](PaletteIndex pidx) {
+                         [palette]44444(PaletteIndex pidx) {
                            switch (pidx) {
                              case 0:
                                return palette & 3;
@@ -418,21 +422,18 @@ PPU::rasterise_line() {
                            }
                          });
           
-//          std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8); // TODO: doesn't check for sprite_row oob
-//            size_t nelements = sprite_row.end() - (sprite_row.begin() + entry.x - 8);
-            std::copy(decoded.begin(), decoded.end(), sprite_row.begin() + entry.x - 8);
-//          auto ptr = sprite_row.begin() + entry.x - 8;
-//          for (auto it = decoded.begin(); it != decoded.end(); ) {
-//            if (ptr == sprite_row.end()) {
-//              break;
-//            }
-//            *ptr++ = *it++;
-//          }
+          // check for sprite_row oob
+          
+          if (entry.flags & (1 << 5)) { // horizontal flip
+            std::copy_n(decoded.rbegin(), std::min(8, 160 - (entry.x - 8)), sprite_row.begin() + entry.x - 8);
+          } else {
+            std::copy_n(decoded.begin(), std::min(8, 160 - (entry.x - 8)), sprite_row.begin() + entry.x - 8);
+          }
         }
       }
     }
     
-//    std::copy(sprite_row.begin(), sprite_row.end(), raster.begin());
+    // raster already contains the background contents
     std::transform(sprite_row.begin(), sprite_row.end(), raster.begin(), raster.begin(), [](byte sprite_byte, byte raster_byte) {
       return (sprite_byte | raster_byte) & 3;
     });
