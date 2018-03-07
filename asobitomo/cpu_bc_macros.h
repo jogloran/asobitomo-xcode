@@ -77,7 +77,7 @@ SRL8_helper(a)
 #define BIT_GEN_HL(bit) [](CPU& cpu) { \
   cpu.unset_flags(Nf); \
   cpu.set_flags(Hf); \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   if ((cpu.mmu[loc] & (1 << bit)) == 0) { \
     cpu.set_flags(Zf); \
   } else { \
@@ -114,7 +114,7 @@ BIT_GEN8(6), \
 BIT_GEN8(7)
 
 #define RES_GEN_HL(bit) [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   cpu.mmu[loc] &= ~(1 << bit); \
 }
 
@@ -141,7 +141,7 @@ RES_GEN8(6), \
 RES_GEN8(7)
 
 #define SET_GEN_HL(bit) [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   cpu.mmu[loc] |= (1 << bit); \
 }
 
@@ -168,7 +168,7 @@ SET_GEN8(6), \
 SET_GEN8(7)
 
 #define RLC8_HL_helper() [](CPU& cpu) { \
-   word loc = (cpu.h << 8) | cpu.l; \
+   word loc = cpu.get_word(cpu.h, cpu.l); \
   byte hibit = cpu.mmu[loc] >> 7; \
   if (hibit == 1) { \
     cpu.set_flags(Cf); \
@@ -203,7 +203,7 @@ SET_GEN8(7)
 }
 
 #define RRC8_HL_helper() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   byte lobit = cpu.mmu[loc] & 0x1; \
   if (lobit) { \
     cpu.set_flags(Cf); \
@@ -239,7 +239,7 @@ SET_GEN8(7)
 
 #define SWAP8_HL_helper() [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf | Cf); \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   byte val = cpu.mmu[loc]; \
   cpu.mmu[loc] = (val << 4) | (val >> 4); \
   if (cpu.mmu[loc] == 0x0) { \
@@ -260,7 +260,7 @@ SET_GEN8(7)
 }
 
 #define RL8_HL_helper() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   byte carry = cpu.C(); \
   byte hibit = cpu.mmu[loc] >> 7; \
   if (hibit) { \
@@ -289,7 +289,7 @@ SET_GEN8(7)
 /* TODO: all below */
 
 #define RR8_HL_helper() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   byte carry = cpu.C(); \
   byte lobit = cpu.mmu[loc] & 0x1; \
   if (lobit) { \
@@ -317,7 +317,7 @@ SET_GEN8(7)
 
 #define SLA8_HL_helper() [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   byte hibit = cpu.mmu[loc] >> 7; \
   if (hibit) { \
     cpu.set_flags(Cf); \
@@ -350,7 +350,7 @@ SET_GEN8(7)
 
 #define SRA8_HL_helper() [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   byte hibit = cpu.mmu[loc] & 0x80; \
   byte lobit = cpu.mmu[loc] & 0x1; \
   if (lobit) { \
@@ -387,7 +387,7 @@ SET_GEN8(7)
 
 #define SRL8_HL_helper() [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   if (cpu.mmu[loc] & 0x1) { \
     cpu.set_flags(Cf); \
   } else { \

@@ -225,6 +225,10 @@ std::ostream& operator<<(std::ostream& out, const two_byte_fmt_manip& manip) {
   return out;
 }
 
+void CPU::dump_registers_to_file(std::ofstream& out) {
+  out << static_cast<byte>(pc >> 8) << static_cast<byte>(pc & 0xff) << a << f << b << c << d << e << h << l;
+}
+
 void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<

@@ -104,6 +104,7 @@ public:
   }
 
   std::string op_name_for(word loc);
+  void dump_registers_to_file(std::ofstream& out);
   void dump_state();
 
   void step(bool debug = false);

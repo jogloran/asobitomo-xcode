@@ -18,7 +18,7 @@
 }
 
 #define LD_ADDR_REG(hi, lo, reg) [](CPU& cpu) { \
-  word loc = (cpu.hi << 8) | cpu.lo; \
+  word loc = cpu.get_word(cpu.hi, cpu.lo); \
   cpu.mmu.set(loc, cpu.reg); \
 }
 
@@ -29,7 +29,7 @@
 }
 
 #define INC_WORD(hi, lo) [](CPU& cpu) { \
-  word bc = (cpu.hi << 8) | cpu.lo; \
+  word bc = cpu.get_word(cpu.hi, cpu.lo); \
   ++bc; \
   cpu.hi = bc >> 8; \
   cpu.lo = bc & 0xff; \
@@ -42,7 +42,7 @@
 }
 
 #define DEC_WORD(hi, lo) [](CPU& cpu) { \
-  word bc = (cpu.hi << 8) | cpu.lo; \
+  word bc = cpu.get_word(cpu.hi, cpu.lo); \
   --bc; \
   cpu.hi = bc >> 8; \
   cpu.lo = bc & 0xff; \
@@ -85,12 +85,12 @@
 }
 
 #define INC_ADDR(hi, lo) [](CPU& cpu) { \
-  word loc = (cpu.hi << 8) | cpu.lo; \
+  word loc = cpu.get_word(cpu.hi, cpu.lo); \
   cpu.mmu.set(loc, cpu.mmu[loc] + 1); \
 }
 
 #define DEC_ADDR(hi, lo) [](CPU& cpu) { \
-  word loc = (cpu.hi << 8) | cpu.lo; \
+  word loc = cpu.get_word(cpu.hi, cpu.lo); \
   cpu.mmu.set(loc, cpu.mmu[loc] - 1); \
 }
 
@@ -101,7 +101,7 @@
 }
 
 #define LD_ADDR_d8(hi, lo) [](CPU& cpu) { \
-  word loc = (cpu.hi << 8) | cpu.lo; \
+  word loc = cpu.get_word(cpu.hi, cpu.lo); \
   byte d8 = cpu.mmu[cpu.pc]; \
   cpu.mmu.set(loc, d8); \
   cpu.pc += 1; \
@@ -158,8 +158,8 @@
 }
 
 #define ADD_WORD_WORD(hi1, lo1, hi2, lo2) [](CPU& cpu) { \
-  word hl = (cpu.hi1 << 8) | cpu.lo1; \
-  word bc = (cpu.hi2 << 8) | cpu.lo2; \
+  word hl = cpu.get_word(cpu.hi1, cpu.lo1); \
+  word bc = cpu.get_word(cpu.hi2, cpu.lo2); \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
   hl = static_cast<word>(result); \
   cpu.hi1 = hl >> 8; \
@@ -174,7 +174,7 @@
 }
 
 #define ADD_WORD_WWORD(hi, lo, wword) [](CPU& cpu) { \
-  word hl = (cpu.hi << 8) | cpu.lo; \
+  word hl = cpu.get_word(cpu.hi, cpu.lo); \
   word bc = cpu.wword; \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
   hl = static_cast<word>(result); \
@@ -190,7 +190,7 @@
 }
 
 #define LD_REG_LOC(reg, hi, lo) [](CPU& cpu) { \
-  word bc = (cpu.hi << 8) | cpu.lo; \
+  word bc = cpu.get_word(cpu.hi, cpu.lo); \
   cpu.reg = cpu.mmu[bc]; \
 }
 
@@ -208,7 +208,7 @@ LD_REG_REG8_helper(dest, a)
 }
 
 #define LD_REG_REG8_HL_LOC_helper(dest) [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   cpu.dest = cpu.mmu[loc]; \
 }
 
@@ -226,7 +226,7 @@ HALT(), \
 LD_HL_SPECIAL_helper(a)
 
 #define LD_HL_SPECIAL_helper(src) [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   cpu.mmu.set(loc, cpu.src); \
 }
 
@@ -276,7 +276,7 @@ AND_A8_HELPER(a)
 }
 
 #define AND_A8_HL_LOC_HELPER() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   cpu.a = cpu.a & cpu.mmu[loc]; \
   cpu.unset_flags(Nf | Cf); \
   cpu.set_flags(Hf); \
@@ -314,7 +314,7 @@ SUB_A8_HELPER(a)
 }
 
 #define SUB_A8_HL_LOC_HELPER() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc]; \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
@@ -358,7 +358,7 @@ ADD_A8_HL_LOC_HELPER(), \
 ADD_A8_HELPER(a)
 
 #define ADD_A8_HL_LOC_HELPER() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   word result = cpu.a + cpu.mmu[loc]; \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
@@ -393,7 +393,7 @@ ADD_A8_HELPER(a)
 }
 
 #define ADC_A8_HL_LOC_HELPER() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   word result = cpu.a + cpu.mmu[loc] + cpu.C(); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
@@ -430,7 +430,7 @@ ADC_A8_HELPER(a)
 }
 
 #define GEN8_HL_LOC_HELPER(op) [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   cpu.a = cpu.a op cpu.mmu[loc]; \
   cpu.unset_flags(Nf | Hf | Cf); \
   if (cpu.a == 0x0) { \
@@ -467,7 +467,7 @@ GEN8_HELPER(op, a)
 }
 
 #define SBC_A8_HL_LOC_HELPER() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc] - cpu.C(); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
@@ -510,7 +510,7 @@ SBC_A8_HELPER(a)
 }
 
 #define CP8_HL_LOC_HELPER() [](CPU& cpu) { \
-  word loc = (cpu.h << 8) | cpu.l; \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc]; \
   if (result < 0) { \
     cpu.set_flags(Cf); \
@@ -712,12 +712,12 @@ CP8_HELPER(a)
 }
 
 #define JP_HL() [](CPU& cpu) { \
-  word hl = (cpu.h << 8) | cpu.l; \
+  word hl = cpu.get_word(cpu.h, cpu.l); \
   cpu.pc = hl; \
 }
 
 #define LD_SP_HL() [](CPU& cpu) { \
-  word hl = (cpu.h << 8) | cpu.l; \
+  word hl = cpu.get_word(cpu.h, cpu.l); \
   cpu.sp = cpu.mmu[hl]; \
 }
 
@@ -752,7 +752,7 @@ CP8_HELPER(a)
 }
 
 #define LD_LOC_REG_AUG(op, hi, lo, reg) [](CPU& cpu) { \
-  word hl = (cpu.hi << 8) | cpu.lo; \
+  word hl = cpu.get_word(cpu.hi, cpu.lo); \
   cpu.mmu.set(hl, cpu.reg); \
   hl = hl op 1; \
   cpu.hi = hl >> 8; \
@@ -780,7 +780,7 @@ CP8_HELPER(a)
 }
 
 #define LD_REG_LOC_AUG(reg, op, hi, lo) [](CPU& cpu) { \
-  word hl = (cpu.hi << 8) | cpu.lo; \
+  word hl = cpu.get_word(cpu.hi, cpu.lo); \
   cpu.reg = cpu.mmu[hl]; \
   hl = hl op 1; \
   cpu.hi = hl >> 8; \
@@ -788,7 +788,7 @@ CP8_HELPER(a)
 }
 
 #define INVALID() [](CPU& cpu) {}
-////  throw std::runtime_error("Invalid opcode"); \
+////  throw std::runti  me_error("Invalid opcode"); \
 //}
 
 #define UNIMPL() [](CPU& cpu) { \

@@ -14,6 +14,7 @@ DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(dis_detect_loops, false, "When dumping disassembly, detect and condense loops");
 DEFINE_bool(headless, false, "No display");
 DEFINE_int32(run_for_n, -1, "Run for n instructions");
+DEFINE_string(dump_states_to_file, "", "Dump states to file");
 
 using namespace std;
 
@@ -55,6 +56,11 @@ int main(int argc, char** argv) {
   bool should_dump = FLAGS_dis;
   int run_for_n = FLAGS_run_for_n;
   
+  std::ofstream states_file;
+  if (FLAGS_dump_states_to_file != "") {
+    states_file.open(FLAGS_dump_states_to_file);
+  }
+  
   if (!FLAGS_headless)
     cpu.ppu.screen.on();
   
@@ -82,6 +88,9 @@ int main(int argc, char** argv) {
     }
     
     cpu.step(should_dump);
+    if (FLAGS_dump_states_to_file != "") {
+      cpu.dump_registers_to_file(states_file);
+    }
     ++ninstrs;
   }
 
