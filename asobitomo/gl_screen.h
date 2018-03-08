@@ -7,6 +7,9 @@
 #include <thread>
 
 #include <SDL2/SDL.h>
+#include <gflags/gflags.h>
+
+DECLARE_bool(limit_framerate);
 
 class GL : public Screen {
 public:
@@ -45,15 +48,16 @@ public:
       SDL_RenderClear(renderer_);
       SDL_RenderCopy(renderer_, texture_, NULL, NULL);
       SDL_RenderPresent(renderer_);
-      
-//      auto now = std::chrono::system_clock::now();
-//      std::chrono::duration<double, std::milli> elapsed = now - last_;
-//      if (elapsed.count() < 16.75) {
-//        std::chrono::duration<double, std::milli> delta(16.75 - elapsed.count());
-//        auto as_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-//        std::this_thread::sleep_for(std::chrono::milliseconds(as_ms));
-//      }
-//      last_ = std::chrono::system_clock::now();
+      if (FLAGS_limit_framerate) {
+        auto now = std::chrono::system_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = now - last_;
+        if (elapsed.count() < 16.75) {
+          std::chrono::duration<double, std::milli> delta(16.75 - elapsed.count());
+          auto as_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+          std::this_thread::sleep_for(std::chrono::milliseconds(as_ms));
+        }
+        last_ = std::chrono::system_clock::now();
+      }
     }
 
 // this slows emulator way down
