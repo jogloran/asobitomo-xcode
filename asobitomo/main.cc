@@ -10,6 +10,8 @@
 #include <gflags/gflags.h>
 #include "rang.hpp"
 
+bool should_dump = false;
+
 DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(dis_detect_loops, false, "When dumping disassembly, detect and condense loops");
 DEFINE_bool(headless, false, "No display");
@@ -35,7 +37,6 @@ bool in_title = false;
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A Game Boy emulator");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  rang::setControlMode(rang::control::Force);
   
   if (argc != 2) {
     std::cerr << "Expecting a ROM filename." << std::endl;
@@ -48,12 +49,16 @@ int main(int argc, char** argv) {
   size_t last_period = 0;
   const bool debug = FLAGS_dis_detect_loops;
 
+  int i = 0;
   cpu.ppu.screen.off();
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
+//    if (i++ >= 100) exit(0);
   }
+  
+  std::cout << "out" << std::endl;
 
-  bool should_dump = FLAGS_dis;
+  should_dump = FLAGS_dis;
   int run_for_n = FLAGS_run_for_n;
   
   std::ofstream states_file;
@@ -85,6 +90,10 @@ int main(int argc, char** argv) {
         should_dump = true;
       }
       last_period = period;
+    }
+    
+    if (cpu.pc == 0x6ad0) {
+    ;
     }
     
     cpu.step(should_dump);

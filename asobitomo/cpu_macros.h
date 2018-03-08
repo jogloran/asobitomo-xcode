@@ -86,12 +86,26 @@
 
 #define INC_ADDR(hi, lo) [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.hi, cpu.lo); \
+  cpu.check_half_carry(cpu.mmu[loc], 1); \
   cpu.mmu.set(loc, cpu.mmu[loc] + 1); \
+  if (cpu.mmu[loc] == 0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  cpu.unset_flags(Nf); \
 }
 
 #define DEC_ADDR(hi, lo) [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.hi, cpu.lo); \
+  cpu.check_half_carry_sub(cpu.mmu[loc], 1); \
   cpu.mmu.set(loc, cpu.mmu[loc] - 1); \
+  if (cpu.mmu[loc] == 0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  cpu.set_flags(Nf); \
 }
 
 #define LD_REG_d8(reg) [](CPU& cpu) { \
@@ -233,7 +247,8 @@ LD_HL_SPECIAL_helper(a)
 #define JR_COND_r8(cond) [](CPU& cpu) { \
   if ((cond)) { \
     int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc]); \
-    cpu.pc += r8 + 1; \
+    cpu.pc += 1; \
+    cpu.pc = cpu.pc + r8; \
     cpu.cycles += 4; \
   } else { \
     cpu.pc += 1; \
@@ -303,6 +318,7 @@ SUB_A8_HELPER(a)
   } else { \
     cpu.unset_flags(Cf); \
   } \
+  cpu.check_half_carry_sub(cpu.a, cpu.src); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
@@ -321,6 +337,7 @@ SUB_A8_HELPER(a)
   } else { \
     cpu.unset_flags(Cf); \
   } \
+  cpu.check_half_carry_sub(cpu.a, cpu.mmu[loc]); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
@@ -338,6 +355,7 @@ SUB_A8_HELPER(a)
   } else { \
     cpu.unset_flags(Cf); \
   } \
+  cpu.check_half_carry(cpu.a, cpu.src); \
   cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
   if (cpu.a == 0x0) { \
@@ -365,6 +383,7 @@ ADD_A8_HELPER(a)
   } else { \
     cpu.unset_flags(Cf); \
   } \
+  cpu.check_half_carry(cpu.a, cpu.mmu[loc]); \
   cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
   if (cpu.a == 0x0) { \
@@ -377,6 +396,7 @@ ADD_A8_HELPER(a)
 
 #define ADC_A8_HELPER(src) [](CPU& cpu) { \
   word result = cpu.a + cpu.src + cpu.C(); \
+  cpu.check_half_carry(cpu.a, cpu.src, cpu.C()); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
@@ -395,6 +415,7 @@ ADD_A8_HELPER(a)
 #define ADC_A8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   word result = cpu.a + cpu.mmu[loc] + cpu.C(); \
+  cpu.check_half_carry(cpu.a, cpu.mmu[loc], cpu.C()); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
@@ -451,6 +472,7 @@ GEN8_HELPER(op, a)
 
 #define SBC_A8_HELPER(src) [](CPU& cpu) { \
   int result = static_cast<int>(cpu.a) - cpu.src - cpu.C(); \
+  cpu.check_half_carry_sub(cpu.a, cpu.src, cpu.C()); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
@@ -469,6 +491,7 @@ GEN8_HELPER(op, a)
 #define SBC_A8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc] - cpu.C(); \
+  cpu.check_half_carry_sub(cpu.a, cpu.mmu[loc], cpu.C()); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
@@ -512,11 +535,12 @@ SBC_A8_HELPER(a)
 #define CP8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc]; \
-  if (result < 0) { \
+  if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
     cpu.unset_flags(Cf); \
   } \
+  cpu.check_half_carry_sub(cpu.a, cpu.mmu[loc]); \
   cpu.set_flags(Nf); \
   if (result == 0x0) { \
     cpu.set_flags(Zf); \
@@ -627,6 +651,7 @@ CP8_HELPER(a)
   byte d8 = cpu.mmu[cpu.pc]; \
   cpu.pc += 1; \
   int result = static_cast<int>(cpu.a) - d8; \
+  cpu.check_half_carry_sub(cpu.a, d8); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   if (cpu.a == 0x0) { \
@@ -646,6 +671,7 @@ CP8_HELPER(a)
   byte d8 = cpu.mmu[cpu.pc]; \
   cpu.pc += 1; \
   int result = (static_cast<int>(cpu.a) - d8 - cpu.C()); \
+  cpu.check_half_carry_sub(cpu.a, d8, cpu.C()); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
@@ -788,7 +814,7 @@ CP8_HELPER(a)
 }
 
 #define INVALID() [](CPU& cpu) {}
-////  throw std::runti  me_error("Invalid opcode"); \
+////  throw std::runtime_error("Invalid opcode"); \
 //}
 
 #define UNIMPL() [](CPU& cpu) { \

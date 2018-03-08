@@ -56,7 +56,7 @@ struct Op {
     case Argument::Offset: {
       byte value = cpu.mmu[cpu.pc+1];
       signed char signed_value = static_cast<signed char>(value);
-      word pc_plus_offset = cpu.pc + signed_value;
+      word pc_plus_offset = cpu.pc + 2 + signed_value;
       
       return formatted(fmt, pc_plus_offset);
       break;
@@ -296,7 +296,7 @@ Op { 0xde, "SBC %02x", "SBC %02x", Argument::U8 },
 Op { 0xdf, "RST 18", "RST 18", Argument::None },
 Op { 0xe0, "LD (0xff%02x), A", "LD (0xff%02x), A", Argument::U8 },
 Op { 0xe1, "POP HL", "POP HL", Argument::None },
-Op { 0xe2, "LD (F    +C), A", "LD (0xff00+C), A", Argument::None },
+Op { 0xe2, "LD (0xff00+C), A", "LD (0xff00+C), A", Argument::None },
 Op { 0xe3, "(invalid)", "(invalid)", Argument::None },
 Op { 0xe4, "(invalid)", "(invalid)", Argument::None },
 Op { 0xe5, "PUSH HL", "PUSH HL", Argument::None },

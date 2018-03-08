@@ -24,7 +24,9 @@ public:
   std::vector<int> accessed;
 
   MMU(std::string path, PPU& ppu, Timer& timer):
-    accessed(0xff7f - 0xff00, 0), bank(0), bank_hi(0),
+    accessed(0xff7f - 0xff00 + 1, 0),
+    bank(1), // default bank for 0x4000 is 1, so that 0x4000 acccesses 0x4000
+    bank_hi(0),
     ram_bank(0), select_external_ram(false), external_ram_enabled(false),
     mem(),
     external_ram(),
@@ -52,11 +54,62 @@ public:
   }
 
   void set(word loc, byte value) {
+    // enable external RAM -- need to write to this area
+    if (loc >= 0x0000 && loc <= 0x1fff) {
+      if ((value & 0xf) == 0xa) {
+        // enable
+        external_ram_enabled = true;
+      } else {
+        // disable (default)
+        external_ram_enabled = false;
+      }
+      
+      return; // Do not actually modify RAM
+    }
+    
+    // ROM bank select lower 5 bits (bits 0-4)
+    if (loc >= 0x2000 && loc <= 0x3fff) {
+      if (value == 0x00) {
+        bank = 1;
+      } else if (value == 0x20 || value == 0x40 || value == 0x60) {
+        bank = value + 0x1; // requesting banks 20h, 40, 60 gets 21h, 41, 61 instead
+      } else {
+        bank = value & 0x1f;
+      }
+      
+      return;
+    }
+    
+    
     // external RAM bank access -- may be battery buffered
     if (loc >= 0xa000 && loc <= 0xbfff) {
       // TODO: check extrenal_ram_enabled
       // not all addresses are valid here
       external_ram[loc - 0xa000] = value;
+      return;
+    }
+    
+    
+    // RAM bank select or ROM bank select
+    if (loc >= 0x4000 && loc <= 0x5fff) {
+      if (select_external_ram) {
+        ram_bank = value & 0x3;
+      } else {
+        bank_hi = value & 0x3;
+      }
+      return;
+    }
+    
+    
+    // RAM/ROM bank select:
+    if (loc >= 0x6000 && loc <= 0x7fff) {
+      // value = 0:
+      // (default) 4000-5fff selects
+      // upper 2 bits (bits 5 and 6) of ROM bank number
+    
+      // value = 1:
+      // 4000-5fff selects a RAM bank 00-03
+      select_external_ram = value & 0x1;
       return;
     }
     
@@ -86,48 +139,6 @@ public:
     }
     if (loc == 0xff07) {
       timer.set_tac(value);
-    }
-    
-    // ROM bank select lower 5 bits (bits 0-4)
-    if (loc >= 0x2000 && loc <= 0x3fff) {
-      if (value == 0x00) {
-        bank = 1;
-      } else if (value == 0x20 || value == 0x40 || value == 0x60) {
-        bank = value + 0x1; // requesting banks 20h, 40, 60 gets 21h, 41, 61 instead
-      } else {
-        bank = value & 0x1f;
-      }
-    }
-    
-    // enable external RAM -- need to write to this area
-    if (loc >= 0x0000 && loc <= 0x1fff) {
-      if ((value & 0xf) == 0xa) {
-        // enable
-        external_ram_enabled = true;
-      } else {
-        // disable (default)
-        external_ram_enabled = false;
-      }
-    }
-    
-    // RAM bank select or ROM bank select
-    if (loc >= 0x4000 && loc <= 0x5fff) {
-      if (select_external_ram) {
-        ram_bank = value & 0x3;
-      } else {
-        bank_hi = value & 0x3;
-      }
-    }
-    
-    // RAM/ROM bank select:
-    if (loc >= 0x6000 && loc <= 0x7fff) {
-      // value = 0:
-      // (default) 4000-5fff selects
-      // upper 2 bits (bits 5 and 6) of ROM bank number
-    
-      // value = 1:
-      // 4000-5fff selects a RAM bank 00-03
-      select_external_ram = value & 0x1;
     }
     
     if (loc == 0xff40) { // LCD stat
@@ -232,6 +243,7 @@ public:
     } else if (loc <= 0x7fff) {
       /* rom bank switchable 0x4000 - 0x7fff */
       int full_bank = (bank_hi << 5) + bank;
+//      std::cout << dec << int(bank_hi) << ' ' << int(bank) << ' ' << full_bank << std::endl;
       return cart[full_bank * 0x4000 + (loc - 0x4000)];
     } else if (loc <= 0x97ff) {
       return mem[loc]; /* RAM 0x8000 - 0x97ff */

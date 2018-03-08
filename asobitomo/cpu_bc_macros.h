@@ -270,7 +270,12 @@ SET_GEN8(7)
   } \
   cpu.mmu[loc] <<= 1; \
   cpu.mmu[loc] |= carry; \
-  cpu.unset_flags(Nf | Hf | Zf); \
+  if (cpu.mmu[loc] == 0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  cpu.unset_flags(Nf | Hf); \
 }
 
 #define RL8_helper(reg) [](CPU& cpu) { \
@@ -283,7 +288,12 @@ SET_GEN8(7)
   } \
   cpu.reg <<= 1; \
   cpu.reg |= carry; \
-  cpu.unset_flags(Nf | Hf | Zf); \
+  if (cpu.reg == 0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  cpu.unset_flags(Nf | Hf); \
 }
 
 /* TODO: all below */
@@ -299,7 +309,12 @@ SET_GEN8(7)
   } \
   cpu.mmu[loc] >>= 1; \
   cpu.mmu[loc] |= carry << 7; \
-  cpu.unset_flags(Nf | Hf | Zf); \
+  if (cpu.mmu[loc] == 0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  cpu.unset_flags(Nf | Hf); \
 }
 
 #define RR8_helper(reg) [](CPU& cpu) { \
@@ -312,7 +327,12 @@ SET_GEN8(7)
   } \
   cpu.reg >>= 1; \
   cpu.reg |= carry << 7; \
-  cpu.unset_flags(Nf | Hf | Zf); \
+  if (cpu.reg == 0) { \
+    cpu.set_flags(Zf); \
+  } else { \
+    cpu.unset_flags(Zf); \
+  } \
+  cpu.unset_flags(Nf | Hf); \
 }
 
 #define SLA8_HL_helper() [](CPU& cpu) { \

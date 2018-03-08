@@ -152,6 +152,22 @@ public:
   static void handle_cb(CPU& cpu) {
     cpu._handle_cb();
   }
+  
+  void check_half_carry(byte reg, byte addend, byte carry=0x0) {
+    if (((reg & 0xf) + (addend & 0xf) + carry) > 0xf) {
+      set_flags(Hf);
+    } else {
+      unset_flags(Hf);
+    }
+  }
+  
+  void check_half_carry_sub(byte reg, byte operand, byte carry=0x0) {
+    if ((reg & 0xf) < ((operand & 0xf) + carry)) {
+      set_flags(Hf);
+    } else {
+      unset_flags(Hf);
+    }
+  }
 
   static std::array<op, NINSTR> cb_ops;
   static std::array<op, NINSTR> ops;

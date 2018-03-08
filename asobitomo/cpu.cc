@@ -237,15 +237,19 @@ void CPU::dump_state() {
     "bc " << two_byte_fmt(b, c) << ' ' <<
     "de " << two_byte_fmt(d, e) << ' ' <<
     "hl " << two_byte_fmt(h, l) << ' '
+    << "sp: " << setw(4) << hex <<
+      static_cast<int>(sp) << ' '
     << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
     << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
-    << " LCDC: " << binary(mmu._read_mem(0xff40))
-    << " STAT: " << binary(mmu._read_mem(0xff41))
+//    << " LCDC: " << binary(mmu._read_mem(0xff40))
+//    << " STAT: " << binary(mmu._read_mem(0xff41))
+    << " rom:" << int(mmu.bank)
+    << " ram:" << int(mmu.ram_bank)
     << " IF: " << binary(mmu._read_mem(0xff0f))
     << " IE: " << binary(mmu._read_mem(0xffff))
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
     << " (" << ppu_state_as_string(ppu.mode) << ")"
-    << "\t" << dec << rang::fg::blue
+    << "\t" << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
     << " " << op_name_for(pc) << rang::fg::reset << endl;
 //  cout << setfill('0') <<
 //    "pc: 0x" << setw(4) << hex << pc << ' ' <<
