@@ -55,7 +55,7 @@
 }
 
 #define INC_REG(byte) [](CPU& cpu) { \
-  if ((((cpu.byte & 0xf) + ((cpu.byte + 1) & 0xf)) & 0x10) == 0x10) { \
+  if ((cpu.byte & 0xf) == 0xf) { \
     cpu.set_flags(Hf); \
   } else { \
     cpu.unset_flags(Hf); \
@@ -70,7 +70,7 @@
 }
 
 #define DEC_REG(byte) [](CPU& cpu) { \
-  if ((((cpu.byte & 0xf) + ((cpu.byte - 1) & 0xf)) & 0x10) == 0x10) { \
+  if ((cpu.byte & 0xf) == 0) { \
     cpu.set_flags(Hf); \
   } else { \
     cpu.unset_flags(Hf); \
@@ -523,6 +523,7 @@ SBC_A8_HELPER(a)
   } else { \
     cpu.unset_flags(Cf); \
   } \
+  cpu.check_half_carry_sub(cpu.a, cpu.src); \
   cpu.set_flags(Nf); \
   if (result == 0x0) { \
     cpu.set_flags(Zf); \
