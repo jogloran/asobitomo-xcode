@@ -184,6 +184,11 @@
   } else { \
     cpu.unset_flags(Cf); \
   } \
+  if ((cpu.hi1 & 0xf) + (cpu.hi2 & 0xf) > 0xf) { \
+    cpu.set_flags(Hf); \
+  } else { \
+    cpu.unset_flags(Hf); \
+  } \
   /* set H conditionally */ \
 }
 
