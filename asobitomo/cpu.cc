@@ -251,39 +251,6 @@ void CPU::dump_state() {
     << " (" << ppu_state_as_string(ppu.mode) << ")"
     << "\t" << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
     << " " << op_name_for(pc) << rang::fg::reset << endl;
-//  cout << setfill('0') <<
-//    "pc: 0x" << setw(4) << hex << pc << ' ' <<
-//    "sp: 0x" <<                   sp << ' ' <<
-//    "op: 0x" << setw(2) << hex << static_cast<int>(instr) << ' ' <<
-//    "(" << op_name_for(pc) << ")" << endl;
-//  cout << "LY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-//    << "\tLYC: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
-//    << "\tSCY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff42))
-//    << "\tSCX: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff43)) << endl;
-//  cout << "LCDC: " << binary(mmu._read_mem(0xff40))
-//    << "\t\tSTAT: " << binary(mmu._read_mem(0xff41))
-//    << " (" << ppu_state_as_string(ppu.mode) << ")" << endl;
-//  cout << "IF: " << binary(mmu._read_mem(0xff0f))
-//    << "\t\tIE: " << binary(mmu._read_mem(0xffff)) << endl;
-//  cout << "Interrupts: " << interrupt_state_as_string(interrupt_enabled) << endl;
-//  cout << "0xff00: " << setw(2) << hex << binary(mmu._read_mem(0xff00))
-//    << "\t\t0xff81: " << setw(2) << hex << binary(mmu._read_mem(0xff81)) << endl;
-//  cout <<
-//    "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
-//    "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
-//    "b: " << setw(2) << hex << static_cast<int>(b) << ' ' <<
-//    "c: " << setw(2) << hex << static_cast<int>(c) << ' ' << endl;
-//  cout <<
-//    "d: " << setw(2) << hex << static_cast<int>(d) << ' ' <<
-//    "e: " << setw(2) << hex << static_cast<int>(e) << ' ' <<
-//    "h: " << setw(2) << hex << static_cast<int>(h) << ' ' <<
-//    "l: " << setw(2) << hex << static_cast<int>(l) << ' ' << endl;
-//  cout <<
-//    "Z: " << setw(2) << hex << static_cast<int>(Z()) << ' ' <<
-//    "N: " << setw(2) << hex << static_cast<int>(N()) << ' ' <<
-//    "H: " << setw(2) << hex << static_cast<int>(H()) << ' ' <<
-//    "C: " << setw(2) << hex << static_cast<int>(C()) << ' ' << endl;
-//  cout << endl;
 }
 
 
@@ -328,6 +295,7 @@ void CPU::fire_interrupts() {
     handled_interrupt = 0x10;
     handler = 0x60; // joypad interrupt
   } else {
+    // what is correct behaviour if IME = 0 and no interrupts came in?
     return;
   }
 

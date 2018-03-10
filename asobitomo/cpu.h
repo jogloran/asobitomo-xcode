@@ -94,8 +94,20 @@ public:
   
   bool wake_if_interrupt_requested();
   void halt() {
-    interrupt_flags_before_halt = mmu[0xff0f];
-    halted = true;
+    if (interrupt_enabled == InterruptState::Disabled) {
+      byte interrupt_enable = mmu._read_mem(0xffff);
+      byte interrupt_flags = mmu._read_mem(0xff0f);
+
+      byte candidate_interrupts = interrupt_enable & interrupt_flags;
+      if (candidate_interrupts != 0x0) {
+        // The HALT bug.
+      } else {
+        halted = true;
+      }
+    } else {
+      interrupt_flags_before_halt = mmu[0xff0f];
+      halted = true;
+    }
   }
 
   void stop() {
