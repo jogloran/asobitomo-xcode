@@ -729,16 +729,17 @@ CP8_HELPER(a)
   byte d8 = cpu.mmu[cpu.pc]; \
   cpu.pc += 1; \
   int result = static_cast<int>(cpu.a) - d8; \
-  if (result < 0) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_half_carry_sub(cpu.a, d8); \
   cpu.set_flags(Nf); \
   if (result == 0x0) { \
     cpu.set_flags(Zf); \
   } else { \
     cpu.unset_flags(Zf); \
+  } \
+  if (result & (1 << 8)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
   } \
   /* need to set H conditionally */ \
 }
