@@ -174,6 +174,11 @@
 #define ADD_WORD_WORD(hi1, lo1, hi2, lo2) [](CPU& cpu) { \
   word hl = cpu.get_word(cpu.hi1, cpu.lo1); \
   word bc = cpu.get_word(cpu.hi2, cpu.lo2); \
+  if ((hl & 0xfff) + (bc & 0xfff) > 0xfff) { \
+    cpu.set_flags(Hf); \
+  } else { \
+    cpu.unset_flags(Hf); \
+  } \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
   hl = static_cast<word>(result); \
   cpu.hi1 = hl >> 8; \
@@ -183,11 +188,6 @@
     cpu.set_flags(Cf); \
   } else { \
     cpu.unset_flags(Cf); \
-  } \
-  if ((cpu.hi1 & 0xf) + (cpu.hi2 & 0xf) > 0xf) { \
-    cpu.set_flags(Hf); \
-  } else { \
-    cpu.unset_flags(Hf); \
   } \
   /* set H conditionally */ \
 }
