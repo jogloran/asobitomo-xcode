@@ -619,6 +619,7 @@ CP8_HELPER(a)
   byte d8 = cpu.mmu[cpu.pc]; \
   cpu.pc += 1; \
   int result = static_cast<int>(cpu.a) + d8; \
+  cpu.check_half_carry(cpu.a, d8); \
   cpu.a = static_cast<byte>(result); \
   if (cpu.a == 0x0) { \
     cpu.set_flags(Zf); \
@@ -638,6 +639,7 @@ CP8_HELPER(a)
   byte d8 = cpu.mmu[cpu.pc]; \
   cpu.pc += 1; \
   word result = cpu.a + d8 + cpu.C(); \
+  cpu.check_half_carry(cpu.a, d8, cpu.C()); \
   if (result & (1 << 8)) { \
     cpu.set_flags(Cf); \
   } else { \
