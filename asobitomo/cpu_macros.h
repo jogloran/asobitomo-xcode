@@ -580,6 +580,12 @@ CP8_HELPER(a)
   cpu.sp += 2; \
 }
 
+#define POP_AF() [](CPU& cpu) { \
+  cpu.a = cpu.mmu[cpu.sp + 1]; \
+  cpu.f = cpu.mmu[cpu.sp + 2] & 0xf0; \
+  cpu.sp += 2; \
+}
+
 #define PUSH_WORD(hi, lo) [](CPU& cpu) { \
   cpu.mmu.set(cpu.sp - 1, cpu.hi); \
   cpu.mmu.set(cpu.sp, cpu.lo); \
@@ -844,5 +850,28 @@ CP8_HELPER(a)
 }
 
 #define DAA() [](CPU& cpu) { \
-  /* NO IMPL */ \
+  word a = static_cast<word>(cpu.a); \
+  if (!cpu.N()) { \
+    if (cpu.H() || (a & 0xf) > 9) { \
+      a += 0x06; \
+    } \
+    if (cpu.C() || (a > 0x9f)) { \
+      a += 0x60; \
+    } \
+  } else { \
+    if (cpu.H()) { \
+      a = (a - 0x06) & 0xff; \
+    } \
+    if (cpu.C()) { \
+      a -= 0x60; \
+    } \
+  } \
+  cpu.unset_flags(Hf | Zf); \
+  if ((a & 0x100) == 0x100) { \
+    cpu.set_flags(Cf); \
+  } \
+  cpu.a = static_cast<byte>(a); \
+  if (cpu.a == 0x0) { \
+    cpu.set_flags(Zf); \
+  } \
 }

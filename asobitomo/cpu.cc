@@ -163,7 +163,7 @@ std::array<op, 256> CPU::ops {
  RST(0x28) /* 0xef */,
 
  LDH_A_a8() /* LDH A, (a8) */ /* 0xf0 */,
- POP_WORD(a, f) /* 0xf1 */,
+ POP_AF() /* POP a, f special case 0xf1 */,
  LDH_A_ADDR(c) /* LD A, (C) */ /* 0xf2 */,
  DI() /* DI */ /* 0xf3 */,
  INVALID() /* 0xf4 */,
