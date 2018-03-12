@@ -78,21 +78,15 @@ SRL8_helper(a)
   cpu.unset_flags(Nf); \
   cpu.set_flags(Hf); \
   word loc = cpu.get_word(cpu.h, cpu.l); \
-  if ((cpu.mmu[loc] & (1 << bit)) == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  byte value = (cpu.mmu[loc] & (1 << bit)); \
+  cpu.check_zero(value); \
 }
 
 #define BIT_GEN(bit, reg) [](CPU& cpu) { \
   cpu.unset_flags(Nf); \
   cpu.set_flags(Hf); \
-  if ((cpu.reg & (1 << bit)) == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  byte value = (cpu.reg & (1 << bit)); \
+  cpu.check_zero(value); \
 }
 
 #define BIT_GEN8(bit) BIT_GEN(bit, b), \
@@ -177,11 +171,7 @@ SET_GEN8(7)
   } \
   cpu.mmu[loc] <<= 1; \
   cpu.mmu[loc] |= hibit; \
-  if (cpu.mmu[loc] == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
 
@@ -194,11 +184,7 @@ SET_GEN8(7)
   } \
   cpu.reg <<= 1; \
   cpu.reg |= hibit; \
-  if (cpu.reg == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
 }
 
@@ -212,11 +198,7 @@ SET_GEN8(7)
   } \
   cpu.mmu[loc] >>= 1; \
   cpu.mmu[loc] |= lobit << 7; \
-  if (cpu.mmu[loc] == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
 
@@ -229,11 +211,7 @@ SET_GEN8(7)
   } \
   cpu.reg >>= 1; \
   cpu.reg |= lobit << 7; \
-  if (cpu.reg == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
 }
 
@@ -242,21 +220,13 @@ SET_GEN8(7)
   word loc = cpu.get_word(cpu.h, cpu.l); \
   byte val = cpu.mmu[loc]; \
   cpu.mmu[loc] = (val << 4) | (val >> 4); \
-  if (cpu.mmu[loc] == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
 }
 
 #define SWAP8_helper(reg) [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf | Cf); \
   cpu.reg = (cpu.reg << 4) | (cpu.reg >> 4); \
-  if (cpu.reg == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
 }
 
 #define RL8_HL_helper() [](CPU& cpu) { \
@@ -270,11 +240,7 @@ SET_GEN8(7)
   } \
   cpu.mmu[loc] <<= 1; \
   cpu.mmu[loc] |= carry; \
-  if (cpu.mmu[loc] == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
 
@@ -288,15 +254,9 @@ SET_GEN8(7)
   } \
   cpu.reg <<= 1; \
   cpu.reg |= carry; \
-  if (cpu.reg == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
 }
-
-/* TODO: all below */
 
 #define RR8_HL_helper() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
@@ -309,11 +269,7 @@ SET_GEN8(7)
   } \
   cpu.mmu[loc] >>= 1; \
   cpu.mmu[loc] |= carry << 7; \
-  if (cpu.mmu[loc] == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
 
@@ -327,11 +283,7 @@ SET_GEN8(7)
   } \
   cpu.reg >>= 1; \
   cpu.reg |= carry << 7; \
-  if (cpu.reg == 0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
 }
 
@@ -345,11 +297,7 @@ SET_GEN8(7)
     cpu.unset_flags(Cf); \
   } \
   cpu.mmu[loc] <<= 1; \
-  if (cpu.mmu[loc] == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
 }
 
 #define SLA8_helper(reg) [](CPU& cpu) { \
@@ -361,11 +309,7 @@ SET_GEN8(7)
     cpu.unset_flags(Cf); \
   } \
   cpu.reg <<= 1; \
-  if (cpu.reg == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
 }
 
 #define SRA8_HL_helper() [](CPU& cpu) { \
@@ -380,11 +324,7 @@ SET_GEN8(7)
   } \
   cpu.mmu[loc] >>= 1; \
   cpu.mmu[loc] |= hibit; \
-  if (cpu.mmu[loc] == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
 }
 
 #define SRA8_helper(reg) [](CPU& cpu) { \
@@ -398,11 +338,7 @@ SET_GEN8(7)
   } \
   cpu.reg >>= 1; \
   cpu.reg |= hibit; \
-  if (cpu.reg == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
 }
 
 #define SRL8_HL_helper() [](CPU& cpu) { \
@@ -414,11 +350,7 @@ SET_GEN8(7)
     cpu.unset_flags(Cf); \
   } \
   cpu.mmu[loc] >>= 1; \
-  if (cpu.mmu[loc] == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.mmu[loc]); \
 }
 
 #define SRL8_helper(reg) [](CPU& cpu) { \
@@ -429,9 +361,5 @@ SET_GEN8(7)
     cpu.unset_flags(Cf); \
   } \
   cpu.reg >>= 1; \
-  if (cpu.reg == 0x0) { \
-    cpu.set_flags(Zf); \
-  } else { \
-    cpu.unset_flags(Zf); \
-  } \
+  cpu.check_zero(cpu.reg); \
 }

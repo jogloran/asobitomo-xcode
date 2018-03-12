@@ -170,6 +170,14 @@ public:
     cpu._handle_cb();
   }
   
+  void check_zero(byte value) {
+    if (value == 0x0) {
+      set_flags(Zf);
+    } else {
+      unset_flags(Zf);
+    }
+  }
+  
   void check_half_carry(byte reg, byte addend, byte carry=0x0) {
     if (((reg & 0xf) + (addend & 0xf) + carry) > 0xf) {
       set_flags(Hf);
