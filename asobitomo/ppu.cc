@@ -393,7 +393,7 @@ PPU::rasterise_line() {
           // need to get the relevant row in the tile
           byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
           if (entry.flags & (1 << 6)) {
-            row_offset_within_tile = 8 - row_offset_within_tile; // TODO: account for 8x16 tiles
+            row_offset_within_tile = 8 - row_offset_within_tile - 1; // TODO: account for 8x16 tiles
           }
           word tile_data_address = tile_data + row_offset_within_tile * 2;
           byte b1 = cpu.mmu._read_mem(tile_data_address);
