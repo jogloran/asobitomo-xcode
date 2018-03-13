@@ -349,7 +349,6 @@ void CPU::step(bool debug)  {
     awakened_by_interrupt = wake_if_interrupt_requested();
   }
 
-  update_interrupt_state();
   fire_interrupts();
   
   if (halted) {
@@ -367,10 +366,15 @@ void CPU::step(bool debug)  {
     ++pc;
 
     long old_cycles = cycles;
-    ops[instr](*this);
+    
+    ops[instr](*this); // calls EI, sets interrupt state to EnableNext
     cycles += ncycles[instr];
     
     ppu.step(cycles - old_cycles);
     timer.step(cycles - old_cycles);
+    
+    if (instr != 0xf3 && instr != 0xfb) {
+      update_interrupt_state(); // sees EnableNext, sets to Enable
+    }
   }
 }
