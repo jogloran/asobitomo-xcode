@@ -239,10 +239,20 @@ void CPU::dump_state() {
     "hl " << two_byte_fmt(h, l) << ' '
     << "sp: " << setw(4) << hex <<
       static_cast<int>(sp) << ' '
-    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
+//    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
+//    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
 //    << " LCDC: " << binary(mmu._read_mem(0xff40))
 //    << " STAT: " << binary(mmu._read_mem(0xff41))
+    << " on:" << int(timer.enabled)
+//    << setfill('0')
+//    << " tac:" << setw(2) << int(timer.tac_)
+//    << " cyc:" << dec << setw(2) << word(timer.counter_cycles)
+//    << " tima:" << hex << setw(2) << int(timer.counter)
+//    << " div:" << setfill('0') << setw(4)
+//    << int((timer.divider_hi << 8) | timer.divider)
+//    << " mod:" << int(timer.modulo)
+    << " scx: " << int(mmu._read_mem(0xff43))
+    << " scy: " << int(mmu._read_mem(0xff42))
     << " rom:" << int(mmu.bank)
     << " ram:" << int(mmu.ram_bank)
     << " IF: " << binary(mmu._read_mem(0xff0f))
@@ -268,7 +278,7 @@ void CPU::update_interrupt_state() {
 }
 
 void CPU::fire_interrupts() {
-  if (interrupt_enabled == InterruptState::Disabled) {
+  if (interrupt_enabled != InterruptState::Enabled && interrupt_enabled != InterruptState::DisableNext) {
     return;
   }
 
@@ -347,6 +357,10 @@ void CPU::step(bool debug)  {
   bool awakened_by_interrupt = false;
   if (halted) {
     awakened_by_interrupt = wake_if_interrupt_requested();
+    
+//    if (interrupt_enabled == InterruptState::Disabled) {
+//      halted = false;
+//    }
   }
 
   fire_interrupts();
@@ -366,6 +380,10 @@ void CPU::step(bool debug)  {
     ++pc;
 
     long old_cycles = cycles;
+    
+    if (instr == 0xfb) {
+    
+    }
     
     ops[instr](*this); // calls EI, sets interrupt state to EnableNext
     cycles += ncycles[instr];

@@ -25,6 +25,7 @@ public:
 
   MMU(std::string path, PPU& ppu, Timer& timer):
     accessed(0xff7f - 0xff00 + 1, 0),
+    nbanks(1),
     bank(1), // default bank for 0x4000 is 1, so that 0x4000 acccesses 0x4000
     bank_hi(0),
     ram_bank(0), select_external_ram(false), external_ram_enabled(false),
@@ -48,12 +49,17 @@ public:
       
     long rom_size = 1 << (15 + h->rom_size);
     cart.resize(rom_size);
+    
+    nbanks = 4 * h->rom_size;
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);
   }
 
   void set(word loc, byte value) {
+  if ((loc==0xff4a || loc==0xff4b) && value != 0) {
+  ;
+  }
     // enable external RAM -- need to write to this area
     if (loc >= 0x0000 && loc <= 0x1fff) {
       if ((value & 0xf) == 0xa) {
@@ -174,6 +180,7 @@ public:
       accessed[loc - 0xff00]++;
     }
     
+    // TODO: ff03 should have the lower byte of timer div
     if (loc == 0xff04) { // timer DIV
       return timer.div();
     }
@@ -244,6 +251,10 @@ public:
       /* rom bank switchable 0x4000 - 0x7fff */
       int full_bank = (bank_hi << 5) + bank;
 //      std::cout << dec << int(bank_hi) << ' ' << int(bank) << ' ' << full_bank << std::endl;
+//      if (full_bank >= nbanks) {
+//        std::cout << "tried to access bank " << full_bank << ", accessing " << (full_bank % nbanks) << " instead" << std::endl;
+//        full_bank %= nbanks;
+//      }
       return cart[full_bank * 0x4000 + (loc - 0x4000)];
     } else if (loc <= 0x97ff) {
       return mem[loc]; /* RAM 0x8000 - 0x97ff */
@@ -279,6 +290,7 @@ public:
 
   PPU& ppu;
   Timer& timer;
+  int nbanks;
   byte bank;
   byte bank_hi;
   byte ram_bank;
