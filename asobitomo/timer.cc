@@ -19,10 +19,11 @@ Timer::step(long delta) {
   
   if (enabled) {
     counter_cycles += delta;
-    if (counter_cycles >= speed) {
+    int frequency = 4194304 / speed;
+    if (counter_cycles >= frequency) {
       inc_tima();
 //      std::cout << "counter: " << dec << static_cast<int>(counter) << ", cycles = " << dec << counter_cycles << " (+" << delta << ")" << std::endl;
-      counter_cycles -= speed;
+      counter_cycles -= frequency;
     }
   }
 }
@@ -59,13 +60,13 @@ Timer::set_tac(byte value) {
     speed = 1024;
     break;
   case 1:
-    speed = 256;
+    speed = 16;
     break;
   case 2:
     speed = 64;
     break;
   case 3:
-    speed = 16;
+    speed = 256;
     break;
   default:
     break;

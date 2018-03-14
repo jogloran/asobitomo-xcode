@@ -22,7 +22,7 @@ DEFINE_string(dump_states_to_file, "", "Dump states to file");
 using namespace std;
 
 size_t history_repeating(std::deque<word> history) {
-  for (auto i = 10; i >= 2; --i) {
+  for (auto i = 16; i >= 2; --i) {
     if (history.size() < 2*i) continue;
     
     if (std::equal(history.end() - i, history.end(), history.end() - 2*i)) {
@@ -54,11 +54,8 @@ int main(int argc, char** argv) {
   cpu.ppu.screen.off();
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
-//    if (i++ >= 100) exit(0);
   }
   
-  std::cout << "out" << std::endl;
-
   should_dump = FLAGS_dis;
   int run_for_n = FLAGS_run_for_n;
   
@@ -72,7 +69,7 @@ int main(int argc, char** argv) {
   
   long ninstrs = 0;
   while (run_for_n == -1 || ninstrs < run_for_n) {
-    if (should_dump && FLAGS_dis_detect_loops) {
+    if (FLAGS_dis_detect_loops) {
       history.emplace_back(cpu.pc);
       if (history.size() >= 20) {
         history.pop_front();
@@ -95,6 +92,9 @@ int main(int argc, char** argv) {
     
     if (cpu.pc == 0x6ad0) {
     ;
+    }
+    if (cpu.pc == 0xd2b4) {
+      should_dump = true;
     }
     
     cpu.step(should_dump);

@@ -163,7 +163,7 @@ std::array<op, 256> CPU::ops {
  RST(0x28) /* 0xef */,
 
  LDH_A_a8() /* LDH A, (a8) */ /* 0xf0 */,
- POP_WORD(a, f) /* 0xf1 */,
+ POP_AF() /* POP a, f special case 0xf1 */,
  LDH_A_ADDR(c) /* LD A, (C) */ /* 0xf2 */,
  DI() /* DI */ /* 0xf3 */,
  INVALID() /* 0xf4 */,
@@ -239,10 +239,20 @@ void CPU::dump_state() {
     "hl " << two_byte_fmt(h, l) << ' '
     << "sp: " << setw(4) << hex <<
       static_cast<int>(sp) << ' '
-    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
+//    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
+//    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
 //    << " LCDC: " << binary(mmu._read_mem(0xff40))
 //    << " STAT: " << binary(mmu._read_mem(0xff41))
+    << " on:" << int(timer.enabled)
+//    << setfill('0')
+//    << " tac:" << setw(2) << int(timer.tac_)
+//    << " cyc:" << dec << setw(2) << word(timer.counter_cycles)
+//    << " tima:" << hex << setw(2) << int(timer.counter)
+//    << " div:" << setfill('0') << setw(4)
+//    << int((timer.divider_hi << 8) | timer.divider)
+//    << " mod:" << int(timer.modulo)
+    << " scx: " << int(mmu._read_mem(0xff43))
+    << " scy: " << int(mmu._read_mem(0xff42))
     << " rom:" << int(mmu.bank)
     << " ram:" << int(mmu.ram_bank)
     << " IF: " << binary(mmu._read_mem(0xff0f))
@@ -251,39 +261,6 @@ void CPU::dump_state() {
     << " (" << ppu_state_as_string(ppu.mode) << ")"
     << "\t" << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
     << " " << op_name_for(pc) << rang::fg::reset << endl;
-//  cout << setfill('0') <<
-//    "pc: 0x" << setw(4) << hex << pc << ' ' <<
-//    "sp: 0x" <<                   sp << ' ' <<
-//    "op: 0x" << setw(2) << hex << static_cast<int>(instr) << ' ' <<
-//    "(" << op_name_for(pc) << ")" << endl;
-//  cout << "LY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-//    << "\tLYC: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
-//    << "\tSCY: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff42))
-//    << "\tSCX: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff43)) << endl;
-//  cout << "LCDC: " << binary(mmu._read_mem(0xff40))
-//    << "\t\tSTAT: " << binary(mmu._read_mem(0xff41))
-//    << " (" << ppu_state_as_string(ppu.mode) << ")" << endl;
-//  cout << "IF: " << binary(mmu._read_mem(0xff0f))
-//    << "\t\tIE: " << binary(mmu._read_mem(0xffff)) << endl;
-//  cout << "Interrupts: " << interrupt_state_as_string(interrupt_enabled) << endl;
-//  cout << "0xff00: " << setw(2) << hex << binary(mmu._read_mem(0xff00))
-//    << "\t\t0xff81: " << setw(2) << hex << binary(mmu._read_mem(0xff81)) << endl;
-//  cout <<
-//    "a: " << setw(2) << hex << static_cast<int>(a) << ' ' <<
-//    "f: " << setw(2) << hex << static_cast<int>(f) << ' ' <<
-//    "b: " << setw(2) << hex << static_cast<int>(b) << ' ' <<
-//    "c: " << setw(2) << hex << static_cast<int>(c) << ' ' << endl;
-//  cout <<
-//    "d: " << setw(2) << hex << static_cast<int>(d) << ' ' <<
-//    "e: " << setw(2) << hex << static_cast<int>(e) << ' ' <<
-//    "h: " << setw(2) << hex << static_cast<int>(h) << ' ' <<
-//    "l: " << setw(2) << hex << static_cast<int>(l) << ' ' << endl;
-//  cout <<
-//    "Z: " << setw(2) << hex << static_cast<int>(Z()) << ' ' <<
-//    "N: " << setw(2) << hex << static_cast<int>(N()) << ' ' <<
-//    "H: " << setw(2) << hex << static_cast<int>(H()) << ' ' <<
-//    "C: " << setw(2) << hex << static_cast<int>(C()) << ' ' << endl;
-//  cout << endl;
 }
 
 
@@ -301,7 +278,7 @@ void CPU::update_interrupt_state() {
 }
 
 void CPU::fire_interrupts() {
-  if (interrupt_enabled == InterruptState::Disabled) {
+  if (interrupt_enabled != InterruptState::Enabled && interrupt_enabled != InterruptState::DisableNext) {
     return;
   }
 
@@ -328,6 +305,7 @@ void CPU::fire_interrupts() {
     handled_interrupt = 0x10;
     handler = 0x60; // joypad interrupt
   } else {
+    // what is correct behaviour if IME = 0 and no interrupts came in?
     return;
   }
 
@@ -379,9 +357,12 @@ void CPU::step(bool debug)  {
   bool awakened_by_interrupt = false;
   if (halted) {
     awakened_by_interrupt = wake_if_interrupt_requested();
+    
+//    if (interrupt_enabled == InterruptState::Disabled) {
+//      halted = false;
+//    }
   }
 
-  update_interrupt_state();
   fire_interrupts();
   
   if (halted) {
@@ -399,10 +380,19 @@ void CPU::step(bool debug)  {
     ++pc;
 
     long old_cycles = cycles;
-    ops[instr](*this);
+    
+    if (instr == 0xfb) {
+    
+    }
+    
+    ops[instr](*this); // calls EI, sets interrupt state to EnableNext
     cycles += ncycles[instr];
     
     ppu.step(cycles - old_cycles);
     timer.step(cycles - old_cycles);
+    
+    if (instr != 0xf3 && instr != 0xfb) {
+      update_interrupt_state(); // sees EnableNext, sets to Enable
+    }
   }
 }
