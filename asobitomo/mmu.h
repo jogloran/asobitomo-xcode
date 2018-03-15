@@ -57,9 +57,12 @@ public:
   }
 
   void set(word loc, byte value) {
-  if ((loc==0xff4a || loc==0xff4b) && value != 0) {
-  ;
-  }
+//  if (!in_title && (loc==0xff42 || loc==0xff43) && value != 0) {
+//  ;
+//  }
+if (loc == 0xff41 && value != 0x40) {
+;
+}
     // enable external RAM -- need to write to this area
     if (loc >= 0x0000 && loc <= 0x1fff) {
       if ((value & 0xf) == 0xa) {

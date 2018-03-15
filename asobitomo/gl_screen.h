@@ -17,7 +17,7 @@ public:
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
   
-  GL(int scale=4): buf(fb.size() * 4), scale_(scale), last_(std::chrono::system_clock::now()) {
+  GL(int scale=4): buf(), scale_(scale), last_(std::chrono::high_resolution_clock::now()) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("test", 0, 0,
@@ -44,19 +44,24 @@ public:
         buf[i++] = pal[b][2];
         buf[i++] = pal[b][3];
       }
+      if (i != BUF_WIDTH * BUF_HEIGHT * 4) {
+        ;
+      }
       SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
       SDL_RenderClear(renderer_);
       SDL_RenderCopy(renderer_, texture_, NULL, NULL);
       SDL_RenderPresent(renderer_);
       if (FLAGS_limit_framerate) {
-        auto now = std::chrono::system_clock::now();
-        std::chrono::duration<double, std::milli> elapsed = now - last_;
+        auto now = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_);
         if (elapsed.count() < 16.75) {
-          std::chrono::duration<double, std::milli> delta(16.75 - elapsed.count());
-          auto as_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-          std::this_thread::sleep_for(std::chrono::milliseconds(as_ms));
+          auto val = std::chrono::microseconds(16750);
+          auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
+          
+          auto delta(val - elapsed_us);
+          std::this_thread::sleep_for(delta);
         }
-        last_ = std::chrono::system_clock::now();
+        last_ = std::chrono::high_resolution_clock::now();
       }
     }
 
@@ -71,8 +76,9 @@ public:
     }
   }
   
-  std::vector<byte> buf;
+  std::array<byte, BUF_WIDTH * BUF_HEIGHT * 4> buf;
   int scale_;
   
-  std::chrono::time_point<std::chrono::system_clock> last_;
+  std::chrono::time_point<std::chrono::high_resolution_clock> last_;
+
 };

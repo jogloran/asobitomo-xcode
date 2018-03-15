@@ -170,12 +170,12 @@ PPU::update_stat_register()  {
     stat &= ~0x4;
   }
   
-  cpu.mmu[0xff41] = static_cast<byte>(mode);
+  cpu.mmu[0xff41] = (stat & 0xfc) | static_cast<byte>(mode);
   cpu.mmu[0xff44] = static_cast<byte>(line);
   
   byte IF = cpu.mmu[0xff0f];
   bool set_lcd_interrupt =
-    ((stat & 0x40) && lyc == line) ||
+    ((stat & 0x40) && (lyc == line)) ||
     ((stat & 0x20) && mode == Mode::OAM) ||
     ((stat & 0x10) && mode == Mode::VBLANK) ||
     ((stat & 0x08) && mode == Mode::HBLANK);
@@ -290,8 +290,11 @@ PPU::rasterise_line() {
     
     // write to raster
     typedef std::vector<byte>::size_type diff;
-//    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end());
-    std::copy(raster_row.begin(), raster_row.end(), raster.begin());
+//    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end());
+    auto fin = std::copy(raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end(), raster.begin());
+    std::copy(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), fin);
+//    std::copy(raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end(), raster.begin());
+//    std::copy_n(raster_row.begin(), Screen::BUF_WIDTH, raster.begin());
   }
   
   if (window_display) {
@@ -446,8 +449,15 @@ PPU::rasterise_line() {
       auto sprite_ptr = sprite.pixels_.begin();
 
       bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
-
+      
+      int n = 0;
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
+        // hack to prevent invalid array access when a sprite starts before column 0
+        if (raster_ptr < raster.begin()) {
+          ++raster_ptr; ++sprite_ptr;
+          continue;
+        }
+        
         auto raster_byte = *raster_ptr;
         auto sprite_byte = *sprite_ptr;
 
@@ -462,7 +472,9 @@ PPU::rasterise_line() {
         }
 
         ++raster_ptr; ++sprite_ptr;
+        ++n;
       }
+//      std::cout << "wrote " << n << " bytes to raster starting at offset " << static_cast<void*>(raster.begin() + sprite.oam_.x - 8 ) << "(begin=" << static_cast<void*>(raster.begin()) << ", end=" << static_cast<void*>(raster.end()) << ")" << std::endl;
     }
     
     std::copy(oam, oam + 40, old_oam.begin());

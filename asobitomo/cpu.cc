@@ -1,4 +1,5 @@
 #include <sstream>
+#include <regex>
 
 #include "cpu.h"
 #include "util.h"
@@ -229,7 +230,16 @@ void CPU::dump_registers_to_file(std::ofstream& out) {
   out << static_cast<byte>(pc >> 8) << static_cast<byte>(pc & 0xff) << a << f << b << c << d << e << h << l;
 }
 
+DECLARE_string(dis_instrs);
+
 void CPU::dump_state() {
+  auto op_name = op_name_for(pc);
+  static std::regex dis_pattern(FLAGS_dis_instrs);
+  
+  if (FLAGS_dis_instrs != "" && !std::regex_match(op_name, dis_pattern)) {
+    return;
+  }
+  
   byte instr = mmu[pc];
   cout << setfill('0') <<
     "[0x" << setw(4) << hex << pc << "] "
@@ -239,10 +249,10 @@ void CPU::dump_state() {
     "hl " << two_byte_fmt(h, l) << ' '
     << "sp: " << setw(4) << hex <<
       static_cast<int>(sp) << ' '
-//    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-//    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
-//    << " LCDC: " << binary(mmu._read_mem(0xff40))
-//    << " STAT: " << binary(mmu._read_mem(0xff41))
+    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
+    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
+    << " LCDC: " << binary(mmu._read_mem(0xff40))
+    << " STAT: " << binary(mmu._read_mem(0xff41))
     << " on:" << int(timer.enabled)
 //    << setfill('0')
 //    << " tac:" << setw(2) << int(timer.tac_)
@@ -253,6 +263,7 @@ void CPU::dump_state() {
 //    << " mod:" << int(timer.modulo)
     << " scx: " << int(mmu._read_mem(0xff43))
     << " scy: " << int(mmu._read_mem(0xff42))
+    << " ffa4: " << int(mmu._read_mem(0xffa4))
     << " rom:" << int(mmu.bank)
     << " ram:" << int(mmu.ram_bank)
     << " IF: " << binary(mmu._read_mem(0xff0f))
@@ -260,7 +271,7 @@ void CPU::dump_state() {
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
     << " (" << ppu_state_as_string(ppu.mode) << ")"
     << "\t" << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
-    << " " << op_name_for(pc) << rang::fg::reset << endl;
+    << " " << op_name << rang::fg::reset << endl;
 }
 
 
@@ -275,6 +286,33 @@ void CPU::update_interrupt_state() {
     default:
       break;
   }
+}
+
+
+static std::string interrupt_names[] {
+  "vblank",
+  "stat",
+  "timer",
+  "serial",
+  "joypad",
+};
+
+static std::string interrupt_flags_to_description(byte flags) {
+  std::stringstream s;
+  bool first = true;
+  
+  int i = 0;
+  for (auto name : interrupt_names) {
+    if (flags & (1 << i)) {
+      if (!first) s << ", ";
+      else first = false;
+      
+      s << name;
+    }
+    ++i;
+  }
+  
+  return s.str();
 }
 
 void CPU::fire_interrupts() {
@@ -310,6 +348,8 @@ void CPU::fire_interrupts() {
   }
 
   interrupt_enabled = InterruptState::Disabled;
+  
+//  std::cout << "Handling " << interrupt_flags_to_description(handled_interrupt) << std::endl;
 
   mmu.set(0xff0f, interrupt_flags & ~handled_interrupt);
   mmu[sp - 1] = pc >> 8;
@@ -318,36 +358,13 @@ void CPU::fire_interrupts() {
   pc = handler;
 }
 
-static std::string interrupt_names[] {
-  "vblank",
-  "stat",
-  "timer",
-  "serial",
-  "joypad",
-};
-
-static std::string interrupt_flags_to_description(byte flags) {
-  std::stringstream s;
-  bool first = true;
-  
-  int i = 0;
-  for (auto name : interrupt_names) {
-    if (flags & (1 << i)) {
-      if (!first) s << ", ";
-      else first = false;
-      
-      s << name;
-    }
-    ++i;
-  }
-  
-  return s.str();
-}
-
 bool CPU::wake_if_interrupt_requested() {
   if (interrupt_flags_before_halt != mmu[0xff0f]) {
     halted = false;
-//    std::cout << ">>> Awakened by " << interrupt_flags_to_description(mmu[0xff0f]) << std::endl;
+    
+    if ((mmu[0xff0f] & 1) == 0) {
+      std::cout << ">>> Awakened by " << interrupt_flags_to_description(mmu[0xff0f]) << std::endl;
+    }
     return true;
   }
   return false;
