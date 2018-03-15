@@ -84,9 +84,7 @@ void
 PPU::step(long delta) {
   ncycles += delta;
   
-  // Games don't seem to work without the LCD on check being commented out --
-  // this is improper
-//  if (!cpu.ppu.lcd_on) return;
+  if (!cpu.ppu.lcd_on) return;
   
   /* 456*144 + 4560 = 70224
    *                                    \
