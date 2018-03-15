@@ -14,6 +14,7 @@
 		093DACDE2044F43A0087724B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDD2044F43A0087724B /* GLUT.framework */; };
 		093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDF2044F4F80087724B /* OpenGL.framework */; };
 		09E2D510204D2BA400D90FDB /* libgflags.2.2.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */; };
+		09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
 		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
 		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
@@ -53,6 +54,8 @@
 		09E2D511204F5BCA00D90FDB /* mbc_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc_types.h; sourceTree = "<group>"; };
 		09E2D512204F5BE900D90FDB /* header_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = header_type.h; sourceTree = "<group>"; };
 		09F0BA45204620C600936CF1 /* sdl_input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sdl_input.h; sourceTree = "<group>"; };
+		09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tile_debugger.cc; sourceTree = "<group>"; };
+		09FB8E7F205AD87C000A1CF6 /* tile_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tile_debugger.h; sourceTree = "<group>"; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		A2CCE56E203A981800F3FD4F /* ppu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ppu.h; sourceTree = "<group>"; };
@@ -140,6 +143,8 @@
 				090794912046A07A0063686E /* util.cc */,
 				09E2D511204F5BCA00D90FDB /* mbc_types.h */,
 				09E2D512204F5BE900D90FDB /* header_type.h */,
+				09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */,
+				09FB8E7F205AD87C000A1CF6 /* tile_debugger.h */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
@@ -202,6 +207,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A2CCE579203A981900F3FD4F /* cpu.cc in Sources */,
+				09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */,
 				090794922046A07A0063686E /* util.cc in Sources */,
 				0907948B2043A01F0063686E /* console_screen.cc in Sources */,
 				A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */,

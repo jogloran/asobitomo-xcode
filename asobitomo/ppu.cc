@@ -131,6 +131,7 @@ PPU::step(long delta) {
           mode = Mode::VBLANK;
           // last hblank: blit buffer
           screen.blit();
+          debugger.show();
         } else {
           mode = Mode::OAM;
         }
