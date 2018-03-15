@@ -62,7 +62,7 @@ public:
     pc(0x0000), sp(0x0000), cycles(0), timer(*this),
     ppu(*this), mmu(path, ppu, timer),
     halted(false), interrupt_flags_before_halt(0),
-    interrupt_enabled(InterruptState::Disabled) {
+    interrupt_enabled(InterruptState::Disabled), in_cb(false) {
   }
 
   enum class InterruptState {
@@ -156,10 +156,14 @@ public:
   InterruptState interrupt_enabled;
   std::string ppu_state_as_string(PPU::Mode mode);
   std::string interrupt_state_as_string(InterruptState state);
+  
+  bool in_cb;
 
   static constexpr size_t NINSTR = 256;
 
   void _handle_cb() {
+    in_cb = true;
+    
     byte instr = mmu[pc];
     ++pc;
     cb_ops[instr](*this);

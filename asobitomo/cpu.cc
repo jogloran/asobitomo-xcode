@@ -385,9 +385,9 @@ bool CPU::wake_if_interrupt_requested() {
   if (interrupt_flags_before_halt != mmu[0xff0f]) {
     halted = false;
     
-    if ((mmu[0xff0f] & 1) == 0) {
-      std::cout << ">>> Awakened by " << interrupt_flags_to_description(mmu[0xff0f]) << std::endl;
-    }
+//    if ((mmu[0xff0f] & 1) == 0) {
+//      std::cout << ">>> Awakened by " << interrupt_flags_to_description(mmu[0xff0f]) << std::endl;
+//    }
     return true;
   }
   return false;
@@ -403,7 +403,10 @@ void CPU::step(bool debug)  {
 //    }
   }
 
-  fire_interrupts();
+  if (!in_cb) {
+    fire_interrupts();
+  }
+  in_cb = false;
   
   if (halted) {
     ppu.step(4);
