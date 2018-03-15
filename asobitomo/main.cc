@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 //      should_dump = true;
     }
     if (cpu.pc == 0xd2b4) {
-      should_dump = true;
+//      should_dump = true;
     }
     
     if (cpu.pc == 0x00a5) {

@@ -252,7 +252,7 @@ PPU::rasterise_line() {
     auto begin = &cpu.mmu.mem[item];
     auto end = &cpu.mmu.mem[item] + 20; // TODO: I think scx means we cannot just take 20 elements starting from begin
     std::transform(begin, end, std::back_inserter(tile_data),
-                   [this, scy](byte index) {
+                   [this, scx, scy](byte index) {
                      // This takes each tile map index and retrieves
                      // the corresponding line of the corresponding tile
                      // 2 bytes per row, 16 bytes per tile
@@ -260,15 +260,14 @@ PPU::rasterise_line() {
                      //              second byte is MSB
                      if (bg_window_tile_data_offset == 0x8000) {
                        return decode(bg_window_tile_data_offset + index*16,
-                                     (line + scy) % 8);
+                                     (line + scy) % 8, scx % 8);
                      } else {
                        // add 0x800 to interpret the tile map index as a signed index starting in the middle
                        // of the tile data range (0x8800-97FF)
                        return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
-                                     (line + scy) % 8);
+                                     (line + scy) % 8, scx % 8);
                      }
                    });
-    
     // map this through the colour map
     
     std::vector<PaletteIndex> raster_row = flatten(tile_data);
@@ -287,7 +286,6 @@ PPU::rasterise_line() {
                          throw std::runtime_error("invalid palette index");
                      }
                    });
-    
     // write to raster
     typedef std::vector<byte>::size_type diff;
 //    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end());
@@ -377,14 +375,27 @@ PPU::rasterise_line() {
 //      if (entry.x != 0)
 //      std::cout << j << ": " << entry << std::endl;
   
+      auto sprite_height = sprite_mode == SpriteMode::S8x8 ? 8 : 16;
+  
       for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
         if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
-            line + 16 >= entry.y && line + 16 < entry.y + 8) {
+            line + 16 >= entry.y && line + 16 < entry.y + sprite_height) {
           // sprite is visible on this line
           // get tile data for sprite
           
+          auto tile_index = entry.tile_index;
+          if (sprite_mode == SpriteMode::S8x16) {
+            auto tile_y = (line - (entry.y - 16));
+            if (tile_y < 8) {
+              tile_index &= 0xfe;
+            } else {
+              tile_y -= 8;
+              tile_index |= 0x01;
+            }
+          }
+          
           // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
-          word tile_data = 0x8000 + entry.tile_index * 16;
+          word tile_data = 0x8000 + tile_index * 16;
           
           // sprites are not necessarily aligned to the 8x8 grid
           // we need to be able to tell which line of the sprite
@@ -395,10 +406,11 @@ PPU::rasterise_line() {
           
           // need to get the relevant row in the tile
           byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
-          if (entry.flags & (1 << 6)) {
+          if (entry.flags & (1 << 6)) { // y flip
             row_offset_within_tile = 8 - row_offset_within_tile - 1; // TODO: account for 8x16 tiles
           }
           word tile_data_address = tile_data + row_offset_within_tile * 2;
+          
           byte b1 = cpu.mmu._read_mem(tile_data_address);
           byte b2 = cpu.mmu._read_mem(tile_data_address + 1);
           
@@ -407,7 +419,7 @@ PPU::rasterise_line() {
           // we are on row index 3 of the sprite, so the row offset is (line - (entry.y - 16)) % 8
           
           // Map the sprite indices through the palette map
-          auto decoded = unpack_bits(b1, b2);
+          auto decoded = unpack_bits(b1, b2, 0);
           byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
           std::transform(decoded.begin(), decoded.end(), decoded.begin(),
                          [sprite_palette](PaletteIndex pidx) {
@@ -484,7 +496,7 @@ PPU::rasterise_line() {
 }
 
 std::vector<PPU::PaletteIndex>
-PPU::decode(word start_loc, byte start_y) {
+PPU::decode(word start_loc, byte start_y, byte start_x) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows
@@ -499,11 +511,11 @@ PPU::decode(word start_loc, byte start_y) {
   // -------------------------
   // 02 02 30 31   30 31 02 12 <- we want to get this sequence
   
-  return unpack_bits(b1, b2);
+  return unpack_bits(b1, b2, start_x);
 }
 
 std::vector<PPU::PaletteIndex>
-PPU::unpack_bits(byte lsb, byte msb) {
+PPU::unpack_bits(byte lsb, byte msb, byte start_x) {
   std::vector<PPU::PaletteIndex> result(8, 0);
   
   for (int i = 7; i >= 0; --i) {
@@ -514,6 +526,9 @@ PPU::unpack_bits(byte lsb, byte msb) {
     
     lsb >>= 1; msb >>= 1;
   }
+  
+  // trippy
+//  std::rotate(result.begin(), result.begin() + start_x, result.end());
   
   return result;
 }

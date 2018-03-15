@@ -68,8 +68,8 @@ public:
 
   void rasterise_line();
   
-  std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */);
-  std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb);
+  std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */, byte start_x);
+  std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb, byte start_x);
   GL screen;
 public:
 
