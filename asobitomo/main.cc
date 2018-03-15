@@ -19,6 +19,7 @@ DEFINE_bool(limit_framerate, true, "Limit framerate to 59.7 fps");
 DEFINE_int32(run_for_n, -1, "Run for n instructions");
 DEFINE_string(dump_states_to_file, "", "Dump states to file");
 DEFINE_string(dis_instrs, "", "Instructions to dump for");
+DEFINE_string(dis_pcs, "", "ROM locations to dump for");
 using namespace std;
 
 size_t history_repeating(std::deque<word> history) {

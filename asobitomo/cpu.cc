@@ -1,5 +1,6 @@
 #include <sstream>
 #include <regex>
+#include <set>
 
 #include "cpu.h"
 #include "util.h"
@@ -9,6 +10,9 @@
 #include "op_names.h"
 
 #include "rang.hpp"
+
+DECLARE_string(dis_instrs);
+DECLARE_string(dis_pcs);
 
 bool ASOBITOMO_DEBUG = false;
 
@@ -230,13 +234,32 @@ void CPU::dump_registers_to_file(std::ofstream& out) {
   out << static_cast<byte>(pc >> 8) << static_cast<byte>(pc & 0xff) << a << f << b << c << d << e << h << l;
 }
 
-DECLARE_string(dis_instrs);
+std::set<word> parse_dis_pcs() {
+  std::set<word> result;
+  if (FLAGS_dis_pcs == "") return result;
+  
+  std::string instrs(FLAGS_dis_pcs);
+  std::replace(instrs.begin(), instrs.end(), ',', ' ');
+  
+  std::istringstream ss(instrs);
+  ss >> std::setbase(16);
+  std::copy(std::istream_iterator<word>(ss),
+            std::istream_iterator<word>(),
+            std::inserter(result, result.begin()));
+  
+  return result;
+}
 
 void CPU::dump_state() {
   auto op_name = op_name_for(pc);
   static std::regex dis_pattern(FLAGS_dis_instrs);
+  static std::set<word> dis_pcs(parse_dis_pcs());
   
   if (FLAGS_dis_instrs != "" && !std::regex_match(op_name, dis_pattern)) {
+    return;
+  }
+  
+  if (dis_pcs.find(pc) == dis_pcs.end()) {
     return;
   }
   
