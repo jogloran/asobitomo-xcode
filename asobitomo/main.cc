@@ -18,7 +18,8 @@ DEFINE_bool(headless, false, "No display");
 DEFINE_bool(limit_framerate, true, "Limit framerate to 59.7 fps");
 DEFINE_int32(run_for_n, -1, "Run for n instructions");
 DEFINE_string(dump_states_to_file, "", "Dump states to file");
-
+DEFINE_string(dis_instrs, "", "Instructions to dump for");
+DEFINE_string(dis_pcs, "", "ROM locations to dump for");
 using namespace std;
 
 size_t history_repeating(std::deque<word> history) {
@@ -33,7 +34,7 @@ size_t history_repeating(std::deque<word> history) {
   return 0;
 }
 
-bool in_title = false;
+bool in_title = true;
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A Game Boy emulator");
@@ -55,6 +56,7 @@ int main(int argc, char** argv) {
   while (!cpu.halted && cpu.pc != 0x100) {
     cpu.step(false);
   }
+  in_title = false;
   
   should_dump = FLAGS_dis;
   int run_for_n = FLAGS_run_for_n;
@@ -90,13 +92,20 @@ int main(int argc, char** argv) {
       last_period = period;
     }
     
-    if (cpu.pc == 0x6ad0) {
-    ;
+    if (cpu.pc == 0x0060) {
+//      should_dump = true;
     }
     if (cpu.pc == 0xd2b4) {
-      should_dump = true;
+//      should_dump = true;
     }
     
+    if (cpu.pc == 0x00a5) {
+//      cpu.dump_state();
+    }
+    if (cpu.pc == 0x018e) {
+      cpu.dump_state();
+//      should_dump = true;
+    }
     cpu.step(should_dump);
     if (FLAGS_dump_states_to_file != "") {
       cpu.dump_registers_to_file(states_file);

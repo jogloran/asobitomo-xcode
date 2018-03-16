@@ -57,9 +57,12 @@ public:
   }
 
   void set(word loc, byte value) {
-  if ((loc==0xff4a || loc==0xff4b) && value != 0) {
-  ;
-  }
+//  if (!in_title && (loc==0xff42 || loc==0xff43) && value != 0) {
+//  ;
+//  }
+if (loc == 0xff41 && value != 0x40) {
+;
+}
     // enable external RAM -- need to write to this area
     if (loc >= 0x0000 && loc <= 0x1fff) {
       if ((value & 0xf) == 0xa) {
@@ -257,9 +260,6 @@ public:
 //      }
       return cart[full_bank * 0x4000 + (loc - 0x4000)];
     } else if (loc <= 0x97ff) {
-      return mem[loc]; /* RAM 0x8000 - 0x97ff */
-    } else if (loc <= 0x9bff) {
-      /* 0x9800 - 0x9bff */
       return mem[loc]; /* is this right? */
     } else if (loc <= 0x9fff) {
       /* 0x9c00 - 0x9fff */

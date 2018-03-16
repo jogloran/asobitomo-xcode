@@ -60,7 +60,7 @@
 		A2CCE570203A981800F3FD4F /* cpu_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu_macros.h; sourceTree = "<group>"; };
 		A2CCE571203A981800F3FD4F /* main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cc; sourceTree = "<group>"; };
 		A2CCE572203A981800F3FD4F /* cpu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cpu.cc; sourceTree = "<group>"; };
-		A2CCE573203A981800F3FD4F /* cpu_bc_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu_bc_macros.h; sourceTree = "<group>"; };
+		A2CCE573203A981800F3FD4F /* cpu_cb_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu_cb_macros.h; sourceTree = "<group>"; };
 		A2CCE574203A981900F3FD4F /* ppu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ppu.cc; sourceTree = "<group>"; };
 		A2CCE575203A981900F3FD4F /* cpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
 		A2CCE576203A981900F3FD4F /* mmu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mmu.cc; sourceTree = "<group>"; };
@@ -119,7 +119,7 @@
 				09079488204089140063686E /* screen.cc */,
 				09079487204089140063686E /* screen.h */,
 				A2CCE57C203A9C3600F3FD4F /* Tetris.gb */,
-				A2CCE573203A981800F3FD4F /* cpu_bc_macros.h */,
+				A2CCE573203A981800F3FD4F /* cpu_cb_macros.h */,
 				A2CCE570203A981800F3FD4F /* cpu_macros.h */,
 				A2CCE572203A981800F3FD4F /* cpu.cc */,
 				A2CCE575203A981900F3FD4F /* cpu.h */,
