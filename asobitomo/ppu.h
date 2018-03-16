@@ -3,6 +3,8 @@
 #include "types.h"
 #include "console_screen.h"
 #include "gl_screen.h"
+#include "tile_debugger.h"
+#include "tile_map.h"
 
 #include <array>
 
@@ -39,9 +41,10 @@ public:
 
   
   PPU(CPU& cpu): raster(), screen(),
+    debugger(*this), tilemap(*this),
     line(0), mode(Mode::OAM), ncycles(0), vblank_ncycles(0), cpu(cpu), lcd_on(true),
     window_tilemap_offset(0), window_display(false),
-    bg_window_tile_data_offset(0),
+    bg_window_tile_data_offset(0x8000),
     bg_tilemap_offset(0),
     sprite_mode(SpriteMode::S8x8), sprite_display(false),
     bg_display(false), old_oam(40) {}
@@ -71,14 +74,15 @@ public:
   std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */, byte start_x);
   std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb, byte start_x);
   GL screen;
+  TD debugger;
+  TM tilemap;
+  
 public:
 
   std::array<byte, 160> raster;
   
   
   void update_stat_register();
-  
-
 
   byte line;
   Mode mode;

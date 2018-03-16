@@ -131,6 +131,8 @@ PPU::step(long delta) {
           mode = Mode::VBLANK;
           // last hblank: blit buffer
           screen.blit();
+          debugger.show();
+          tilemap.show();
         } else {
           mode = Mode::OAM;
         }
@@ -231,12 +233,13 @@ PPU::rasterise_line() {
     
     // get the sequence of tiles which are touched
     auto row_touched = (line + scy) / 8;
-    
-    auto index_touched = row_touched * 32 + (scx / 8); // index_touched... +20
-    // y coordinate within a tile is (line + scy) % 8
-    // starting x coordinate for the line of tiles is scx % 8
-    
-    word item = bg_tilemap_offset + index_touched;
+  
+    // create sequence of tiles to use (these can wrap around)
+    auto starting_index = scx / 8;
+    std::vector<word> row_tiles(20, 0);
+    for (int i = 0; i < 20; ++i) {
+      row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
+    }
     
     // if bg_window_tile_data_offset is 0x8000,
     //     tile data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
@@ -247,8 +250,8 @@ PPU::rasterise_line() {
     
     std::vector<std::vector<PaletteIndex>> tile_data;
     // These are pointers into the tile map
-    auto begin = &cpu.mmu.mem[item];
-    auto end = &cpu.mmu.mem[item] + 20; // TODO: I think scx means we cannot just take 20 elements starting from begin
+    auto begin = row_tiles.begin();
+    auto end = row_tiles.end(); // TODO: I think scx means we cannot just take 20 elements starting from begin
     std::transform(begin, end, std::back_inserter(tile_data),
                    [this, scx, scy](byte index) {
                      // This takes each tile map index and retrieves
@@ -286,10 +289,10 @@ PPU::rasterise_line() {
                    });
     // write to raster
     typedef std::vector<byte>::size_type diff;
-//    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end());
+
     auto fin = std::copy(raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end(), raster.begin());
     std::copy(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), fin);
-//    std::copy(raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end(), raster.begin());
+    
 //    std::copy_n(raster_row.begin(), Screen::BUF_WIDTH, raster.begin());
   }
   
