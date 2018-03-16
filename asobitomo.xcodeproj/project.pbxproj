@@ -13,6 +13,7 @@
 		090794922046A07A0063686E /* util.cc in Sources */ = {isa = PBXBuildFile; fileRef = 090794912046A07A0063686E /* util.cc */; };
 		093DACDE2044F43A0087724B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDD2044F43A0087724B /* GLUT.framework */; };
 		093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDF2044F4F80087724B /* OpenGL.framework */; };
+		09D0119F205B405400A62FE4 /* tile_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09D0119E205B405400A62FE4 /* tile_map.cc */; };
 		09E2D510204D2BA400D90FDB /* libgflags.2.2.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */; };
 		09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
@@ -50,6 +51,8 @@
 		093DACDD2044F43A0087724B /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		093DACDF2044F4F80087724B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		09670602204B87240023DA60 /* rang.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = rang.hpp; sourceTree = "<group>"; };
+		09D0119D205B404700A62FE4 /* tile_map.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tile_map.h; sourceTree = "<group>"; };
+		09D0119E205B405400A62FE4 /* tile_map.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tile_map.cc; sourceTree = "<group>"; };
 		09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgflags.2.2.1.dylib; path = ../../../../usr/local/Cellar/gflags/2.2.1/lib/libgflags.2.2.1.dylib; sourceTree = "<group>"; };
 		09E2D511204F5BCA00D90FDB /* mbc_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc_types.h; sourceTree = "<group>"; };
 		09E2D512204F5BE900D90FDB /* header_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = header_type.h; sourceTree = "<group>"; };
@@ -143,8 +146,10 @@
 				090794912046A07A0063686E /* util.cc */,
 				09E2D511204F5BCA00D90FDB /* mbc_types.h */,
 				09E2D512204F5BE900D90FDB /* header_type.h */,
-				09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */,
 				09FB8E7F205AD87C000A1CF6 /* tile_debugger.h */,
+				09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */,
+				09D0119D205B404700A62FE4 /* tile_map.h */,
+				09D0119E205B405400A62FE4 /* tile_map.cc */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
@@ -210,6 +215,7 @@
 				09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */,
 				090794922046A07A0063686E /* util.cc in Sources */,
 				0907948B2043A01F0063686E /* console_screen.cc in Sources */,
+				09D0119F205B405400A62FE4 /* tile_map.cc in Sources */,
 				A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */,
 				0907948E20468C100063686E /* timer.cc in Sources */,
 				A2CCE578203A981900F3FD4F /* main.cc in Sources */,
@@ -329,7 +335,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_STYLE = Automatic;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,

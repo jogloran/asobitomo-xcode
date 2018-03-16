@@ -132,6 +132,7 @@ PPU::step(long delta) {
           // last hblank: blit buffer
           screen.blit();
           debugger.show();
+          tilemap.show();
         } else {
           mode = Mode::OAM;
         }
@@ -287,10 +288,10 @@ PPU::rasterise_line() {
                    });
     // write to raster
     typedef std::vector<byte>::size_type diff;
-//    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end());
+
     auto fin = std::copy(raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end(), raster.begin());
     std::copy(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), fin);
-//    std::copy(raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end(), raster.begin());
+    
 //    std::copy_n(raster_row.begin(), Screen::BUF_WIDTH, raster.begin());
   }
   
