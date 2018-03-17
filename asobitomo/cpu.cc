@@ -259,7 +259,7 @@ void CPU::dump_state() {
     return;
   }
   
-  if (dis_pcs.find(pc) == dis_pcs.end()) {
+  if (FLAGS_dis_pcs != "" && dis_pcs.find(pc) == dis_pcs.end()) {
     return;
   }
   
@@ -438,4 +438,36 @@ void CPU::step(bool debug)  {
       update_interrupt_state(); // sees EnableNext, sets to Enable
     }
   }
+}
+
+void CPU::fake_boot() {
+  pc = 0x100;
+  a = 0x1; f = 0xb0;
+  b = 0x0; c = 0x13;
+  d = 0x0; e = 0xd8;
+  h = 0x1; l = 0x4d;
+  sp = 0xfffe;
+  
+  mmu.set(0xff10, 0x80);
+  mmu.set(0xff11, 0xbf);
+  mmu.set(0xff12, 0xf3);
+  mmu.set(0xff14, 0xbf);
+  mmu.set(0xff16, 0x3f);
+  mmu.set(0xff19, 0xbf);
+  mmu.set(0xff1a, 0x7f);
+  mmu.set(0xff1b, 0xff);
+  mmu.set(0xff1c, 0x9f);
+  mmu.set(0xff1e, 0xbf);
+  mmu.set(0xff20, 0xff);
+  mmu.set(0xff23, 0xbf);
+  mmu.set(0xff24, 0x77);
+  mmu.set(0xff25, 0xf3);
+  mmu.set(0xff26, 0xf1);
+  mmu.set(0xff40, 0x91);
+  mmu.set(0xff41, 0x05);
+  mmu.set(0xff47, 0xfc);
+  mmu.set(0xff48, 0xff);
+  mmu.set(0xff49, 0xff);
+  
+  mmu.rom_mapped = false;
 }

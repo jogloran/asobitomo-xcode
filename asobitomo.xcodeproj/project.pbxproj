@@ -14,6 +14,7 @@
 		093DACDE2044F43A0087724B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDD2044F43A0087724B /* GLUT.framework */; };
 		093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDF2044F4F80087724B /* OpenGL.framework */; };
 		09D0119F205B405400A62FE4 /* tile_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09D0119E205B405400A62FE4 /* tile_map.cc */; };
+		09D011A0205CAB9400A62FE4 /* gl_screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 093DACDB2044F4100087724B /* gl_screen.cc */; };
 		09E2D510204D2BA400D90FDB /* libgflags.2.2.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */; };
 		09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
@@ -213,6 +214,7 @@
 			files = (
 				A2CCE579203A981900F3FD4F /* cpu.cc in Sources */,
 				09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */,
+				09D011A0205CAB9400A62FE4 /* gl_screen.cc in Sources */,
 				090794922046A07A0063686E /* util.cc in Sources */,
 				0907948B2043A01F0063686E /* console_screen.cc in Sources */,
 				09D0119F205B405400A62FE4 /* tile_map.cc in Sources */,

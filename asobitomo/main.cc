@@ -20,6 +20,8 @@ DEFINE_int32(run_for_n, -1, "Run for n instructions");
 DEFINE_string(dump_states_to_file, "", "Dump states to file");
 DEFINE_string(dis_instrs, "", "Instructions to dump for");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
+DEFINE_bool(fake_boot, true, "Initialise registers to post-ROM values");
+
 using namespace std;
 
 size_t history_repeating(std::deque<word> history) {
@@ -52,10 +54,15 @@ int main(int argc, char** argv) {
   const bool debug = FLAGS_dis_detect_loops;
 
   int i = 0;
-  cpu.ppu.screen.off();
-  while (!cpu.halted && cpu.pc != 0x100) {
-    cpu.step(false);
+  
+  if (FLAGS_fake_boot) {
+    cpu.fake_boot();
+  } else {
+    while (cpu.pc != 0x100) {
+      cpu.step(false);
+    }
   }
+  
   in_title = false;
   
   should_dump = FLAGS_dis;
