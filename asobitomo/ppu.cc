@@ -218,14 +218,8 @@ PPU::rasterise_line() {
   byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
   if (bg_display) {
-    // line is from 0 to 143 and 144 to 153 during vblank
-    // line touches tiles in row (line + scy) / 8
-    //                       columns scx / 8 to scx / 8 + 20
-    // starting and ending at vertical pixel (line + scy) % 8
-    //                        horizontal pixel scx % 8
-    
     // get the sequence of tiles which are touched
-    auto row_touched = (line + scy) / 8;
+    auto row_touched = ((line + scy) % 144) / 8; // % 144 for scy wrap around
   
     // create sequence of tiles to use (these can wrap around)
     auto starting_index = scx / 8;
@@ -244,7 +238,7 @@ PPU::rasterise_line() {
     std::vector<std::vector<PaletteIndex>> tile_data;
     // These are pointers into the tile map
     auto begin = row_tiles.begin();
-    auto end = row_tiles.end(); // TODO: I think scx means we cannot just take 20 elements starting from begin
+    auto end = row_tiles.end();
     std::transform(begin, end, std::back_inserter(tile_data),
                    [this, scx, scy](byte index) {
                      // This takes each tile map index and retrieves
@@ -308,7 +302,7 @@ PPU::rasterise_line() {
       std::vector<std::vector<PaletteIndex>> tile_data;
       // These are pointers into the tile map
       auto begin = row_tiles.begin();
-      auto end = row_tiles.end(); // TODO: I think scx means we cannot just take 20 elements starting from begin
+      auto end = row_tiles.end();
       std::transform(begin, end, std::back_inserter(tile_data),
                      [this, wx, wy](byte index) {
                        // This takes each tile map index and retrieves
