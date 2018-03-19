@@ -22,6 +22,9 @@ DEFINE_string(dis_instrs, "", "Instructions to dump for");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
 DEFINE_bool(fake_boot, true, "Initialise registers to post-ROM values");
 
+DEFINE_bool(show_td, false, "Show tile debugger");
+DEFINE_bool(show_tm, false, "Show tile map");
+
 using namespace std;
 
 size_t history_repeating(std::deque<word> history) {
@@ -98,21 +101,7 @@ int main(int argc, char** argv) {
       }
       last_period = period;
     }
-    
-    if (cpu.pc == 0x0060) {
-//      should_dump = true;
-    }
-    if (cpu.pc == 0xd2b4) {
-//      should_dump = true;
-    }
-    
-    if (cpu.pc == 0x00a5) {
-//      cpu.dump_state();
-    }
-    if (cpu.pc == 0x018e) {
-      cpu.dump_state();
-//      should_dump = true;
-    }
+  
     cpu.step(should_dump);
     if (FLAGS_dump_states_to_file != "") {
       cpu.dump_registers_to_file(states_file);

@@ -5,6 +5,10 @@
 
 void
 TM::show() {
+  if (!enabled_) {
+    return;
+  }
+  
   word tilemap_offset = ppu_.bg_tilemap_offset;
   
   for (int row = 0; row < 32; ++row) {
@@ -74,4 +78,13 @@ TM::show() {
   }
   
   SDL_RenderPresent(renderer_);
+  
+  int mouse_x, mouse_y;
+  uint8_t mouse_mask = SDL_GetMouseState(&mouse_x, &mouse_y);
+  if (mouse_mask & SDL_BUTTON(1)) {
+    mouse_x /= 2;
+    mouse_y /= 2;
+    
+    std::cout << hex << mouse_x << ' ' << mouse_y << std::endl;
+  }
 }
