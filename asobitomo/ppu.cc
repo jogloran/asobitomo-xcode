@@ -84,7 +84,7 @@ void
 PPU::step(long delta) {
   ncycles += delta;
   
-  if (!cpu.ppu.lcd_on) return;
+//  if (!cpu.ppu.lcd_on) return;
   
   /* 456*144 + 4560 = 70224
    *                                    \
@@ -217,6 +217,8 @@ PPU::rasterise_line() {
   byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
   byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
+  std::vector<PaletteIndex> palette_index_row(168, 0);
+  
   if (bg_display) {
     // get the sequence of tiles which are touched
     auto row_touched = ((line + scy) % 144) / 8; // % 144 for scy wrap around
@@ -282,8 +284,13 @@ PPU::rasterise_line() {
 
     auto offset = static_cast<int>(scx % 8);
     
-    auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), raster.begin());
+    auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
     std::copy(raster_row.begin(), raster_row.begin() + offset, fin);
+    
+    std::copy(palette_index_row.begin(), palette_index_row.end(), raster.begin());
+    std::transform(raster.begin(), raster.end(), raster.begin(), [palette](PaletteIndex idx) {
+      return apply_palette(idx, palette);
+    });
   }
   
   if (window_display) {
@@ -425,6 +432,7 @@ PPU::rasterise_line() {
         break;
       }
       
+      auto bg_palette_index_ptr = palette_index_row.begin() + sprite.oam_.x - 8;
       auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
       auto sprite_ptr = sprite.pixels_.begin();
 
@@ -439,17 +447,36 @@ PPU::rasterise_line() {
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
         // hack to prevent invalid array access when a sprite starts before column 0
         if (raster_ptr < raster.begin()) {
-          ++raster_ptr; ++sprite_ptr;
+          ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
           continue;
         }
         
-        auto raster_byte = *raster_ptr; // Background colour
-        auto sprite_byte = *sprite_ptr; // Sprite colour (0 means transparency)
+        auto raster_byte = *raster_ptr; // Background colour index
+        auto sprite_byte = *sprite_ptr; // Sprite palette index
+        auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
 
-        if (!sprite_behind_bg || (raster_byte == 0 && sprite_byte != 0)) {
-          *raster_ptr = apply_palette(sprite_byte, sprite_palette);
+        if (sprite_behind_bg) {
+          // draw background when palette index is 1, 2, 3
+          if (bg_palette_byte != 0) {
+            ;
+          } else {
+            PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
+            if (sprite_byte != 0) {
+              *raster_ptr = idx;
+            } else {
+              ;
+            }
+          }
         } else {
-          *raster_ptr = apply_palette(raster_byte, palette);
+          // sprite in front of background (except that colour value 0 is transparent)
+          PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
+          if (sprite_byte != 0) {
+            *raster_ptr = idx;
+          } else if (raster_byte != 0) {
+            ;
+          } else {
+            *raster_ptr = idx;
+          }
         }
 //        if (raster_byte == 0) {
 //          *raster_ptr = sprite_byte;
