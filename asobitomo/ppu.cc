@@ -217,7 +217,7 @@ PPU::rasterise_line() {
   byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
   byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
-  std::vector<PaletteIndex> palette_index_row(168, 0);
+  std::vector<PaletteIndex> palette_index_row(160, 0);
   
   if (bg_display) {
     // get the sequence of tiles which are touched
@@ -261,6 +261,7 @@ PPU::rasterise_line() {
     // map this through the colour map
     
     std::vector<PaletteIndex> raster_row = flatten(tile_data);
+    
 //    std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(),
 //                   [palette](PaletteIndex pidx) {
 //                     switch (pidx) {
@@ -287,8 +288,8 @@ PPU::rasterise_line() {
     auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
     std::copy(raster_row.begin(), raster_row.begin() + offset, fin);
     
-    std::copy(palette_index_row.begin(), palette_index_row.end(), raster.begin());
-    std::transform(raster.begin(), raster.end(), raster.begin(), [palette](PaletteIndex idx) {
+    std::transform(palette_index_row.begin(), palette_index_row.end(),
+      raster.begin(), [palette](PaletteIndex idx) {
       return apply_palette(idx, palette);
     });
   }
@@ -501,7 +502,7 @@ PPU::rasterise_line() {
 //          }
 //*raster_ptr = sprite_byte;
 
-        ++raster_ptr; ++sprite_ptr;
+        ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
         ++n;
       }
 //      std::cout << "wrote " << n << " bytes to raster starting at offset " << static_cast<void*>(raster.begin() + sprite.oam_.x - 8 ) << "(begin=" << static_cast<void*>(raster.begin()) << ", end=" << static_cast<void*>(raster.end()) << ")" << std::endl;
