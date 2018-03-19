@@ -7,6 +7,10 @@
 #include "tile_map.h"
 
 #include <array>
+#include <gflags/gflags.h>
+
+DECLARE_bool(show_tm);
+DECLARE_bool(show_td);
 
 struct OAM {
   byte y;
@@ -47,7 +51,11 @@ public:
     bg_window_tile_data_offset(0x8000),
     bg_tilemap_offset(0),
     sprite_mode(SpriteMode::S8x8), sprite_display(false),
-    bg_display(false), old_oam(40) {}
+    bg_display(false), old_oam(40) {
+    
+    debugger.set_enabled(FLAGS_show_td);
+    tilemap.set_enabled(FLAGS_show_tm);
+  }
 
   enum class Mode : byte {
     HBLANK = 0,
@@ -107,3 +115,5 @@ public:
   friend class CPU;
   std::vector<OAM> old_oam;
 };
+
+PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette);

@@ -6,11 +6,13 @@
 #include <gflags/gflags.h>
 #include <array>
 
+DECLARE_bool(show_td);
+
 class PPU;
 
 class TD {
 public:
-  TD(PPU& ppu): ppu_(ppu) {
+  TD(PPU& ppu): ppu_(ppu), enabled_(FLAGS_show_td) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("test", 0, 0, TD_WIDTH * 4, TD_HEIGHT * 4, 0);
@@ -21,6 +23,16 @@ public:
   }
   
   void show();
+  
+  void set_enabled(bool enabled) {
+    enabled_ = enabled;
+    
+    if (enabled_) {
+      SDL_ShowWindow(window_);
+    } else {
+      SDL_HideWindow(window_);
+    }
+  }
   
 private:
   PPU& ppu_;
@@ -33,4 +45,6 @@ private:
   
   constexpr static int TD_WIDTH = 16*8;
   constexpr static int TD_HEIGHT = 16*8;
+  
+  bool enabled_;
 };

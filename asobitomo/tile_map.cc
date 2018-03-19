@@ -5,6 +5,10 @@
 
 void
 TM::show() {
+  if (!enabled_) {
+    return;
+  }
+  
   word tilemap_offset = ppu_.bg_tilemap_offset;
   
   for (int row = 0; row < 32; ++row) {

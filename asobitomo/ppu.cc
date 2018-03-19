@@ -259,21 +259,21 @@ PPU::rasterise_line() {
     // map this through the colour map
     
     std::vector<PaletteIndex> raster_row = flatten(tile_data);
-    std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(),
-                   [palette](PaletteIndex pidx) {
-                     switch (pidx) {
-                       case 0:
-                         return palette & 3;
-                       case 1:
-                         return (palette >> 2) & 3;
-                       case 2:
-                         return (palette >> 4) & 3;
-                       case 3:
-                         return (palette >> 6) & 3;
-                       default:
-                         throw std::runtime_error("invalid palette index");
-                     }
-                   });
+//    std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(),
+//                   [palette](PaletteIndex pidx) {
+//                     switch (pidx) {
+//                       case 0:
+//                         return palette & 3;
+//                       case 1:
+//                         return (palette >> 2) & 3;
+//                       case 2:
+//                         return (palette >> 4) & 3;
+//                       case 3:
+//                         return (palette >> 6) & 3;
+//                       default:
+//                         throw std::runtime_error("invalid palette index");
+//                     }
+//                   });
     
 //    std::rotate(raster_row.begin(), raster_row.begin(), raster_row.end());
     
@@ -388,22 +388,22 @@ PPU::rasterise_line() {
           
           // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2, 0);
-          byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
-          std::transform(decoded.begin(), decoded.end(), decoded.begin(),
-                         [sprite_palette](PaletteIndex pidx) {
-                           switch (pidx) {
-                             case 0:
-                               return sprite_palette & 3;
-                             case 1:
-                               return (sprite_palette >> 2) & 3;
-                             case 2:
-                               return (sprite_palette >> 4) & 3;
-                             case 3:
-                               return (sprite_palette >> 6) & 3;
-                             default:
-                               throw std::runtime_error("invalid palette index");
-                           }
-                         });
+//          byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
+//          std::transform(decoded.begin(), decoded.end(), decoded.begin(),
+//                         [sprite_palette](PaletteIndex pidx) {
+//                           switch (pidx) {
+//                             case 0:
+//                               return sprite_palette & 3;
+//                             case 1:
+//                               return (sprite_palette >> 2) & 3;
+//                             case 2:
+//                               return (sprite_palette >> 4) & 3;
+//                             case 3:
+//                               return (sprite_palette >> 6) & 3;
+//                             default:
+//                               throw std::runtime_error("invalid palette index");
+//                           }
+//                         });
           
           if (entry.flags & (1 << 5)) {
             std::reverse(decoded.begin(), decoded.end());
@@ -428,7 +428,12 @@ PPU::rasterise_line() {
       auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
       auto sprite_ptr = sprite.pixels_.begin();
 
+      // If set to 0, sprite is always in front of bkgd and window
+      // If set to 1, if background or window is colour 1, 2, 3, background or window wins
+      //              else if background or window is color 0, sprite wins
       bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
+      
+      byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
       
       int n = 0;
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
@@ -438,18 +443,36 @@ PPU::rasterise_line() {
           continue;
         }
         
-        auto raster_byte = *raster_ptr;
-        auto sprite_byte = *sprite_ptr;
+        auto raster_byte = *raster_ptr; // Background colour
+        auto sprite_byte = *sprite_ptr; // Sprite colour (0 means transparency)
 
-        if (raster_byte == 0) {
-          *raster_ptr = sprite_byte;
+        if (!sprite_behind_bg || (raster_byte == 0 && sprite_byte != 0)) {
+          *raster_ptr = apply_palette(sprite_byte, sprite_palette);
         } else {
-          if (sprite_behind_bg && sprite_byte == 0) {
-            ;
-          } else if (sprite_byte != 0) {
-            *raster_ptr = sprite_byte;
-          }
+          *raster_ptr = apply_palette(raster_byte, palette);
         }
+//        if (raster_byte == 0) {
+//          *raster_ptr = sprite_byte;
+//        } else {
+//          // If sprite behind bg
+//          if (sprite_behind_bg) {
+//            // only if bg is colour 0 does sprite win
+//            if (raster_byte == 0 && sprite_byte != 0) {
+//              *raster_ptr = sprite_byte;
+//            }
+//          } else {
+//            // sprite always wins
+//            if (sprite_byte != 0) {
+//              *raster_ptr = sprite_byte;
+//            }
+//          }
+        
+//          if (sprite_behind_bg && sprite_byte == 0) {
+//
+//          } else if (sprite_byte != 0) {
+//            *raster_ptr = sprite_byte;
+//          }
+//*raster_ptr = sprite_byte;
 
         ++raster_ptr; ++sprite_ptr;
         ++n;
@@ -541,3 +564,19 @@ inline void
 PPU::set_bg_display(bool on) {
   bg_display = on;
 }
+
+PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette) {
+  switch (pidx) {
+    case 0:
+      return sprite_palette & 3;
+    case 1:
+      return (sprite_palette >> 2) & 3;
+    case 2:
+      return (sprite_palette >> 4) & 3;
+    case 3:
+      return (sprite_palette >> 6) & 3;
+    default:
+      throw std::runtime_error("invalid palette index");
+  }
+}
+
