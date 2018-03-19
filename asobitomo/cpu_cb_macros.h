@@ -109,7 +109,7 @@ BIT_GEN8(7)
 
 #define RES_GEN_HL(bit) [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
-  cpu.mmu[loc] &= ~(1 << bit); \
+  cpu.mmu.set(loc, cpu.mmu[loc] & ~(1 << bit)); \
 }
 
 #define RES_GEN(bit, reg) [](CPU& cpu) { \
@@ -136,11 +136,11 @@ RES_GEN8(7)
 
 #define SET_GEN_HL(bit) [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
-  cpu.mmu[loc] |= (1 << bit); \
+  cpu.mmu.set(loc, cpu.mmu[loc] | (1 << bit)); \
 }
 
 #define SET_GEN(bit, reg) [](CPU& cpu) { \
-  cpu.reg |= (1 << bit); \
+  cpu.reg |= 1 << bit; \
 }
 
 #define SET_GEN8(bit) SET_GEN(bit, b), \
@@ -169,8 +169,7 @@ SET_GEN8(7)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.mmu[loc] <<= 1; \
-  cpu.mmu[loc] |= hibit; \
+  cpu.mmu.set(loc, (cpu.mmu[loc] << 1) | hibit); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
@@ -182,8 +181,7 @@ SET_GEN8(7)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.reg <<= 1; \
-  cpu.reg |= hibit; \
+  cpu.reg = (cpu.reg << 1) | hibit; \
   cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
 }
@@ -196,8 +194,7 @@ SET_GEN8(7)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.mmu[loc] >>= 1; \
-  cpu.mmu[loc] |= lobit << 7; \
+  cpu.mmu.set(loc, (cpu.mmu[loc] >> 1) | (lobit << 7)); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
@@ -209,8 +206,7 @@ SET_GEN8(7)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.reg >>= 1; \
-  cpu.reg |= lobit << 7; \
+  cpu.reg = (cpu.reg >> 1) | (lobit << 7); \
   cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
 }
@@ -219,7 +215,7 @@ SET_GEN8(7)
   cpu.unset_flags(Nf | Hf | Cf); \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   byte val = cpu.mmu[loc]; \
-  cpu.mmu[loc] = (val << 4) | (val >> 4); \
+  cpu.mmu.set(loc, (val << 4) | (val >> 4)); \
   cpu.check_zero(cpu.mmu[loc]); \
 }
 
@@ -238,8 +234,7 @@ SET_GEN8(7)
   } else { \
    cpu.unset_flags(Cf); \
   } \
-  cpu.mmu[loc] <<= 1; \
-  cpu.mmu[loc] |= carry; \
+  cpu.mmu.set(loc, (cpu.mmu[loc] << 1) | carry); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
@@ -252,8 +247,7 @@ SET_GEN8(7)
   } else { \
    cpu.unset_flags(Cf); \
   } \
-  cpu.reg <<= 1; \
-  cpu.reg |= carry; \
+  cpu.reg = (cpu.reg << 1) | carry; \
   cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
 }
@@ -267,8 +261,7 @@ SET_GEN8(7)
   } else { \
    cpu.unset_flags(Cf); \
   } \
-  cpu.mmu[loc] >>= 1; \
-  cpu.mmu[loc] |= carry << 7; \
+  cpu.mmu.set(loc, (cpu.mmu[loc] >> 1) | (carry << 7)); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
@@ -296,7 +289,7 @@ SET_GEN8(7)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.mmu[loc] <<= 1; \
+  cpu.mmu.set(loc, cpu.mmu[loc] << 1); \
   cpu.check_zero(cpu.mmu[loc]); \
 }
 
@@ -322,8 +315,7 @@ SET_GEN8(7)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.mmu[loc] >>= 1; \
-  cpu.mmu[loc] |= hibit; \
+  cpu.mmu.set(loc, (cpu.mmu[loc] >> 1) | hibit); \
   cpu.check_zero(cpu.mmu[loc]); \
 }
 
@@ -349,7 +341,7 @@ SET_GEN8(7)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  cpu.mmu[loc] >>= 1; \
+  cpu.mmu.set(loc, cpu.mmu[loc] >> 1); \
   cpu.check_zero(cpu.mmu[loc]); \
 }
 

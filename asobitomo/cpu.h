@@ -126,6 +126,8 @@ public:
 
   void step(bool debug = false);
   void inst();
+  
+  void fake_boot();
 
   void update_interrupt_state();
   void fire_interrupts();

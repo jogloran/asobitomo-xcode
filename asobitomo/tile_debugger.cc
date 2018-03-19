@@ -7,7 +7,12 @@
 #include "ppu.h"
 #include "cpu.h"
 
+
 void TD::show() {
+  if (!enabled_) {
+    return;
+  }
+  
   word tile_offset = ppu_.bg_window_tile_data_offset;
   for (int i = 0; i < 256; ++i) {
     word tile_start = tile_offset + i * 16;

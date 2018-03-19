@@ -5,6 +5,10 @@
 
 void
 TM::show() {
+  if (!enabled_) {
+    return;
+  }
+  
   word tilemap_offset = ppu_.bg_tilemap_offset;
   
   for (int row = 0; row < 32; ++row) {
@@ -54,13 +58,33 @@ TM::show() {
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, texture_, NULL, NULL);
   
-  SDL_Rect rect { scx*2, scy, 160*2, 144*2 }; // TODO: 4 = scale
-  SDL_SetRenderDrawColor(renderer_, 255, 0, 0, 255);
-  SDL_RenderDrawRect(renderer_, &rect);
+  SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
   
-  SDL_Rect rect_l { (scx-160)*2, scy, 160*2, 144*2 }; // TODO: 4 = scale
-  SDL_SetRenderDrawColor(renderer_, 255, 0, 0, 255);
-  SDL_RenderDrawRect(renderer_, &rect_l);
+  int alpha = std::min(256 - scx, 160);
+  int beta = std::min(256 - scy, 144);
+  int gamma = 160 - alpha;
+  int delta = 144 - beta;
+  
+  SDL_Rect rects[] {
+    { scx*2, scy*2, alpha*2, beta*2 },
+    { 0, scy*2, gamma*2, beta*2},
+    { scx*2, 0, alpha*2, delta*2},
+    { 0, 0, gamma*2, delta*2 }
+  };
+  
+  for (SDL_Rect rect : rects) {
+    SDL_SetRenderDrawColor(renderer_, 0, 255, 0, 64);
+    SDL_RenderFillRect(renderer_, &rect);
+  }
   
   SDL_RenderPresent(renderer_);
+  
+  int mouse_x, mouse_y;
+  uint8_t mouse_mask = SDL_GetMouseState(&mouse_x, &mouse_y);
+  if (mouse_mask & SDL_BUTTON(1)) {
+    mouse_x /= 2;
+    mouse_y /= 2;
+    
+    std::cout << hex << mouse_x << ' ' << mouse_y << std::endl;
+  }
 }

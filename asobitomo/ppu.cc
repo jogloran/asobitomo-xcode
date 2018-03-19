@@ -84,7 +84,9 @@ void
 PPU::step(long delta) {
   ncycles += delta;
   
-  if (!cpu.ppu.lcd_on) return;
+  // Dr Mario seems to wait for vblank while in HALT, which leads to an infinite loop
+  // unless the PPU is still active during LCD off (why would Dr Mario turn the LCD off?)
+//  if (!cpu.ppu.lcd_on) return;
   
   /* 456*144 + 4560 = 70224
    *                                    \
@@ -206,13 +208,6 @@ PPU::rasterise_line() {
   byte& oam_ref = cpu.mmu._read_mem(0xfe00);
   OAM* oam = reinterpret_cast<OAM*>(&oam_ref);
   
-  // bg
-  // find bg tiles which intersect this line
-  // line / 8 will intersect this line
-  // bg_tilemap_offset is the beginning of bg tiles (32x32, one byte per tile)
-  // if bg_tilemap_offset is 0x9800, tile IDs are unsigned offsets 0 - 255
-  // if bg_tilemap_offset is 0x9c00, tile IDs are signed offsets -127 - 128
-  
   // bg and window tile data comes from either 0x8000-0x8fff (1) or 0x8800-0x97ff (0)
   // according to LCDC bit 4
   byte scx = cpu.mmu._read_mem(0xff43);
@@ -224,15 +219,11 @@ PPU::rasterise_line() {
   byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
   byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
+  std::vector<PaletteIndex> palette_index_row(160, 0);
+  
   if (bg_display) {
-    // line is from 0 to 143 and 144 to 153 during vblank
-    // line touches tiles in row (line + scy) / 8
-    //                       columns scx / 8 to scx / 8 + 20
-    // starting and ending at vertical pixel (line + scy) % 8
-    //                        horizontal pixel scx % 8
-    
     // get the sequence of tiles which are touched
-    auto row_touched = (line + scy) / 8;
+    auto row_touched = ((line + scy) % 144) / 8; // % 144 for scy wrap around
   
     // create sequence of tiles to use (these can wrap around)
     auto starting_index = scx / 8;
@@ -251,7 +242,7 @@ PPU::rasterise_line() {
     std::vector<std::vector<PaletteIndex>> tile_data;
     // These are pointers into the tile map
     auto begin = row_tiles.begin();
-    auto end = row_tiles.end(); // TODO: I think scx means we cannot just take 20 elements starting from begin
+    auto end = row_tiles.end();
     std::transform(begin, end, std::back_inserter(tile_data),
                    [this, scx, scy](byte index) {
                      // This takes each tile map index and retrieves
@@ -272,76 +263,7 @@ PPU::rasterise_line() {
     // map this through the colour map
     
     std::vector<PaletteIndex> raster_row = flatten(tile_data);
-    std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(),
-                   [palette](PaletteIndex pidx) {
-                     switch (pidx) {
-                       case 0:
-                         return palette & 3;
-                       case 1:
-                         return (palette >> 2) & 3;
-                       case 2:
-                         return (palette >> 4) & 3;
-                       case 3:
-                         return (palette >> 6) & 3;
-                       default:
-                         throw std::runtime_error("invalid palette index");
-                     }
-                   });
-    // write to raster
-    typedef std::vector<byte>::size_type diff;
-
-    auto fin = std::copy(raster_row.begin() + static_cast<diff>(scx % 8), raster_row.end(), raster.begin());
-    std::copy(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx % 8), fin);
     
-//    std::copy_n(raster_row.begin(), Screen::BUF_WIDTH, raster.begin());
-  }
-  
-  if (window_display) {
-//    byte wx = cpu.mmu._read_mem(0xff4b);
-//    byte wy = cpu.mmu._read_mem(0xff4a);
-//    
-//    // line is from 0 to 143 and 144 to 153 during vblank
-//    // line touches tiles in row (line + scy) / 8
-//    //                       columns scx / 8 to scx / 8 + 20
-//    // starting and ending at vertical pixel (line + scy) % 8
-//    //                        horizontal pixel scx % 8
-//    
-//    // get the sequence of tiles which are touched
-//    auto row_touched = (line + wy) / 8;
-//    
-//    auto index_touched = row_touched * 32 + ((wx - 7) / 8); // index_touched... +20
-//    // y coordinate within a tile is (line + scy) % 8
-//    // starting x coordinate for the line of tiles is scx % 8
-//    
-//    word item = window_tilemap_offset + index_touched;
-//    
-//    // if bg_window_tile_data_offset is 0x8000,
-//    //     tile data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
-//    // else if bg_window_tile_data_offset is 0x8800,
-//    //     tile data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
-//    
-//    // there are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
-//    
-//    std::vector<std::vector<PaletteIndex>> tile_data;
-//    auto begin = &cpu.mmu.mem[item];
-//    auto end = &cpu.mmu.mem[item] + 20;
-//    std::transform(begin, end, std::back_inserter(tile_data),
-//                   [this, wy](byte index) {
-//                     // 2 bytes per row, 16 bytes per tile
-//                     // in each row, first byte is LSB of palette indices
-//                     //              second byte is MSB
-//                     if (bg_window_tile_data_offset == 0x8000) {
-//                       return decode(bg_window_tile_data_offset + index*4,
-//                                     (line + wy) % 8);
-//                     } else {
-//                       return decode(bg_window_tile_data_offset + (128-index)*4,
-//                                     (line + wy) % 8);
-//                     }
-//                   });
-//    
-//    // map this through the colour map
-//    
-//    std::vector<PaletteIndex> raster_row = flatten(tile_data);
 //    std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(),
 //                   [palette](PaletteIndex pidx) {
 //                     switch (pidx) {
@@ -357,11 +279,66 @@ PPU::rasterise_line() {
 //                         throw std::runtime_error("invalid palette index");
 //                     }
 //                   });
-//    
-//    // write to raster
-//    typedef std::vector<byte>::size_type diff;
-////    std::rotate(raster_row.begin(), raster_row.begin() + static_cast<diff>(scx), raster_row.end());
-//    std::copy(raster_row.begin(), raster_row.end(), raster.begin());
+    
+//    std::rotate(raster_row.begin(), raster_row.begin(), raster_row.end());
+    
+    // write to raster
+    typedef std::vector<byte>::size_type diff;
+
+    auto offset = static_cast<int>(scx % 8);
+    
+    auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
+    std::copy(raster_row.begin(), raster_row.begin() + offset, fin);
+    
+    std::transform(palette_index_row.begin(), palette_index_row.end(),
+      raster.begin(), [palette](PaletteIndex idx) {
+      return apply_palette(idx, palette);
+    });
+  }
+  
+  if (window_display) {
+    byte wx = cpu.mmu._read_mem(0xff4b);
+    byte wy = cpu.mmu._read_mem(0xff4a);
+    
+    if (line >= wy) {
+      byte row_touched = (line - wy) / 8;
+      
+      std::vector<word> row_tiles(20, 0);
+      
+      for (int i = 0; i < 20; ++i) {
+        row_tiles[i] = cpu.mmu[window_tilemap_offset + row_touched * 32 + (i % 32)];
+      }
+      
+      std::vector<std::vector<PaletteIndex>> tile_data;
+      // These are pointers into the tile map
+      auto begin = row_tiles.begin();
+      auto end = row_tiles.end();
+      std::transform(begin, end, std::back_inserter(tile_data),
+                     [this, wx, wy](byte index) {
+                       // This takes each tile map index and retrieves
+                       // the corresponding line of the corresponding tile
+                       // 2 bytes per row, 16 bytes per tile
+                       // in each row, first byte is LSB of palette indices
+                       //              second byte is MSB
+                       if (window_tilemap_offset == 0x8000) {
+                         return decode(bg_window_tile_data_offset + index*16,
+                                       (line - wy) % 8, (wx - 7) % 8);
+                       } else {
+                         // add 0x800 to interpret the tile map index as a signed index starting in the middle
+                         // of the tile data range (0x8800-97FF)
+                         return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
+                                       (line - wy) % 8, (wx - 7) % 8);
+                       }
+                     });
+      
+      std::vector<PaletteIndex> raster_row = flatten(tile_data);
+      
+      // write to raster
+      typedef std::vector<byte>::size_type diff;
+      
+      auto offset = static_cast<int>(wx - 7);
+      std::copy_n(raster_row.begin(), 160 - offset, raster.begin() + offset);
+    }
   }
   
   std::vector<RenderedSprite> visible;
@@ -421,22 +398,22 @@ PPU::rasterise_line() {
           
           // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2, 0);
-          byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
-          std::transform(decoded.begin(), decoded.end(), decoded.begin(),
-                         [sprite_palette](PaletteIndex pidx) {
-                           switch (pidx) {
-                             case 0:
-                               return sprite_palette & 3;
-                             case 1:
-                               return (sprite_palette >> 2) & 3;
-                             case 2:
-                               return (sprite_palette >> 4) & 3;
-                             case 3:
-                               return (sprite_palette >> 6) & 3;
-                             default:
-                               throw std::runtime_error("invalid palette index");
-                           }
-                         });
+//          byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
+//          std::transform(decoded.begin(), decoded.end(), decoded.begin(),
+//                         [sprite_palette](PaletteIndex pidx) {
+//                           switch (pidx) {
+//                             case 0:
+//                               return sprite_palette & 3;
+//                             case 1:
+//                               return (sprite_palette >> 2) & 3;
+//                             case 2:
+//                               return (sprite_palette >> 4) & 3;
+//                             case 3:
+//                               return (sprite_palette >> 6) & 3;
+//                             default:
+//                               throw std::runtime_error("invalid palette index");
+//                           }
+//                         });
           
           if (entry.flags & (1 << 5)) {
             std::reverse(decoded.begin(), decoded.end());
@@ -458,33 +435,76 @@ PPU::rasterise_line() {
         break;
       }
       
+      auto bg_palette_index_ptr = palette_index_row.begin() + sprite.oam_.x - 8;
       auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
       auto sprite_ptr = sprite.pixels_.begin();
 
+      // If set to 0, sprite is always in front of bkgd and window
+      // If set to 1, if background or window is colour 1, 2, 3, background or window wins
+      //              else if background or window is color 0, sprite wins
       bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
+      
+      byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
       
       int n = 0;
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
         // hack to prevent invalid array access when a sprite starts before column 0
         if (raster_ptr < raster.begin()) {
-          ++raster_ptr; ++sprite_ptr;
+          ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
           continue;
         }
         
-        auto raster_byte = *raster_ptr;
-        auto sprite_byte = *sprite_ptr;
+        auto raster_byte = *raster_ptr; // Background colour index
+        auto sprite_byte = *sprite_ptr; // Sprite palette index
+        auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
 
-        if (raster_byte == 0) {
-          *raster_ptr = sprite_byte;
-        } else {
-          if (sprite_behind_bg && sprite_byte == 0) {
+        if (sprite_behind_bg) {
+          // draw background when palette index is 1, 2, 3
+          if (bg_palette_byte != 0) {
             ;
-          } else if (sprite_byte != 0) {
-            *raster_ptr = sprite_byte;
+          } else {
+            PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
+            if (sprite_byte != 0) {
+              *raster_ptr = idx;
+            } else {
+              ;
+            }
+          }
+        } else {
+          // sprite in front of background (except that colour value 0 is transparent)
+          PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
+          if (sprite_byte != 0) {
+            *raster_ptr = idx;
+          } else if (raster_byte != 0) {
+            ;
+          } else {
+            *raster_ptr = idx;
           }
         }
+//        if (raster_byte == 0) {
+//          *raster_ptr = sprite_byte;
+//        } else {
+//          // If sprite behind bg
+//          if (sprite_behind_bg) {
+//            // only if bg is colour 0 does sprite win
+//            if (raster_byte == 0 && sprite_byte != 0) {
+//              *raster_ptr = sprite_byte;
+//            }
+//          } else {
+//            // sprite always wins
+//            if (sprite_byte != 0) {
+//              *raster_ptr = sprite_byte;
+//            }
+//          }
+        
+//          if (sprite_behind_bg && sprite_byte == 0) {
+//
+//          } else if (sprite_byte != 0) {
+//            *raster_ptr = sprite_byte;
+//          }
+//*raster_ptr = sprite_byte;
 
-        ++raster_ptr; ++sprite_ptr;
+        ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
         ++n;
       }
 //      std::cout << "wrote " << n << " bytes to raster starting at offset " << static_cast<void*>(raster.begin() + sprite.oam_.x - 8 ) << "(begin=" << static_cast<void*>(raster.begin()) << ", end=" << static_cast<void*>(raster.end()) << ")" << std::endl;
@@ -534,43 +554,59 @@ PPU::unpack_bits(byte lsb, byte msb, byte start_x) {
   return result;
 }
 
-void
+inline void
 PPU::set_lcd_on(bool on) {
 //  std::cout << "lcd " << on << " at 0x" << hex << setw(4) << setfill('0') << cpu.pc << std::endl;
   lcd_on = on;
 }
 
-void
+inline void
 PPU::set_window_tilemap_offset(word offset) {
   window_tilemap_offset = offset;
 }
 
-void
+inline void
 PPU::set_bg_window_tile_data_offset(word offset) {
   bg_window_tile_data_offset = offset;
 }
 
-void
+inline void
 PPU::set_window_display(bool on) {
   window_display = on;
 }
 
-void
+inline void
 PPU::set_bg_tilemap_offset(word offset) {
   bg_tilemap_offset = offset;
 }
 
-void
+inline void
 PPU::set_sprite_mode(SpriteMode mode) {
   sprite_mode = mode;
 }
 
-void
+inline void
 PPU::set_sprite_display(bool on) {
   sprite_display = on;
 }
 
-void
+inline void
 PPU::set_bg_display(bool on) {
   bg_display = on;
 }
+
+PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette) {
+  switch (pidx) {
+    case 0:
+      return sprite_palette & 3;
+    case 1:
+      return (sprite_palette >> 2) & 3;
+    case 2:
+      return (sprite_palette >> 4) & 3;
+    case 3:
+      return (sprite_palette >> 6) & 3;
+    default:
+      throw std::runtime_error("invalid palette index");
+  }
+}
+
