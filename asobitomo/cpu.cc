@@ -372,8 +372,6 @@ void CPU::fire_interrupts() {
 
   interrupt_enabled = InterruptState::Disabled;
   
-//  std::cout << "Handling " << interrupt_flags_to_description(handled_interrupt) << std::endl;
-
   mmu.set(0xff0f, interrupt_flags & ~handled_interrupt);
   mmu[sp - 1] = pc >> 8;
   mmu[sp] = pc & 0xff;

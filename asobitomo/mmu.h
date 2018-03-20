@@ -46,23 +46,20 @@ public:
     f.seekg(0x100);
     f.read((char*)header_bytes, 0x50);
     Header* h = reinterpret_cast<Header*>(header_bytes);
+    header = *h;
       
     long rom_size = 1 << (15 + h->rom_size);
     cart.resize(rom_size);
     
     nbanks = 4 * h->rom_size;
+    
+    MBC cartridge_type = h->cartridge_type;
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);
   }
 
   void set(word loc, byte value) {
-//  if (!in_title && (loc==0xff42 || loc==0xff43) && value != 0) {
-//  ;
-//  }
-if (loc == 0xff41 && value != 0x40) {
-;
-}
     // enable external RAM -- need to write to this area
     if (loc >= 0x0000 && loc <= 0x1fff) {
       if ((value & 0xf) == 0xa) {
@@ -88,7 +85,6 @@ if (loc == 0xff41 && value != 0x40) {
       
       return;
     }
-    
     
     // external RAM bank access -- may be battery buffered
     if (loc >= 0xa000 && loc <= 0xbfff) {
@@ -179,10 +175,6 @@ if (loc == 0xff41 && value != 0x40) {
   }
 
   byte& _read_mem(word loc) {
-//    if (loc >= 0xff00 && loc <= 0xff7f) {
-//      accessed[loc - 0xff00]++;
-//    }
-    
     // TODO: ff03 should have the lower byte of timer div
     if (loc == 0xff04) { // timer DIV
       return timer.div();
@@ -202,41 +194,7 @@ if (loc == 0xff41 && value != 0x40) {
     }
     
     if (loc == 0xff00) { //joypad
-      input.poll();
-      
-      byte key_input = 0xf;
-      
-      byte value = mem[0xff00] | 0xf;
-      if ((value & 0x20) == 0) {
-        if ((input.state & Buttons::Start) == Buttons::Start) {
-          key_input ^= 0x8;
-        }
-        if ((input.state & Buttons::Select) == Buttons::Select) {
-          key_input ^= 0x4;
-        }
-        if ((input.state & Buttons::B) == Buttons::B) {
-          key_input ^= 0x2;
-        }
-        if ((input.state & Buttons::A) == Buttons::A) {
-          key_input ^= 0x1;
-        }
-      } else if ((value & 0x10) == 0) {
-        if ((input.state & Buttons::D) == Buttons::D) {
-          key_input ^= 0x8;
-        }
-        if ((input.state & Buttons::U) == Buttons::U) {
-          key_input ^= 0x4;
-        }
-        if ((input.state & Buttons::L) == Buttons::L) {
-          key_input ^= 0x2;
-        }
-        if ((input.state & Buttons::R) == Buttons::R) {
-          key_input ^= 0x1;
-        }
-      }
-      
-      joypad = (0xf0 & value) | key_input;
-//      std::cout << "joypad read: " << hex << static_cast<int>(joypad) << std::endl;
+      handle_joypad();
       mem[loc] = joypad;
       return joypad;
     }
@@ -252,12 +210,7 @@ if (loc == 0xff41 && value != 0x40) {
       return cart[loc]; /* rom bank 0 0x150 - 0x3fff */
     } else if (loc <= 0x7fff) {
       /* rom bank switchable 0x4000 - 0x7fff */
-      int full_bank = (bank_hi << 5) + bank;
-//      std::cout << dec << int(bank_hi) << ' ' << int(bank) << ' ' << full_bank << std::endl;
-//      if (full_bank >= nbanks) {
-//        std::cout << "tried to access bank " << full_bank << ", accessing " << (full_bank % nbanks) << " instead" << std::endl;
-//        full_bank %= nbanks;
-//      }
+      int full_bank = (bank_hi << 5) + bank; // TODO: need wraparound behaviour?
       return cart[full_bank * 0x4000 + (loc - 0x4000)];
     } else if (loc <= 0x97ff) {
       return mem[loc]; /* is this right? */
@@ -283,6 +236,17 @@ if (loc == 0xff41 && value != 0x40) {
       return mem[loc];
     }
   }
+  
+  void dump_cartridge_info() {
+    std::cout << "Title\t\t" << (char*)header.title_or_manufacturer.title << std::endl;
+    std::cout << "Type\t\t"  << header.cartridge_type << std::endl;
+    std::cout << "ROM\t\t" << (1 << (15 + header.rom_size)) << std::endl;
+    std::cout << "RAM\t\t" << static_cast<int>(header.ram_size) << std::endl;
+    std::cout << "SGB\t\t" << static_cast<int>(header.sgb == 0x3) << std::endl;
+    std::cout << "NJP\t\t"  << static_cast<int>(header.destination) << std::endl;
+  }
+  
+  void handle_joypad();
 
 // private:
   static constexpr int RAM_BYTES = 65536;
@@ -329,6 +293,8 @@ if (loc == 0xff41 && value != 0x40) {
   byte joypad;
   
   SDLInput input;
+  
+  Header header;
   
   int i = 0;
   char last;

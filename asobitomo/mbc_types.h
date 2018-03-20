@@ -1,5 +1,10 @@
 #pragma once
 
+#include <map>
+#include <iostream>
+
+#include "types.h"
+
 enum class MBC : byte {
   ROM = 0x00,
   MBC1 = 0x01,
@@ -30,3 +35,36 @@ enum class MBC : byte {
   HuC3 = 0xFE,
   HuC1_RAM_BATTERY = 0xFF
 };
+
+static std::map<MBC, std::string> mbc_string {
+  { MBC::ROM, "ROM" },
+  { MBC::MBC1, "MBC1" },
+  { MBC::MBC1_RAM, "MBC1_RAM" },
+  { MBC::MBC1_RAM_BATTERY, "MBC1_RAM_BATTERY" },
+  { MBC::MBC2, "MBC2" },
+  { MBC::MBC2_BATTERY, "MBC2_BATTERY" },
+  { MBC::ROM_RAM, "ROM_RAM" },
+  { MBC::ROM_RAM_BATTERY, "ROM_RAM_BATTERY" },
+  { MBC::MMM01, "MMM01" },
+  { MBC::MMM01_RAM, "MMM01_RAM" },
+  { MBC::MMM01_RAM_BATTERY, "MMM01_RAM_BATTERY" },
+  { MBC::MBC3_TIMER_BATTERY, "MBC3_TIMER_BATTERY" },
+  { MBC::MBC3_TIMER_RAM_BATTERY, "MBC3_TIMER_RAM_BATTERY" },
+  { MBC::MBC3, "MBC3" },
+  { MBC::MBC3_RAM, "MBC3_RAM" },
+  { MBC::MBC3_RAM_BATTERY, "MBC3_RAM_BATTERY" },
+  { MBC::MBC5, "MBC5" },
+  { MBC::MBC5_RAM, "MBC5_RAM" },
+  { MBC::MBC5_RAM_BATTERY, "MBC5_RAM_BATTERY" },
+  { MBC::MBC5_RUMBLE, "MBC5_RUMBLE" },
+  { MBC::MBC5_RUMBLE_RAM, "MBC5_RUMBLE_RAM" },
+  { MBC::MBC5_RUMBLE_RAM_BATTERY, "MBC5_RUMBLE_RAM_BATTERY" },
+  { MBC::MBC6, "MBC6" },
+  { MBC::MBC7_SENSOR_RUMBLE_RAM_BATTERY, "MBC7_SENSOR_RUMBLE_RAM_BATTERY" },
+  { MBC::POCKET_CAMERA, "POCKET_CAMERA" },
+  { MBC::BANDAI_TAMA5, "BANDAI_TAMA5" },
+  { MBC::HuC3, "HuC3" },
+  { MBC::HuC1_RAM_BATTERY, "HuC1_RAM_BATTERY" },
+};
+
+std::ostream& operator<<(std::ostream& out, MBC mbc);
