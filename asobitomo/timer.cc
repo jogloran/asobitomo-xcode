@@ -57,16 +57,16 @@ Timer::set_tac(byte value) {
   byte frequency_selector = value & 0x3;
   switch (frequency_selector) {
   case 0:
-    speed = 1024;
+    speed = 4096;
     break;
   case 1:
-    speed = 16;
+    speed = 262144;
     break;
   case 2:
-    speed = 64;
+    speed = 65536;
     break;
   case 3:
-    speed = 256;
+    speed = 16384;
     break;
   default:
     break;

@@ -223,7 +223,7 @@ PPU::rasterise_line() {
   
   if (bg_display) {
     // get the sequence of tiles which are touched
-    auto row_touched = ((line + scy) % 144) / 8; // % 144 for scy wrap around
+    auto row_touched = ((line + scy) % 256) / 8; // % 256 for scy wrap around
   
     // create sequence of tiles to use (these can wrap around)
     auto starting_index = scx / 8;
@@ -322,7 +322,8 @@ PPU::rasterise_line() {
       typedef std::vector<byte>::size_type diff;
       
       auto offset = static_cast<int>(wx - 7);
-      std::copy_n(raster_row.begin(), 160 - offset, raster.begin() + offset);
+      // TODO: is this correct when wx < 7?
+      std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
     }
   }
   
@@ -383,23 +384,7 @@ PPU::rasterise_line() {
           
           // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2, 0);
-//          byte sprite_palette = (entry.flags & (1 << 4)) ? obp1 : obp0;
-//          std::transform(decoded.begin(), decoded.end(), decoded.begin(),
-//                         [sprite_palette](PaletteIndex pidx) {
-//                           switch (pidx) {
-//                             case 0:
-//                               return sprite_palette & 3;
-//                             case 1:
-//                               return (sprite_palette >> 2) & 3;
-//                             case 2:
-//                               return (sprite_palette >> 4) & 3;
-//                             case 3:
-//                               return (sprite_palette >> 6) & 3;
-//                             default:
-//                               throw std::runtime_error("invalid palette index");
-//                           }
-//                         });
-          
+
           if (entry.flags & (1 << 5)) {
             std::reverse(decoded.begin(), decoded.end());
           }
@@ -443,35 +428,16 @@ PPU::rasterise_line() {
         // priority bit in LCDC needs to examine the original palette index
         // (and not the index after palette mapping)
         
-        auto raster_byte = *raster_ptr; // Background colour index
         auto sprite_byte = *sprite_ptr; // Sprite palette index
         auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
 
-        
-        if (sprite_behind_bg) {
-          // draw background when palette index is 1, 2, 3
-          if (bg_palette_byte != 0) {
-            ;
-          } else {
-            PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
-            if (sprite_byte != 0) {
-              *raster_ptr = idx;
-            } else {
-              ;
-            }
-          }
-        } else {
-          // sprite in front of background (except that colour value 0 is transparent)
+        if (!(sprite_behind_bg && bg_palette_byte != 0)) {
           PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
           if (sprite_byte != 0) {
             *raster_ptr = idx;
-          } else if (raster_byte != 0) {
-            ;
-          } else {
-            *raster_ptr = idx;
           }
         }
-
+        
         ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
         ++n;
       }
@@ -479,8 +445,6 @@ PPU::rasterise_line() {
     
     std::copy(oam, oam + 40, old_oam.begin());
   }
-  
-  
 }
 
 std::vector<PPU::PaletteIndex>
@@ -515,15 +479,11 @@ PPU::unpack_bits(byte lsb, byte msb, byte start_x) {
     lsb >>= 1; msb >>= 1;
   }
   
-  // trippy
-//  std::rotate(result.begin(), result.begin() + start_x, result.end());
-  
   return result;
 }
 
 inline void
 PPU::set_lcd_on(bool on) {
-//  std::cout << "lcd " << on << " at 0x" << hex << setw(4) << setfill('0') << cpu.pc << std::endl;
   lcd_on = on;
 }
 
@@ -562,7 +522,7 @@ PPU::set_bg_display(bool on) {
   bg_display = on;
 }
 
-PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette) {
+inline PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette) {
   switch (pidx) {
     case 0:
       return sprite_palette & 3;

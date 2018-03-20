@@ -85,6 +85,10 @@ TM::show() {
     mouse_x /= 2;
     mouse_y /= 2;
     
-    std::cout << hex << mouse_x << ' ' << mouse_y << std::endl;
+    std::cout << "address: " << setw(4) << setfill('0') << hex <<  (ppu_.bg_tilemap_offset + (mouse_y / 16) * 32 + (mouse_x / 16)) << std::endl;
+    byte tile_index = ppu_.cpu.mmu[ppu_.bg_tilemap_offset + (mouse_y / 16) * 32 + (mouse_x / 16)];
+////    byte tile_data = ppu_.cpu.mmu[ppu_.bg_window_tile_data_offset + tile_index*16];
+////
+     std::cout << hex << setfill('0') << setw(2) << int(mouse_x / 16) << ' ' << setw(2) << int(mouse_y / 16) << ' ' << setw(2) << int(tile_index) << std::endl;
   }
 }
