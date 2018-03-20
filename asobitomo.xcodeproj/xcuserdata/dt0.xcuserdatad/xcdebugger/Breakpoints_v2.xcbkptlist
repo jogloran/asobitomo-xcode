@@ -57,7 +57,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "546"
             endingLineNumber = "546"
-            landmarkName = "PPU::set_sprite_display(bool on)"
+            landmarkName = "PPU::unpack_bits(byte lsb, byte msb, byte start_x)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

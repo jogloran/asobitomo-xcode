@@ -264,24 +264,6 @@ PPU::rasterise_line() {
     
     std::vector<PaletteIndex> raster_row = flatten(tile_data);
     
-//    std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(),
-//                   [palette](PaletteIndex pidx) {
-//                     switch (pidx) {
-//                       case 0:
-//                         return palette & 3;
-//                       case 1:
-//                         return (palette >> 2) & 3;
-//                       case 2:
-//                         return (palette >> 4) & 3;
-//                       case 3:
-//                         return (palette >> 6) & 3;
-//                       default:
-//                         throw std::runtime_error("invalid palette index");
-//                     }
-//                   });
-    
-//    std::rotate(raster_row.begin(), raster_row.begin(), raster_row.end());
-    
     // write to raster
     typedef std::vector<byte>::size_type diff;
 
@@ -332,6 +314,9 @@ PPU::rasterise_line() {
                      });
       
       std::vector<PaletteIndex> raster_row = flatten(tile_data);
+      std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
+        return apply_palette(idx, palette);
+      });
       
       // write to raster
       typedef std::vector<byte>::size_type diff;
@@ -454,10 +439,15 @@ PPU::rasterise_line() {
           continue;
         }
         
+        // We need to examine the original palette byte, since the bg-to-OBJ
+        // priority bit in LCDC needs to examine the original palette index
+        // (and not the index after palette mapping)
+        
         auto raster_byte = *raster_ptr; // Background colour index
         auto sprite_byte = *sprite_ptr; // Sprite palette index
         auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
 
+        
         if (sprite_behind_bg) {
           // draw background when palette index is 1, 2, 3
           if (bg_palette_byte != 0) {
@@ -481,33 +471,10 @@ PPU::rasterise_line() {
             *raster_ptr = idx;
           }
         }
-//        if (raster_byte == 0) {
-//          *raster_ptr = sprite_byte;
-//        } else {
-//          // If sprite behind bg
-//          if (sprite_behind_bg) {
-//            // only if bg is colour 0 does sprite win
-//            if (raster_byte == 0 && sprite_byte != 0) {
-//              *raster_ptr = sprite_byte;
-//            }
-//          } else {
-//            // sprite always wins
-//            if (sprite_byte != 0) {
-//              *raster_ptr = sprite_byte;
-//            }
-//          }
-        
-//          if (sprite_behind_bg && sprite_byte == 0) {
-//
-//          } else if (sprite_byte != 0) {
-//            *raster_ptr = sprite_byte;
-//          }
-//*raster_ptr = sprite_byte;
 
         ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
         ++n;
       }
-//      std::cout << "wrote " << n << " bytes to raster starting at offset " << static_cast<void*>(raster.begin() + sprite.oam_.x - 8 ) << "(begin=" << static_cast<void*>(raster.begin()) << ", end=" << static_cast<void*>(raster.end()) << ")" << std::endl;
     }
     
     std::copy(oam, oam + 40, old_oam.begin());
