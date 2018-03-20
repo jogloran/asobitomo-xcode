@@ -179,9 +179,9 @@ if (loc == 0xff41 && value != 0x40) {
   }
 
   byte& _read_mem(word loc) {
-    if (loc >= 0xff00 && loc <= 0xff7f) {
-      accessed[loc - 0xff00]++;
-    }
+//    if (loc >= 0xff00 && loc <= 0xff7f) {
+//      accessed[loc - 0xff00]++;
+//    }
     
     // TODO: ff03 should have the lower byte of timer div
     if (loc == 0xff04) { // timer DIV

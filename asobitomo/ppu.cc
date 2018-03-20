@@ -58,10 +58,11 @@ compare_oams(OAM* current_oam, OAM* old_oam) {
 }
 
 template <typename T> std::vector<T>
-flatten(const std::vector<std::vector<T>>& in) {
-  std::vector<T> result;
+flatten(const std::vector<std::vector<T>>& in, size_t out_size) {
+  std::vector<T> result(out_size, 0);
+  auto ptr = result.begin();
   for (auto it = in.begin(); it != in.end(); ++it) {
-    std::copy(it->begin(), it->end(), std::back_inserter(result));
+    ptr = std::copy(it->begin(), it->end(), ptr);
   }
   return result;
 }
@@ -262,7 +263,7 @@ PPU::rasterise_line() {
                    });
     // map this through the colour map
     
-    std::vector<PaletteIndex> raster_row = flatten(tile_data);
+    std::vector<PaletteIndex> raster_row = flatten(tile_data, 160);
     
     // write to raster
     typedef std::vector<byte>::size_type diff;
@@ -313,7 +314,7 @@ PPU::rasterise_line() {
                        }
                      });
       
-      std::vector<PaletteIndex> raster_row = flatten(tile_data);
+      std::vector<PaletteIndex> raster_row = flatten(tile_data, 160);
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
         return apply_palette(idx, palette);
       });
