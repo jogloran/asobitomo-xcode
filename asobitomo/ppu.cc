@@ -57,14 +57,12 @@ compare_oams(OAM* current_oam, OAM* old_oam) {
   }
 }
 
-template <typename T> std::vector<T>
-flatten(const std::vector<std::vector<T>>& in, size_t out_size) {
-  std::vector<T> result(out_size, 0);
-  auto ptr = result.begin();
+template <typename T> void
+flatten(const std::array<std::vector<T>, 20>& in, size_t out_size, typename std::array<T, 160>::iterator begin) {
+  auto ptr = begin;
   for (auto it = in.begin(); it != in.end(); ++it) {
     ptr = std::copy(it->begin(), it->end(), ptr);
   }
-  return result;
 }
 
 void
@@ -220,8 +218,6 @@ PPU::rasterise_line() {
   byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
   byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
-  std::vector<PaletteIndex> palette_index_row(160, 0);
-  
   if (bg_display) {
     // get the sequence of tiles which are touched
     auto row_touched = ((line + scy) % 256) / 8; // % 256 for scy wrap around
@@ -240,11 +236,12 @@ PPU::rasterise_line() {
     
     // there are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
     
-    std::vector<std::vector<PaletteIndex>> tile_data;
     // These are pointers into the tile map
+    std::for_each(tile_data.begin(), tile_data.end(),
+        [](std::vector<PaletteIndex>& v) { v.clear(); });
     auto begin = row_tiles.begin();
     auto end = row_tiles.end();
-    std::transform(begin, end, std::back_inserter(tile_data),
+    std::transform(begin, end, tile_data.begin(),
                    [this, scx, scy](byte index) {
                      // This takes each tile map index and retrieves
                      // the corresponding line of the corresponding tile
@@ -263,7 +260,7 @@ PPU::rasterise_line() {
                    });
     // map this through the colour map
     
-    std::vector<PaletteIndex> raster_row = flatten(tile_data, 160);
+    flatten(tile_data, 160, raster_row.begin());
     
     // write to raster
     typedef std::vector<byte>::size_type diff;
@@ -286,17 +283,16 @@ PPU::rasterise_line() {
     if (line >= wy) {
       byte row_touched = (line - wy) / 8;
       
-      std::vector<word> row_tiles(20, 0);
-      
       for (int i = 0; i < 20; ++i) {
         row_tiles[i] = cpu.mmu[window_tilemap_offset + row_touched * 32 + (i % 32)];
       }
       
-      std::vector<std::vector<PaletteIndex>> tile_data;
+      std::for_each(tile_data.begin(), tile_data.end(),
+        [](std::vector<PaletteIndex>& v) { v.clear(); });
       // These are pointers into the tile map
       auto begin = row_tiles.begin();
       auto end = row_tiles.end();
-      std::transform(begin, end, std::back_inserter(tile_data),
+      std::transform(begin, end, tile_data.begin(),
                      [this, wx, wy](byte index) {
                        // This takes each tile map index and retrieves
                        // the corresponding line of the corresponding tile
@@ -314,7 +310,7 @@ PPU::rasterise_line() {
                        }
                      });
       
-      std::vector<PaletteIndex> raster_row = flatten(tile_data, 160);
+      flatten(tile_data, 160, raster_row.begin());
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
         return apply_palette(idx, palette);
       });
@@ -328,9 +324,8 @@ PPU::rasterise_line() {
     }
   }
   
-  std::vector<RenderedSprite> visible;
+  visible.clear();
   if (sprite_display) {
-    std::array<byte, 160> sprite_row;
     std::fill(sprite_row.begin(), sprite_row.end(), 0);
     
 //    compare_oams(oam, old_oam.data());
@@ -372,7 +367,10 @@ PPU::rasterise_line() {
           // need to get the relevant row in the tile
           byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
           if (entry.flags & (1 << 6)) { // y flip
-            row_offset_within_tile = 8 - row_offset_within_tile - 1; // TODO: account for 8x16 tiles
+            // TODO: account for 8x16 tiles
+            // in the event that 8 <= row_offset_within_tile <= 15,
+            // we need to take from the second tile
+            row_offset_within_tile = 8 - row_offset_within_tile - 1;
           }
           word tile_data_address = tile_data + row_offset_within_tile * 2;
           

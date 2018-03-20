@@ -86,9 +86,7 @@ public:
   TM tilemap;
   
 public:
-
   std::array<byte, 160> raster;
-  
   
   void update_stat_register();
 
@@ -114,6 +112,14 @@ public:
   
   friend class CPU;
   std::vector<OAM> old_oam;
+  
+  // Caches
+  std::array<PPU::PaletteIndex, 160> palette_index_row;
+  std::array<word, 20> row_tiles;
+  std::vector<RenderedSprite> visible;
+  std::array<byte, 160> sprite_row;
+  std::array<PaletteIndex, 160> raster_row;
+  std::array<std::vector<PaletteIndex>, 20> tile_data;
 };
 
 PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette);
