@@ -61,7 +61,7 @@ public:
   CPU(std::string path): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
     pc(0x0000), sp(0x0000), cycles(0), timer(*this),
     ppu(*this), mmu(path, ppu, timer),
-    halted(false), interrupt_flags_before_halt(0),
+    halted(false), in_halt_bug(false), interrupt_flags_before_halt(0),
     interrupt_enabled(InterruptState::Disabled), in_cb(false) {
   }
 
@@ -104,8 +104,12 @@ public:
       byte interrupt_flags = mmu._read_mem(0xff0f);
 
       byte candidate_interrupts = interrupt_enable & interrupt_flags;
+      // The HALT bug occurs when IME is zero, and some interrupt is
+      // enabled and pending
       if (candidate_interrupts != 0x0) {
         // The HALT bug.
+        in_halt_bug = true;
+        halted = false;
       } else {
         halted = true;
       }
@@ -153,6 +157,7 @@ public:
   MMU mmu;
   
   bool halted;
+  bool in_halt_bug;
   byte interrupt_flags_before_halt;
 
   InterruptState interrupt_enabled;

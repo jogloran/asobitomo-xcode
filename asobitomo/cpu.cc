@@ -418,7 +418,11 @@ void CPU::step(bool debug)  {
       dump_state();
     }
 
-    ++pc;
+    if (in_halt_bug) {
+      in_halt_bug = false;
+    } else {
+      ++pc;
+    }
 
     long old_cycles = cycles;
     
