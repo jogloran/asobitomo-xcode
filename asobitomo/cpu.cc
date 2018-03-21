@@ -287,8 +287,8 @@ void CPU::dump_state() {
     << " bgp:" << binary(mmu._read_mem(0xff47))
     << " obp0:" << binary(mmu._read_mem(0xff48))
     << " obp1:" << binary(mmu._read_mem(0xff49))
-    << " rom:" << int(mmu.bank)
-    << " ram:" << int(mmu.ram_bank)
+//    << " rom:" << int(mmu.bank)
+//    << " ram:" << int(mmu.ram_bank)
     << " IF: " << binary(mmu._read_mem(0xff0f))
     << " IE: " << binary(mmu._read_mem(0xffff))
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
