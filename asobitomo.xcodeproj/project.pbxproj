@@ -17,6 +17,7 @@
 		09D011A0205CAB9400A62FE4 /* gl_screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 093DACDB2044F4100087724B /* gl_screen.cc */; };
 		09D011A22061BEA400A62FE4 /* mbc_types.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09D011A12061BEA400A62FE4 /* mbc_types.cc */; };
 		09D011A5206227C300A62FE4 /* mbc1.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09D011A4206227C300A62FE4 /* mbc1.cc */; };
+		09E1809E20622DD900AC0A28 /* mbc3.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09D011AA20622DB600A62FE4 /* mbc3.cc */; };
 		09E2D510204D2BA400D90FDB /* libgflags.2.2.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */; };
 		09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
@@ -59,6 +60,9 @@
 		09D011A12061BEA400A62FE4 /* mbc_types.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mbc_types.cc; sourceTree = "<group>"; };
 		09D011A32062279F00A62FE4 /* mbc1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc1.h; sourceTree = "<group>"; };
 		09D011A4206227C300A62FE4 /* mbc1.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mbc1.cc; sourceTree = "<group>"; };
+		09D011A720622D2700A62FE4 /* mbc_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc_base.h; sourceTree = "<group>"; };
+		09D011A920622DB600A62FE4 /* mbc3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc3.h; sourceTree = "<group>"; };
+		09D011AA20622DB600A62FE4 /* mbc3.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mbc3.cc; sourceTree = "<group>"; };
 		09E2D50F204D2BA400D90FDB /* libgflags.2.2.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgflags.2.2.1.dylib; path = ../../../../usr/local/Cellar/gflags/2.2.1/lib/libgflags.2.2.1.dylib; sourceTree = "<group>"; };
 		09E2D511204F5BCA00D90FDB /* mbc_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc_types.h; sourceTree = "<group>"; };
 		09E2D512204F5BE900D90FDB /* header_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = header_type.h; sourceTree = "<group>"; };
@@ -159,6 +163,9 @@
 				09D011A12061BEA400A62FE4 /* mbc_types.cc */,
 				09D011A32062279F00A62FE4 /* mbc1.h */,
 				09D011A4206227C300A62FE4 /* mbc1.cc */,
+				09D011A920622DB600A62FE4 /* mbc3.h */,
+				09D011AA20622DB600A62FE4 /* mbc3.cc */,
+				09D011A720622D2700A62FE4 /* mbc_base.h */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
@@ -228,6 +235,7 @@
 				09D0119F205B405400A62FE4 /* tile_map.cc in Sources */,
 				09D011A22061BEA400A62FE4 /* mbc_types.cc in Sources */,
 				09D011A5206227C300A62FE4 /* mbc1.cc in Sources */,
+				09E1809E20622DD900AC0A28 /* mbc3.cc in Sources */,
 				A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */,
 				0907948E20468C100063686E /* timer.cc in Sources */,
 				A2CCE578203A981900F3FD4F /* main.cc in Sources */,

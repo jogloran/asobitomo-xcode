@@ -8,9 +8,9 @@
 
 class MMU;
 
-class MBC1 : public MBCBase {
+class MBC3 : public MBCBase {
 public:
-  MBC1(MMU& mmu) :
+  MBC3(MMU& mmu) :
     mmu(mmu),
     nbanks(1),
     bank(1), // default bank for 0x4000 is 1, so that 0x4000 acccesses 0x4000
@@ -32,5 +32,5 @@ public:
   bool select_external_ram;
   bool external_ram_enabled;
   
-  std::array<byte, 0x2000> external_ram;
+  std::array<byte, 0x2000*4> external_ram;
 };

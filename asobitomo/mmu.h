@@ -18,6 +18,7 @@ using namespace std;
 #include "mbc_types.h"
 #include "header_type.h"
 #include "mbc1.h"
+#include "mbc3.h"
 
 extern bool in_title;
 

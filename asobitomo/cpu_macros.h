@@ -654,7 +654,7 @@ CP8_HELPER(a)
 
 #define LD_SP_HL() [](CPU& cpu) { \
   word hl = cpu.get_word(cpu.h, cpu.l); \
-  cpu.sp = cpu.mmu[hl]; \
+  cpu.sp = hl; \
 }
 
 #define LD_A_a16() [](CPU& cpu) { \
