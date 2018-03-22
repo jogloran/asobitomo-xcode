@@ -27,7 +27,7 @@ public:
   MMU(std::string path, PPU& ppu, Timer& timer):
     cart(32768, 0), rom_mapped(true), ppu(ppu), timer(timer),
     joypad(0xf),
-    input(), mbc(std::make_unique<MBC1>(*this)) {
+    input(), mbc() {
     fill(mem.begin(), mem.end(), 0);
     std::copy(rom.begin(), rom.end(), mem.begin());
     
@@ -44,6 +44,7 @@ public:
     cart.resize(rom_size);
     
     MBC cartridge_type = h->cartridge_type;
+    mbc = mbc_for(cartridge_type, *this);
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);

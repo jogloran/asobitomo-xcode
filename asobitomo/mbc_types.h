@@ -4,6 +4,10 @@
 #include <iostream>
 
 #include "types.h"
+#include <memory>
+
+class MBCBase;
+class MMU;
 
 enum class MBC : byte {
   ROM = 0x00,
@@ -68,3 +72,6 @@ static std::map<MBC, std::string> mbc_string {
 };
 
 std::ostream& operator<<(std::ostream& out, MBC mbc);
+
+std::unique_ptr<MBCBase> mbc_for(MBC mbc, MMU& mmu);
+
