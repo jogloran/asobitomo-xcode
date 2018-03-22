@@ -672,13 +672,19 @@ CP8_HELPER(a)
 #define ADD_SP_r8() [](CPU& cpu) { \
   int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc + 1]); \
   cpu.pc += 1; \
+  cpu.check_half_carry(cpu.sp, r8); \
+  int result = static_cast<int>(cpu.sp) + r8; \
+  if (result & (1 << 8)) { \
+    cpu.set_flags(Cf); \
+  } else { \
+    cpu.unset_flags(Cf); \
+  } \
   cpu.sp += r8; \
   cpu.unset_flags(Zf | Nf); \
-  /* need to set H, C conditionally */ \
 }
 
 #define LD_HL_SP_plus_r8() [](CPU& cpu) { \
-  int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc + 1]); \
+  int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc]); \
   cpu.pc += 1; \
   word hl = cpu.sp + r8; \
   cpu.h = hl >> 8; \
