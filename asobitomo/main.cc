@@ -22,8 +22,10 @@ DEFINE_string(dis_instrs, "", "Instructions to dump for");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
 DEFINE_bool(fake_boot, true, "Initialise registers to post-ROM values");
 
-DEFINE_bool(show_td, false, "Show tile debugger");
-DEFINE_bool(show_tm, false, "Show tile map");
+DEFINE_bool(td, false, "Show tile debugger");
+DEFINE_bool(tm, false, "Show tile map");
+
+DEFINE_bool(xx, false, "Debug");
 
 using namespace std;
 
@@ -40,10 +42,13 @@ size_t history_repeating(std::deque<word> history) {
 }
 
 bool in_title = true;
+bool xx = false;
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A Game Boy emulator");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+  
+  xx = FLAGS_xx;
   
   if (argc != 2) {
     std::cerr << "Expecting a ROM filename." << std::endl;

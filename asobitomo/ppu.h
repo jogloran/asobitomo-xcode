@@ -9,8 +9,8 @@
 #include <array>
 #include <gflags/gflags.h>
 
-DECLARE_bool(show_tm);
-DECLARE_bool(show_td);
+DECLARE_bool(tm);
+DECLARE_bool(td);
 
 struct OAM {
   byte y;
@@ -53,8 +53,8 @@ public:
     sprite_mode(SpriteMode::S8x8), sprite_display(false),
     bg_display(false), old_oam(40) {
     
-    debugger.set_enabled(FLAGS_show_td);
-    tilemap.set_enabled(FLAGS_show_tm);
+    debugger.set_enabled(FLAGS_td);
+    tilemap.set_enabled(FLAGS_tm);
   }
 
   enum class Mode : byte {

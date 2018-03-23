@@ -56,6 +56,11 @@ GL::blit() {
   const uint8_t* keystates = SDL_GetKeyboardState(&nkeys);
   if (keystates[SDL_SCANCODE_D]) {
     cpu_.dump_state();
+  } else if (keystates[SDL_SCANCODE_X]) {
+    for (word addr = 0xc4f4; addr <= 0xc506; ++addr) {
+      std::cout << hex << setw(2) << int(cpu_.mmu._read_mem(addr)) << ' ';
+    }
+    std::cout << std::endl;
   }
   
   SDL_Event event;

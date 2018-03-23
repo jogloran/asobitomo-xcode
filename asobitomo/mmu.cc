@@ -65,7 +65,7 @@ void MMU::set(word loc, byte value) {
   }
   // serial read
   if (loc == 0xff02) {
-    std::cout << (char)last;
+//    std::cout << (char)last;
   }
   
   if (loc == 0xff04) { // timer DIV

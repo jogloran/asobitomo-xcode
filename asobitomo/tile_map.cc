@@ -71,10 +71,16 @@ TM::show() {
     { scx*2, 0, alpha*2, delta*2},
     { 0, 0, gamma*2, delta*2 }
   };
-  
+
+  SDL_SetRenderDrawColor(renderer_, 0, 255, 0, 64);
   for (SDL_Rect rect : rects) {
-    SDL_SetRenderDrawColor(renderer_, 0, 255, 0, 64);
     SDL_RenderFillRect(renderer_, &rect);
+  }
+  
+  SDL_SetRenderDrawColor(renderer_, 244, 177, 18, 64);
+  for (int i = 0; i < 256; i += 8) {
+    SDL_RenderDrawLine(renderer_, 0, i*2, 256*2, i*2);
+    SDL_RenderDrawLine(renderer_, i*2, 0, i*2, 256*2);
   }
   
   SDL_RenderPresent(renderer_);

@@ -269,8 +269,9 @@ void CPU::dump_state() {
     "af " << two_byte_fmt(a, f) << ' ' <<
     "bc " << two_byte_fmt(b, c) << ' ' <<
     "de " << two_byte_fmt(d, e) << ' ' <<
-    "hl " << two_byte_fmt(h, l) << ' '
-    << "sp: " << setw(4) << hex <<
+    "hl " << two_byte_fmt(h, l) << ' ' <<
+    "(hl) " << setw(2) << static_cast<int>(mmu._read_mem((h << 8) | l))
+    << " sp: " << setw(4) << hex <<
       static_cast<int>(sp) << ' '
     << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
     << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
@@ -284,9 +285,9 @@ void CPU::dump_state() {
 //    << " div:" << setfill('0') << setw(4)
 //    << int((timer.divider_hi << 8) | timer.divider)
 //    << " mod:" << int(timer.modulo)
-    << " bgp:" << binary(mmu._read_mem(0xff47))
-    << " obp0:" << binary(mmu._read_mem(0xff48))
-    << " obp1:" << binary(mmu._read_mem(0xff49))
+//    << " bgp:" << binary(mmu._read_mem(0xff47))
+//    << " obp0:" << binary(mmu._read_mem(0xff48))
+//    << " obp1:" << binary(mmu._read_mem(0xff49))
 //    << " rom:" << int(mmu.bank)
 //    << " ram:" << int(mmu.ram_bank)
     << " IF: " << binary(mmu._read_mem(0xff0f))
@@ -373,8 +374,13 @@ void CPU::fire_interrupts() {
   interrupt_enabled = InterruptState::Disabled;
   
   mmu.set(0xff0f, interrupt_flags & ~handled_interrupt);
+  if (xx) {
+  mmu[sp - 1] = pc & 0xff;
+  mmu[sp] = pc >> 8;
+  } else {
   mmu[sp - 1] = pc >> 8;
   mmu[sp] = pc & 0xff;
+  }
   sp -= 2;
   pc = handler;
 }
