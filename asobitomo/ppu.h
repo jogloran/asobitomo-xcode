@@ -81,6 +81,7 @@ public:
   
   std::array<PaletteIndex, 8> decode(word start_loc, byte start_y /* 0 to 7 */, byte start_x);
   std::array<PaletteIndex, 8> unpack_bits(byte lsb, byte msb, byte start_x);
+  std::array<PaletteIndex, 8> tilemap_index_to_tile(byte index, byte y_offset, byte x_offset);
   GL screen;
   TD debugger;
   TM tilemap;

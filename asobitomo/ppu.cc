@@ -202,6 +202,24 @@ std::ostream& operator<<(std::ostream& out, const OAM& oam) {
     << ", flags = " << binary(oam.flags) << ")";
 }
 
+std::array<PPU::PaletteIndex, 8>
+PPU::tilemap_index_to_tile(byte index, byte y_offset, byte x_offset) {
+  // This takes each tile map index and retrieves
+  // the corresponding line of the corresponding tile
+  // 2 bytes per row, 16 bytes per tile
+  // in each row, first byte is LSB of palette indices
+  //              second byte is MSB
+  if (bg_window_tile_data_offset == 0x8000) {
+    return decode(bg_window_tile_data_offset + index*16,
+                  y_offset, x_offset);
+  } else {
+    // add 0x800 to interpret the tile map index as a signed index starting in the middle
+    // of the tile data range (0x8800-97FF)
+    return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
+                  y_offset, x_offset);
+  }
+}
+
 void
 PPU::rasterise_line() {
   byte& oam_ref = cpu.mmu._read_mem(0xfe00);
@@ -240,23 +258,9 @@ PPU::rasterise_line() {
                   [](std::array<PaletteIndex, 8>& v) { std::fill(v.begin(), v.end(), 0); });
     auto begin = row_tiles.begin();
     auto end = row_tiles.end();
-    std::transform(begin, end, tile_data.begin(),
-                   [this, scx, scy](byte index) {
-                     // This takes each tile map index and retrieves
-                     // the corresponding line of the corresponding tile
-                     // 2 bytes per row, 16 bytes per tile
-                     // in each row, first byte is LSB of palette indices
-                     //              second byte is MSB
-                     if (bg_window_tile_data_offset == 0x8000) {
-                       return decode(bg_window_tile_data_offset + index*16,
-                                     (line + scy) % 8, scx % 8);
-                     } else {
-                       // add 0x800 to interpret the tile map index as a signed index starting in the middle
-                       // of the tile data range (0x8800-97FF)
-                       return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
-                                     (line + scy) % 8, scx % 8);
-                     }
-                   });
+    std::transform(begin, end, tile_data.begin(), [this, scx, scy](byte index) {
+      return tilemap_index_to_tile(index, (line + scy) % 8, scx % 8);
+    });
     // map this through the colour map
     
     flatten(tile_data, 160, raster_row.begin());
@@ -291,23 +295,9 @@ PPU::rasterise_line() {
       // These are pointers into the tile map
       auto begin = row_tiles.begin();
       auto end = row_tiles.end();
-      std::transform(begin, end, tile_data.begin(),
-                     [this, wx, wy](byte index) {
-                       // This takes each tile map index and retrieves
-                       // the corresponding line of the corresponding tile
-                       // 2 bytes per row, 16 bytes per tile
-                       // in each row, first byte is LSB of palette indices
-                       //              second byte is MSB
-                       if (window_tilemap_offset == 0x8000) {
-                         return decode(bg_window_tile_data_offset + index*16,
-                                       (line - wy) % 8, (wx - 7) % 8);
-                       } else {
-                         // add 0x800 to interpret the tile map index as a signed index starting in the middle
-                         // of the tile data range (0x8800-97FF)
-                         return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
-                                       (line - wy) % 8, (wx - 7) % 8);
-                       }
-                     });
+      std::transform(begin, end, tile_data.begin(), [this, wx, wy](byte index) {
+        return tilemap_index_to_tile(index, (line - wy) % 8, (wx - 7) % 8);
+      });
       
       flatten(tile_data, 160, raster_row.begin());
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
