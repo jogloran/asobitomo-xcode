@@ -558,7 +558,6 @@ CP8_HELPER(a)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  /* TODO: set H */ \
 }
 
 #define ADC_A_d8() [](CPU& cpu) { \
@@ -590,7 +589,6 @@ CP8_HELPER(a)
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  /* TODO: set H */ \
 }
 
 #define SBC_A_d8() [](CPU& cpu) { \
@@ -606,7 +604,6 @@ CP8_HELPER(a)
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   cpu.check_zero(cpu.a); \
-  /* TODO: set H */ \
 }
 
 #define RETI() [](CPU& cpu) { \
