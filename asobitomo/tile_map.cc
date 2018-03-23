@@ -60,16 +60,16 @@ TM::show() {
   
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
   
-  int alpha = std::min(256 - scx, 160);
-  int beta = std::min(256 - scy, 144);
-  int gamma = 160 - alpha;
-  int delta = 144 - beta;
+  int alpha = std::min(256 - scx, 160) * scale_;
+  int beta = std::min(256 - scy, 144) * scale_;
+  int gamma = (160 - alpha) * scale_;
+  int delta = (144 - beta) * scale_;
   
   SDL_Rect rects[] {
-    { scx*2, scy*2, alpha*2, beta*2 },
-    { 0, scy*2, gamma*2, beta*2},
-    { scx*2, 0, alpha*2, delta*2},
-    { 0, 0, gamma*2, delta*2 }
+    { scx*scale_, scy*scale_, alpha, beta },
+    { 0, scy*scale_, gamma, beta},
+    { scx*scale_, 0, alpha, delta},
+    { 0, 0, gamma, delta }
   };
 
   SDL_SetRenderDrawColor(renderer_, 0, 255, 0, 64);
@@ -79,8 +79,8 @@ TM::show() {
   
   SDL_SetRenderDrawColor(renderer_, 244, 177, 18, 64);
   for (int i = 0; i < 256; i += 8) {
-    SDL_RenderDrawLine(renderer_, 0, i*2, 256*2, i*2);
-    SDL_RenderDrawLine(renderer_, i*2, 0, i*2, 256*2);
+    SDL_RenderDrawLine(renderer_, 0, i*scale_, TM_HEIGHT*scale_, i*scale_);
+    SDL_RenderDrawLine(renderer_, i*scale_, 0, i*scale_, TM_WIDTH*scale_);
   }
   
   SDL_RenderPresent(renderer_);
@@ -88,13 +88,13 @@ TM::show() {
   int mouse_x, mouse_y;
   uint8_t mouse_mask = SDL_GetMouseState(&mouse_x, &mouse_y);
   if (mouse_mask & SDL_BUTTON(1)) {
-    mouse_x /= 2;
-    mouse_y /= 2;
+    mouse_x /= 8;
+    mouse_y /= 8;
     
-    std::cout << "address: " << setw(4) << setfill('0') << hex <<  (ppu_.bg_tilemap_offset + (mouse_y / 16) * 32 + (mouse_x / 16)) << std::endl;
-    byte tile_index = ppu_.cpu.mmu[ppu_.bg_tilemap_offset + (mouse_y / 16) * 32 + (mouse_x / 16)];
+    std::cout << "address: " << setw(4) << setfill('0') << hex <<  (ppu_.bg_tilemap_offset + (mouse_y / scale_) * 32 + (mouse_x / scale_)) << std::endl;
+    byte tile_index = ppu_.cpu.mmu[ppu_.bg_tilemap_offset + (mouse_y / scale_) * 32 + (mouse_x / scale_)];
 ////    byte tile_data = ppu_.cpu.mmu[ppu_.bg_window_tile_data_offset + tile_index*16];
 ////
-     std::cout << hex << setfill('0') << setw(2) << int(mouse_x / 16) << ' ' << setw(2) << int(mouse_y / 16) << ' ' << setw(2) << int(tile_index) << std::endl;
+     std::cout << hex << setfill('0') << setw(2) << int(mouse_x / scale_) << ' ' << setw(2) << int(mouse_y / scale_) << ' ' << setw(2) << int(tile_index) << std::endl;
   }
 }

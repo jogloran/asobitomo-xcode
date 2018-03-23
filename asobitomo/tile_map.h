@@ -12,13 +12,13 @@ class PPU;
 
 class TM {
 public:
-  TM(PPU& ppu): ppu_(ppu), enabled_(FLAGS_tm) {
+  TM(PPU& ppu): ppu_(ppu), enabled_(FLAGS_tm), scale_(2) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
-    window_ = SDL_CreateWindow("test", 0, 0, TM_WIDTH * 2, TM_HEIGHT * 2, 0);
+    window_ = SDL_CreateWindow("test", 0, 0, TM_WIDTH * scale_, TM_HEIGHT * scale_, 0);
     renderer_ = SDL_CreateRenderer(window_, -1, 0);
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
-    SDL_RenderSetLogicalSize(renderer_, TM_WIDTH * 2, TM_HEIGHT * 2);
+    SDL_RenderSetLogicalSize(renderer_, TM_WIDTH * scale_, TM_HEIGHT * scale_);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, TM_WIDTH, TM_HEIGHT);
   }
   
@@ -36,6 +36,7 @@ public:
   
 private:
   PPU& ppu_;
+  int scale_;
   
   std::array<byte, (32*8*4) * (32*8) * 4> buf;
   
