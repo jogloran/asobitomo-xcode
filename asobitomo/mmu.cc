@@ -137,5 +137,4 @@ MMU::handle_joypad() {
   }
   
   joypad = (0xf0 & value) | key_input;
-  //      std::cout << "joypad read: " << hex << static_cast<int>(joypad) << std::endl;
 }

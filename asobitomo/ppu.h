@@ -37,10 +37,10 @@ public:
   
   typedef byte PaletteIndex;
   struct RenderedSprite {
-    RenderedSprite(const OAM& oam, byte oam_index, const std::vector<PPU::PaletteIndex>& pixels): oam_(oam), oam_index_(oam_index), pixels_(pixels) {}
+    RenderedSprite(const OAM& oam, byte oam_index, const std::array<PPU::PaletteIndex, 8>& pixels): oam_(oam), oam_index_(oam_index), pixels_(pixels) {}
     OAM oam_;
     byte oam_index_;
-    std::vector<PaletteIndex> pixels_;
+    std::array<PaletteIndex, 8> pixels_;
   };
 
   
@@ -79,8 +79,8 @@ public:
 
   void rasterise_line();
   
-  std::vector<PaletteIndex> decode(word start_loc, byte start_y /* 0 to 7 */, byte start_x);
-  std::vector<PaletteIndex> unpack_bits(byte lsb, byte msb, byte start_x);
+  std::array<PaletteIndex, 8> decode(word start_loc, byte start_y /* 0 to 7 */, byte start_x);
+  std::array<PaletteIndex, 8> unpack_bits(byte lsb, byte msb, byte start_x);
   GL screen;
   TD debugger;
   TM tilemap;
@@ -119,7 +119,7 @@ public:
   std::vector<RenderedSprite> visible;
   std::array<byte, 160> sprite_row;
   std::array<PaletteIndex, 160> raster_row;
-  std::array<std::vector<PaletteIndex>, 20> tile_data;
+  std::array<std::array<PaletteIndex, 8>, 20> tile_data;
 };
 
 PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette);

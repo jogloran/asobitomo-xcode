@@ -58,7 +58,7 @@ compare_oams(OAM* current_oam, OAM* old_oam) {
 }
 
 template <typename T> void
-flatten(const std::array<std::vector<T>, 20>& in, size_t out_size, typename std::array<T, 160>::iterator begin) {
+flatten(const std::array<std::array<T, 8>, 20>& in, size_t out_size, typename std::array<T, 160>::iterator begin) {
   auto ptr = begin;
   for (auto it = in.begin(); it != in.end(); ++it) {
     ptr = std::copy(it->begin(), it->end(), ptr);
@@ -224,7 +224,6 @@ PPU::rasterise_line() {
   
     // create sequence of tiles to use (these can wrap around)
     auto starting_index = scx / 8;
-    std::vector<word> row_tiles(20, 0);
     for (int i = 0; i < 20; ++i) {
       row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
     }
@@ -238,7 +237,7 @@ PPU::rasterise_line() {
     
     // These are pointers into the tile map
     std::for_each(tile_data.begin(), tile_data.end(),
-        [](std::vector<PaletteIndex>& v) { v.clear(); });
+                  [](std::array<PaletteIndex, 8>& v) { std::fill(v.begin(), v.end(), 0); });
     auto begin = row_tiles.begin();
     auto end = row_tiles.end();
     std::transform(begin, end, tile_data.begin(),
@@ -288,7 +287,7 @@ PPU::rasterise_line() {
       }
       
       std::for_each(tile_data.begin(), tile_data.end(),
-        [](std::vector<PaletteIndex>& v) { v.clear(); });
+                    [](std::array<PaletteIndex, 8>& v) { std::fill(v.begin(), v.end(), 0); });
       // These are pointers into the tile map
       auto begin = row_tiles.begin();
       auto end = row_tiles.end();
@@ -316,8 +315,6 @@ PPU::rasterise_line() {
       });
       
       // write to raster
-      typedef std::vector<byte>::size_type diff;
-      
       auto offset = static_cast<int>(wx - 7);
       // TODO: is this correct when wx < 7?
       std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
@@ -446,7 +443,7 @@ PPU::rasterise_line() {
   }
 }
 
-std::vector<PPU::PaletteIndex>
+std::array<PPU::PaletteIndex, 8>
 PPU::decode(word start_loc, byte start_y, byte start_x) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
@@ -465,9 +462,9 @@ PPU::decode(word start_loc, byte start_y, byte start_x) {
   return unpack_bits(b1, b2, start_x);
 }
 
-std::vector<PPU::PaletteIndex>
+std::array<PPU::PaletteIndex, 8>
 PPU::unpack_bits(byte lsb, byte msb, byte start_x) {
-  std::vector<PPU::PaletteIndex> result(8, 0);
+  std::array<PPU::PaletteIndex, 8> result;
   
   for (int i = 7; i >= 0; --i) {
     byte m = msb & 0x1;
