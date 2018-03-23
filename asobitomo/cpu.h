@@ -103,6 +103,12 @@ public:
     return result;
   }
   
+  void push_word(word w) {
+    mmu.set(sp - 1, w & 0xff);
+    mmu.set(sp, w >> 8);
+    sp -= 2;
+  }
+  
   void push_word(byte hi, byte lo) {
     mmu.set(sp - 1, lo);
     mmu.set(sp, hi);
