@@ -97,6 +97,10 @@ public:
     return (hi << 8) | lo;
   }
   
+  word pop_word() {
+    return (mmu[sp + 2] << 8) | mmu[sp + 1];
+  }
+  
   bool wake_if_interrupt_requested();
   
   void halt();
@@ -181,6 +185,26 @@ public:
     } else {
       unset_flags(Hf);
     }
+  }
+  
+  byte check_carry_if_lobit_set(byte value) {
+    byte lobit = value & 0x1;
+    if (lobit) {
+      set_flags(Cf);
+    } else {
+      unset_flags(Cf);
+    }
+    return lobit;
+  }
+  
+  byte check_carry_if_hibit_set(byte value) {
+    byte hibit = value >> 7;
+    if (hibit) {
+      set_flags(Cf);
+    } else {
+      unset_flags(Cf);
+    }
+    return hibit;
   }
 
   static std::array<op, NINSTR> cb_ops;

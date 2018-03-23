@@ -1,61 +1,12 @@
 #include "ppu.h"
 #include "cpu.h"
 #include "util.h"
+#include "ppu_util.h"
 
 #include <numeric>
 #include <iterator>
 #include <algorithm>
 #include <sstream>
-
-void
-compare_oams(OAM* current_oam, OAM* old_oam) {
-  bool first = true;
-  
-  std::stringstream s;
-  for (int i = 0; i < 40; ++i) {
-    OAM cur = current_oam[i];
-    OAM old = old_oam[i];
-    
-    if (cur != old) {
-      if (first) {
-        first = false;
-      } else {
-        s << ", ";
-      }
-      s << "obj " << hex << setw(2) << setfill('0') << i << " [";
-      
-      bool first_change = true;
-      
-      if (cur.x != old.x) {
-        if (first_change) first_change = false;
-        else s << ", ";
-        s << "x " << dec << static_cast<int>(old.x) << " -> " << static_cast<int>(cur.x) << hex;
-      }
-      if (cur.y != old.y) {
-        if (first_change) first_change = false;
-        else s << ", ";
-        s << "y " << dec << static_cast<int>(old.y) << " -> " << static_cast<int>(cur.y) << hex;
-      }
-      if (cur.tile_index != old.tile_index) {
-        if (first_change) first_change = false;
-        else s << ", ";
-        s << "t " << static_cast<int>(old.tile_index) << " -> " << static_cast<int>(cur.tile_index);
-      }
-      if (cur.flags != old.flags) {
-        if (first_change) first_change = false;
-        else s << ", ";
-        s << "f " << static_cast<int>(old.flags) << " -> " << static_cast<int>(cur.flags);
-      }
-      
-      s << "]";
-    }
-  }
-  
-  std::string out = s.str();
-  if (out.size()) {
-    std::cout << s.str() << std::endl;
-  }
-}
 
 template <typename T> void
 flatten(const std::array<std::array<T, 8>, 20>& in, size_t out_size, typename std::array<T, 160>::iterator begin) {
@@ -202,19 +153,22 @@ std::ostream& operator<<(std::ostream& out, const OAM& oam) {
     << ", flags = " << binary(oam.flags) << ")";
 }
 
-std::array<PPU::PaletteIndex, 8>
+PPU::TileRow
 PPU::tilemap_index_to_tile(byte index, byte y_offset, byte x_offset) {
+  // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
   // This takes each tile map index and retrieves
   // the corresponding line of the corresponding tile
   // 2 bytes per row, 16 bytes per tile
   // in each row, first byte is LSB of palette indices
   //              second byte is MSB
   if (bg_window_tile_data_offset == 0x8000) {
+    // data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
     return decode(bg_window_tile_data_offset + index*16,
                   y_offset, x_offset);
   } else {
     // add 0x800 to interpret the tile map index as a signed index starting in the middle
     // of the tile data range (0x8800-97FF)
+    // data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
     return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
                   y_offset, x_offset);
   }
@@ -225,17 +179,16 @@ PPU::rasterise_line() {
   byte& oam_ref = cpu.mmu._read_mem(0xfe00);
   OAM* oam = reinterpret_cast<OAM*>(&oam_ref);
   
-  // bg and window tile data comes from either 0x8000-0x8fff (1) or 0x8800-0x97ff (0)
-  // according to LCDC bit 4
   byte scx = cpu.mmu._read_mem(0xff43);
   byte scy = cpu.mmu._read_mem(0xff42);
 
-  // Background palette
-  byte palette = cpu.mmu._read_mem(0xff47);
   // For the sprite palettes, the lowest two bits should always map to 0
   byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
   byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
   
+  // Background palette
+  byte palette = cpu.mmu._read_mem(0xff47);
+
   if (bg_display) {
     // get the sequence of tiles which are touched
     auto row_touched = ((line + scy) % 256) / 8; // % 256 for scy wrap around
@@ -246,19 +199,10 @@ PPU::rasterise_line() {
       row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
     }
     
-    // if bg_window_tile_data_offset is 0x8000,
-    //     tile data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
-    // else if bg_window_tile_data_offset is 0x8800,
-    //     tile data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
-    
-    // there are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
-    
     // These are pointers into the tile map
     std::for_each(tile_data.begin(), tile_data.end(),
-                  [](std::array<PaletteIndex, 8>& v) { std::fill(v.begin(), v.end(), 0); });
-    auto begin = row_tiles.begin();
-    auto end = row_tiles.end();
-    std::transform(begin, end, tile_data.begin(), [this, scx, scy](byte index) {
+                  [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
+    std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
       return tilemap_index_to_tile(index, (line + scy) % 8, scx % 8);
     });
     // map this through the colour map
@@ -291,11 +235,8 @@ PPU::rasterise_line() {
       }
       
       std::for_each(tile_data.begin(), tile_data.end(),
-                    [](std::array<PaletteIndex, 8>& v) { std::fill(v.begin(), v.end(), 0); });
-      // These are pointers into the tile map
-      auto begin = row_tiles.begin();
-      auto end = row_tiles.end();
-      std::transform(begin, end, tile_data.begin(), [this, wx, wy](byte index) {
+                    [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
+      std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, wx, wy](byte index) {
         return tilemap_index_to_tile(index, (line - wy) % 8, (wx - 7) % 8);
       });
       
@@ -341,16 +282,11 @@ PPU::rasterise_line() {
             }
           }
           
-          // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
-          word tile_data = 0x8000 + tile_index * 16;
-          
           // sprites are not necessarily aligned to the 8x8 grid
           // we need to be able to tell which line of the sprite
           // intersects the current scanline
           
           // if we are in this section, then entry.y - 16 <= line < entry.y - 8
-          // (entry.y - 16 - line) % 8?
-          
           // need to get the relevant row in the tile
           byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
           if (entry.flags & (1 << 6)) { // y flip
@@ -359,14 +295,13 @@ PPU::rasterise_line() {
             // we need to take from the second tile
             row_offset_within_tile = 8 - row_offset_within_tile - 1;
           }
-          word tile_data_address = tile_data + row_offset_within_tile * 2;
+          
+          // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
+          word tile_data_begin = 0x8000 + tile_index * 16;
+          word tile_data_address = tile_data_begin + row_offset_within_tile * 2;
           
           byte b1 = cpu.mmu._read_mem(tile_data_address);
           byte b2 = cpu.mmu._read_mem(tile_data_address + 1);
-          
-          // for example, entry.y = 0x80, so the top left is at 0x80-0x10 = 0x70 = 112
-          // when line = 115, we have 112 <= line < 120, so we are inside the sprite.
-          // we are on row index 3 of the sprite, so the row offset is (line - (entry.y - 16)) % 8
           
           // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2, 0);
@@ -394,38 +329,35 @@ PPU::rasterise_line() {
       auto bg_palette_index_ptr = palette_index_row.begin() + sprite.oam_.x - 8;
       auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
       auto sprite_ptr = sprite.pixels_.begin();
+      
+      byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
 
       // If set to 0, sprite is always in front of bkgd and window
       // If set to 1, if background or window is colour 1, 2, 3, background or window wins
       //              else if background or window is color 0, sprite wins
       bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
       
-      byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
-      
       int n = 0;
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
         // hack to prevent invalid array access when a sprite starts before column 0
-        if (raster_ptr < raster.begin()) {
-          ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
-          continue;
-        }
-        
-        // We need to examine the original palette byte, since the bg-to-OBJ
-        // priority bit in LCDC needs to examine the original palette index
-        // (and not the index after palette mapping)
-        
-        auto sprite_byte = *sprite_ptr; // Sprite palette index
-        auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
-
-        if (!(sprite_behind_bg && bg_palette_byte != 0)) {
-          PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
-          if (sprite_byte != 0) {
-            *raster_ptr = idx;
+        if (raster_ptr >= raster.begin()) {
+          // We need to examine the original palette byte, since the bg-to-OBJ
+          // priority bit in LCDC needs to examine the original palette index
+          // (and not the index after palette mapping)
+          
+          auto sprite_byte = *sprite_ptr; // Sprite palette index
+          auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
+          
+          if (!(sprite_behind_bg && bg_palette_byte != 0)) {
+            PPU::PaletteIndex idx = apply_palette(sprite_byte, sprite_palette);
+            if (sprite_byte != 0) {
+              *raster_ptr = idx;
+            }
           }
+          ++n;
         }
         
         ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
-        ++n;
       }
     }
     
@@ -433,7 +365,7 @@ PPU::rasterise_line() {
   }
 }
 
-std::array<PPU::PaletteIndex, 8>
+PPU::TileRow
 PPU::decode(word start_loc, byte start_y, byte start_x) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
@@ -452,9 +384,9 @@ PPU::decode(word start_loc, byte start_y, byte start_x) {
   return unpack_bits(b1, b2, start_x);
 }
 
-std::array<PPU::PaletteIndex, 8>
+PPU::TileRow
 PPU::unpack_bits(byte lsb, byte msb, byte start_x) {
-  std::array<PPU::PaletteIndex, 8> result;
+  PPU::TileRow result;
   
   for (int i = 7; i >= 0; --i) {
     byte m = msb & 0x1;

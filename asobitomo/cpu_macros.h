@@ -106,24 +106,14 @@
 }
 
 #define RLCA() [](CPU& cpu) { \
-  byte hibit = cpu.a >> 7; \
-  if (hibit == 1) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  byte hibit = cpu.check_carry_if_hibit_set(cpu.a); \
   cpu.a <<= 1; \
   cpu.a |= hibit; \
   cpu.unset_flags(Nf | Hf | Zf); \
 }
 
 #define RRCA() [](CPU& cpu) { \
-  byte lobit = cpu.a & 0x1; \
-  if (lobit) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  byte lobit = cpu.check_carry_if_lobit_set(cpu.a); \
   cpu.a >>= 1; \
   cpu.a |= lobit << 7; \
   cpu.unset_flags(Nf | Hf | Zf); \
@@ -131,12 +121,7 @@
 
  #define RLA() [](CPU& cpu) { \
    byte carry = cpu.C(); \
-   byte hibit = cpu.a >> 7; \
-   if (hibit) { \
-     cpu.set_flags(Cf); \
-   } else { \
-     cpu.unset_flags(Cf); \
-   } \
+   byte hibit = cpu.check_carry_if_hibit_set(cpu.a); \
    cpu.a <<= 1; \
    cpu.a |= carry; \
    cpu.unset_flags(Nf | Hf | Zf); \
@@ -144,12 +129,7 @@
 
 #define RRA() [](CPU& cpu) { \
    byte carry = cpu.C(); \
-   byte lobit = cpu.a & 0x1; \
-   if (lobit) { \
-     cpu.set_flags(Cf); \
-   } else { \
-     cpu.unset_flags(Cf); \
-   } \
+   byte lobit = cpu.check_carry_if_lobit_set(cpu.a); \
    cpu.a >>= 1; \
    cpu.a |= carry << 7; \
    cpu.unset_flags(Nf | Hf | Zf); \
@@ -164,7 +144,6 @@
     cpu.unset_flags(Hf); \
   } \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
-  uint32_t lo_result = static_cast<uint32_t>(cpu.lo1) + static_cast<uint32_t>(cpu.lo2); \
   hl = static_cast<word>(result); \
   cpu.hi1 = hl >> 8; \
   cpu.lo1 = hl & 0xff; \
@@ -174,7 +153,7 @@
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  if ((hl & 0xfff) + (bc & 0xfff) > 0xfff) { \
+  if ((hl & 0xfff) + (bc & 0xfff) > 0xfff) { /* somehow duplicated */\
     cpu.set_flags(Hf); \
   } else { \
     cpu.unset_flags(Hf); \
@@ -489,7 +468,7 @@ CP8_HELPER(a)
 
 #define RET_COND(cond) [](CPU& cpu) { \
   if (cond) { \
-    word loc = (cpu.mmu[cpu.sp + 2] << 8) | cpu.mmu[cpu.sp + 1]; \
+    word loc = cpu.pop_word(); \
     cpu.sp += 2; \
     cpu.pc = loc; \
     cpu.cycles += 12; \
@@ -605,7 +584,7 @@ CP8_HELPER(a)
 }
 
 #define RETI() [](CPU& cpu) { \
-  word loc = (cpu.mmu[cpu.sp + 2] << 8) | cpu.mmu[cpu.sp + 1]; \
+  word loc = cpu.pop_word(); \
   cpu.sp += 2; \
   cpu.pc = loc; \
   cpu.enable_interrupts(); \

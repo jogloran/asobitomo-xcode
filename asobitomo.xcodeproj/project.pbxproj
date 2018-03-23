@@ -67,6 +67,7 @@
 		09E2D511204F5BCA00D90FDB /* mbc_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mbc_types.h; sourceTree = "<group>"; };
 		09E2D512204F5BE900D90FDB /* header_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = header_type.h; sourceTree = "<group>"; };
 		09F0BA45204620C600936CF1 /* sdl_input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sdl_input.h; sourceTree = "<group>"; };
+		09F569FB2065B10600FE8307 /* ppu_util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ppu_util.h; sourceTree = "<group>"; };
 		09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tile_debugger.cc; sourceTree = "<group>"; };
 		09FB8E7F205AD87C000A1CF6 /* tile_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tile_debugger.h; sourceTree = "<group>"; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -166,6 +167,7 @@
 				09D011A920622DB600A62FE4 /* mbc3.h */,
 				09D011AA20622DB600A62FE4 /* mbc3.cc */,
 				09D011A720622D2700A62FE4 /* mbc_base.h */,
+				09F569FB2065B10600FE8307 /* ppu_util.h */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
@@ -253,7 +255,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -278,26 +280,39 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = 1;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_STRICT_ALIASING = NO;
+				GCC_UNROLL_LOOPS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LLVM_LTO = YES_THIN;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-pipe",
+					"-Ofast",
+					"-fvectorize",
+					"-funroll-loops",
+					"-fstrict-aliasing",
+					"-flto",
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -308,7 +323,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -333,19 +348,32 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_STRICT_ALIASING = NO;
+				GCC_UNROLL_LOOPS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LLVM_LTO = YES_THIN;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-pipe",
+					"-Ofast",
+					"-fvectorize",
+					"-funroll-loops",
+					"-fstrict-aliasing",
+					"-flto",
+				);
 				SDKROOT = macosx;
 			};
 			name = Release;

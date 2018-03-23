@@ -162,25 +162,15 @@ SET_GEN8(6), \
 SET_GEN8(7)
 
 #define RLC8_HL_helper() [](CPU& cpu) { \
-   word loc = cpu.get_word(cpu.h, cpu.l); \
-  byte hibit = cpu.mmu[loc] >> 7; \
-  if (hibit == 1) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  word loc = cpu.get_word(cpu.h, cpu.l); \
+  byte hibit = cpu.check_carry_if_hibit_set(cpu.mmu[loc]); \
   cpu.mmu.set(loc, (cpu.mmu[loc] << 1) | hibit); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
 
 #define RLC8_helper(reg) [](CPU& cpu) { \
-  byte hibit = cpu.reg >> 7; \
-  if (hibit == 1) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  byte hibit = cpu.check_carry_if_hibit_set(cpu.reg); \
   cpu.reg = (cpu.reg << 1) | hibit; \
   cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
@@ -188,24 +178,14 @@ SET_GEN8(7)
 
 #define RRC8_HL_helper() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
-  byte lobit = cpu.mmu[loc] & 0x1; \
-  if (lobit) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  byte lobit = cpu.check_carry_if_lobit_set(cpu.mmu[loc]); \
   cpu.mmu.set(loc, (cpu.mmu[loc] >> 1) | (lobit << 7)); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
 }
 
 #define RRC8_helper(reg) [](CPU& cpu) { \
-  byte lobit = cpu.reg & 0x1; \
-  if (lobit) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  byte lobit = cpu.check_carry_if_lobit_set(cpu.reg); \
   cpu.reg = (cpu.reg >> 1) | (lobit << 7); \
   cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
@@ -228,12 +208,7 @@ SET_GEN8(7)
 #define RL8_HL_helper() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   byte carry = cpu.C(); \
-  byte hibit = cpu.mmu[loc] >> 7; \
-  if (hibit) { \
-   cpu.set_flags(Cf); \
-  } else { \
-   cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_hibit_set(cpu.mmu[loc]); \
   cpu.mmu.set(loc, (cpu.mmu[loc] << 1) | carry); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
@@ -241,12 +216,7 @@ SET_GEN8(7)
 
 #define RL8_helper(reg) [](CPU& cpu) { \
   byte carry = cpu.C(); \
-  byte hibit = cpu.reg >> 7; \
-  if (hibit) { \
-   cpu.set_flags(Cf); \
-  } else { \
-   cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_hibit_set(cpu.reg); \
   cpu.reg = (cpu.reg << 1) | carry; \
   cpu.check_zero(cpu.reg); \
   cpu.unset_flags(Nf | Hf); \
@@ -255,12 +225,7 @@ SET_GEN8(7)
 #define RR8_HL_helper() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   byte carry = cpu.C(); \
-  byte lobit = cpu.mmu[loc] & 0x1; \
-  if (lobit) { \
-   cpu.set_flags(Cf); \
-  } else { \
-   cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_lobit_set(cpu.mmu[loc]); \
   cpu.mmu.set(loc, (cpu.mmu[loc] >> 1) | (carry << 7)); \
   cpu.check_zero(cpu.mmu[loc]); \
   cpu.unset_flags(Nf | Hf); \
@@ -268,12 +233,7 @@ SET_GEN8(7)
 
 #define RR8_helper(reg) [](CPU& cpu) { \
   byte carry = cpu.C(); \
-  byte lobit = cpu.reg & 0x1; \
-  if (lobit) { \
-   cpu.set_flags(Cf); \
-  } else { \
-   cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_lobit_set(cpu.reg); \
   cpu.reg >>= 1; \
   cpu.reg |= carry << 7; \
   cpu.check_zero(cpu.reg); \
@@ -283,24 +243,14 @@ SET_GEN8(7)
 #define SLA8_HL_helper() [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
   word loc = cpu.get_word(cpu.h, cpu.l); \
-  byte hibit = cpu.mmu[loc] >> 7; \
-  if (hibit) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_hibit_set(cpu.mmu[loc]); \
   cpu.mmu.set(loc, cpu.mmu[loc] << 1); \
   cpu.check_zero(cpu.mmu[loc]); \
 }
 
 #define SLA8_helper(reg) [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
-  byte hibit = cpu.reg >> 7; \
-  if (hibit) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_hibit_set(cpu.reg); \
   cpu.reg <<= 1; \
   cpu.check_zero(cpu.reg); \
 }
@@ -309,12 +259,7 @@ SET_GEN8(7)
   cpu.unset_flags(Nf | Hf); \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   byte hibit = cpu.mmu[loc] & 0x80; \
-  byte lobit = cpu.mmu[loc] & 0x1; \
-  if (lobit) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_lobit_set(cpu.mmu[loc]); \
   cpu.mmu.set(loc, (cpu.mmu[loc] >> 1) | hibit); \
   cpu.check_zero(cpu.mmu[loc]); \
 }
@@ -322,12 +267,7 @@ SET_GEN8(7)
 #define SRA8_helper(reg) [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
   byte hibit = cpu.reg & 0x80; \
-  byte lobit = cpu.reg & 0x1; \
-  if (lobit) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_lobit_set(cpu.reg); \
   cpu.reg >>= 1; \
   cpu.reg |= hibit; \
   cpu.check_zero(cpu.reg); \
@@ -336,22 +276,14 @@ SET_GEN8(7)
 #define SRL8_HL_helper() [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
   word loc = cpu.get_word(cpu.h, cpu.l); \
-  if (cpu.mmu[loc] & 0x1) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_lobit_set(cpu.mmu[loc]); \
   cpu.mmu.set(loc, cpu.mmu[loc] >> 1); \
   cpu.check_zero(cpu.mmu[loc]); \
 }
 
 #define SRL8_helper(reg) [](CPU& cpu) { \
   cpu.unset_flags(Nf | Hf); \
-  if (cpu.reg & 0x1) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry_if_lobit_set(cpu.reg); \
   cpu.reg >>= 1; \
   cpu.check_zero(cpu.reg); \
 }
