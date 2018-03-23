@@ -18,3 +18,39 @@ std::string binary(byte b) {
   auto result = s.str();
   return result;
 }
+
+static std::string interrupt_names[] {
+  "vblank",
+  "stat",
+  "timer",
+  "serial",
+  "joypad",
+};
+
+std::string interrupt_flags_to_description(byte flags) {
+  std::stringstream s;
+  bool first = true;
+  
+  int i = 0;
+  for (auto name : interrupt_names) {
+    if (flags & (1 << i)) {
+      if (!first) s << ", ";
+      else first = false;
+      
+      s << name;
+    }
+    ++i;
+  }
+  
+  return s.str();
+}
+
+two_byte_fmt_manip two_byte_fmt(byte b1, byte b2) {
+  return two_byte_fmt_manip(b1, b2);
+}
+
+std::ostream& operator<<(std::ostream& out, const two_byte_fmt_manip& manip) {
+  manip(out);
+  return out;
+}
+

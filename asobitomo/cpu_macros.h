@@ -165,7 +165,6 @@
   } \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
   uint32_t lo_result = static_cast<uint32_t>(cpu.lo1) + static_cast<uint32_t>(cpu.lo2); \
-  bool lo_carry = lo_result & (1 << 8); \
   hl = static_cast<word>(result); \
   cpu.hi1 = hl >> 8; \
   cpu.lo1 = hl & 0xff; \
@@ -180,7 +179,6 @@
   } else { \
     cpu.unset_flags(Hf); \
   } \
-  /* set H conditionally */ \
 }
 
 #define ADD_WORD_WWORD(hi, lo, wword) [](CPU& cpu) { \

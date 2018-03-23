@@ -8,6 +8,7 @@
 #include "cpu_macros.h"
 #include "cpu_cb_macros.h"
 #include "op_names.h"
+#include "util.h"
 
 #include "rang.hpp"
 
@@ -210,26 +211,6 @@ std::string CPU::ppu_state_as_string(PPU::Mode mode) {
   return mode_strings[static_cast<int>(mode)];
 }
 
-struct two_byte_fmt_manip {
-public:
-  two_byte_fmt_manip(byte b1, byte b2): b1_(b1), b2_(b2) {}
-  void operator()(std::ostream& out) const {
-    out << dec << rang::style::bold << rang::fgB::gray << setw(2) << setfill('0') << hex << static_cast<int>(b1_) << rang::style::reset << rang::fg::reset
-        << dec <<                      rang::fgB::black << setw(2) << setfill('0') << hex << static_cast<int>(b2_) << rang::style::reset << rang::fg::reset;
-  }
-  
-private:
-  byte b1_, b2_;
-};
-
-two_byte_fmt_manip two_byte_fmt(byte b1, byte b2) {
-  return two_byte_fmt_manip(b1, b2);
-}
-std::ostream& operator<<(std::ostream& out, const two_byte_fmt_manip& manip) {
-  manip(out);
-  return out;
-}
-
 void CPU::dump_registers_to_file(std::ofstream& out) {
   out << static_cast<byte>(pc >> 8) << static_cast<byte>(pc & 0xff) << a << f << b << c << d << e << h << l;
 }
@@ -312,33 +293,6 @@ void CPU::update_interrupt_state() {
   }
 }
 
-
-static std::string interrupt_names[] {
-  "vblank",
-  "stat",
-  "timer",
-  "serial",
-  "joypad",
-};
-
-static std::string interrupt_flags_to_description(byte flags) {
-  std::stringstream s;
-  bool first = true;
-  
-  int i = 0;
-  for (auto name : interrupt_names) {
-    if (flags & (1 << i)) {
-      if (!first) s << ", ";
-      else first = false;
-      
-      s << name;
-    }
-    ++i;
-  }
-  
-  return s.str();
-}
-
 void CPU::fire_interrupts() {
   if (interrupt_enabled != InterruptState::Enabled && interrupt_enabled != InterruptState::DisableNext) {
     return;
@@ -393,6 +347,32 @@ bool CPU::wake_if_interrupt_requested() {
   return false;
 }
 
+void CPU::stop() {
+  pc += 1;
+  halted = true;
+}
+
+void CPU::halt() {
+  if (interrupt_enabled == InterruptState::Disabled) {
+    byte interrupt_enable = mmu._read_mem(0xffff);
+    byte interrupt_flags = mmu._read_mem(0xff0f);
+    
+    byte candidate_interrupts = interrupt_enable & interrupt_flags;
+    // The HALT bug occurs when IME is zero, and some interrupt is
+    // enabled and pending
+    if (candidate_interrupts != 0x0) {
+      // The HALT bug.
+      in_halt_bug = true;
+      halted = false;
+    } else {
+      halted = true;
+    }
+  } else {
+    interrupt_flags_before_halt = mmu[0xff0f];
+    halted = true;
+  }
+}
+
 void CPU::step(bool debug)  {
   bool awakened_by_interrupt = false;
   if (halted) {
@@ -427,10 +407,6 @@ void CPU::step(bool debug)  {
     }
 
     long old_cycles = cycles;
-    
-    if (instr == 0xfb) {
-    
-    }
     
     ops[instr](*this); // calls EI, sets interrupt state to EnableNext
     cycles += ncycles[instr];

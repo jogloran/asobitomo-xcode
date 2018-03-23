@@ -98,31 +98,9 @@ public:
   }
   
   bool wake_if_interrupt_requested();
-  void halt() {
-    if (interrupt_enabled == InterruptState::Disabled) {
-      byte interrupt_enable = mmu._read_mem(0xffff);
-      byte interrupt_flags = mmu._read_mem(0xff0f);
-
-      byte candidate_interrupts = interrupt_enable & interrupt_flags;
-      // The HALT bug occurs when IME is zero, and some interrupt is
-      // enabled and pending
-      if (candidate_interrupts != 0x0) {
-        // The HALT bug.
-        in_halt_bug = true;
-        halted = false;
-      } else {
-        halted = true;
-      }
-    } else {
-      interrupt_flags_before_halt = mmu[0xff0f];
-      halted = true;
-    }
-  }
-
-  void stop() {
-    pc += 1;
-    halted = true;
-  }
+  
+  void halt();
+  void stop();
 
   std::string op_name_for(word loc);
   void dump_registers_to_file(std::ofstream& out);

@@ -35,17 +35,17 @@ public:
   }
   
 private:
+  constexpr static int TM_WIDTH = 32*8;
+  constexpr static int TM_HEIGHT = 32*8;
+  
   PPU& ppu_;
   int scale_;
   
-  std::array<byte, (32*8*4) * (32*8) * 4> buf;
+  std::array<byte, (TM_WIDTH * 4) * (TM_HEIGHT * 4)> buf;
   
   SDL_Window* window_;
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
-  
-  constexpr static int TM_WIDTH = 32*8;
-  constexpr static int TM_HEIGHT = 32*8;
 
   bool enabled_;
 };
