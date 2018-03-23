@@ -54,3 +54,14 @@ std::ostream& operator<<(std::ostream& out, const two_byte_fmt_manip& manip) {
   return out;
 }
 
+size_t history_repeating(std::deque<word> history) {
+  for (auto i = 16; i >= 2; --i) {
+    if (history.size() < 2*i) continue;
+    
+    if (std::equal(history.end() - i, history.end(), history.end() - 2*i)) {
+      return i;
+    }
+  }
+  
+  return 0;
+}

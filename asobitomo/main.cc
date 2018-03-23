@@ -6,6 +6,7 @@
 #include <deque>
 #include "types.h"
 #include "cpu.h"
+#include "util.h"
 
 #include <gflags/gflags.h>
 #include "rang.hpp"
@@ -28,18 +29,6 @@ DEFINE_bool(tm, false, "Show tile map");
 DEFINE_bool(xx, false, "Debug");
 
 using namespace std;
-
-size_t history_repeating(std::deque<word> history) {
-  for (auto i = 16; i >= 2; --i) {
-    if (history.size() < 2*i) continue;
-    
-    if (std::equal(history.end() - i, history.end(), history.end() - 2*i)) {
-      return i;
-    }
-  }
-  
-  return 0;
-}
 
 bool in_title = true;
 bool xx = false;

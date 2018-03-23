@@ -2,6 +2,7 @@
 #include "mmu.h"
 
 #include "mbc1.h"
+#include "mbc3.h"
 
 byte& MMU::_read_mem(word loc) {
   byte* result = mbc->get(loc);

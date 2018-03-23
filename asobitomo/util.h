@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <deque>
 #include <iostream>
 #include <ios>
 #include <iomanip>
@@ -11,6 +12,7 @@
 std::string binary(byte b);
 std::string interrupt_flags_to_description(byte flags);
 
+size_t history_repeating(std::deque<word> history);
 
 struct two_byte_fmt_manip {
 public:

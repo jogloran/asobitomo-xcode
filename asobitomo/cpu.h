@@ -98,7 +98,15 @@ public:
   }
   
   word pop_word() {
-    return (mmu[sp + 2] << 8) | mmu[sp + 1];
+    word result = (mmu[sp + 2] << 8) | mmu[sp + 1];
+    sp += 2;
+    return result;
+  }
+  
+  void push_word(byte hi, byte lo) {
+    mmu.set(sp - 1, lo);
+    mmu.set(sp, hi);
+    sp -= 2;
   }
   
   bool wake_if_interrupt_requested();

@@ -73,7 +73,7 @@ std::array<op, 256> CPU::ops {
  INC_REG(h) /* 0x24 */,
  DEC_REG(h) /* 0x25 */,
  LD_REG_d8(h) /* 0x26 */,
- DAA() /* TODO: DAA */ /* 0x27 */,
+ DAA() /* 0x27 */,
  JR_COND_r8((cpu.Z() != 0)) /* JR Z */ /* 0x28 */,
  ADD_WORD_WORD(h, l, h, l) /* 0x29 */,
  LD_REG_LOC_AUG(a, +, h, l) /* LD A, (HL+) */ /* 0x2a */,
@@ -191,7 +191,6 @@ std::string CPU::op_name_for(word loc) {
   if (mmu[loc] == 0xcb) {
     return cb_op_names[mmu[loc+1]];
   } else {
-//    return op_names[mmu[loc]];
     auto op = op_names[mmu[loc]];
     return op.instruction_at_pc(*this);
   }

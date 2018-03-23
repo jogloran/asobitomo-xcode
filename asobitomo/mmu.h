@@ -16,9 +16,8 @@ using namespace std;
 #include "ppu.h"
 #include "timer.h"
 #include "mbc_types.h"
+#include "mbc_base.h"
 #include "header_type.h"
-#include "mbc1.h"
-#include "mbc3.h"
 
 extern bool in_title;
 

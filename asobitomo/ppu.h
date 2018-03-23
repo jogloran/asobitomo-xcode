@@ -103,14 +103,10 @@ public:
   
   word window_tilemap_offset;
   bool window_display;
-  
   word bg_window_tile_data_offset;
-  
   word bg_tilemap_offset;
-  
   SpriteMode sprite_mode;
   bool sprite_display;
-  
   bool bg_display;
 
   CPU& cpu;

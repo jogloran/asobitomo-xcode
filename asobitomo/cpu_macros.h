@@ -121,7 +121,7 @@
 
  #define RLA() [](CPU& cpu) { \
    byte carry = cpu.C(); \
-   byte hibit = cpu.check_carry_if_hibit_set(cpu.a); \
+   cpu.check_carry_if_hibit_set(cpu.a); \
    cpu.a <<= 1; \
    cpu.a |= carry; \
    cpu.unset_flags(Nf | Hf | Zf); \
@@ -129,7 +129,7 @@
 
 #define RRA() [](CPU& cpu) { \
    byte carry = cpu.C(); \
-   byte lobit = cpu.check_carry_if_lobit_set(cpu.a); \
+   cpu.check_carry_if_lobit_set(cpu.a); \
    cpu.a >>= 1; \
    cpu.a |= carry << 7; \
    cpu.unset_flags(Nf | Hf | Zf); \
@@ -469,7 +469,6 @@ CP8_HELPER(a)
 #define RET_COND(cond) [](CPU& cpu) { \
   if (cond) { \
     word loc = cpu.pop_word(); \
-    cpu.sp += 2; \
     cpu.pc = loc; \
     cpu.cycles += 12; \
   } \
@@ -488,9 +487,7 @@ CP8_HELPER(a)
 }
 
 #define PUSH_WORD(hi, lo) [](CPU& cpu) { \
-  cpu.mmu.set(cpu.sp - 1, cpu.lo); \
-  cpu.mmu.set(cpu.sp, cpu.hi); \
-  cpu.sp -= 2; \
+  cpu.push_word(cpu.hi, cpu.lo); \
 }
 
 #define JP_COND_a16(cond) [](CPU& cpu) { \
@@ -585,7 +582,6 @@ CP8_HELPER(a)
 
 #define RETI() [](CPU& cpu) { \
   word loc = cpu.pop_word(); \
-  cpu.sp += 2; \
   cpu.pc = loc; \
   cpu.enable_interrupts(); \
 }
