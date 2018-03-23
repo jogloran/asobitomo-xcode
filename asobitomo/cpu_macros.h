@@ -4,9 +4,6 @@
 #include "flags.h"
 #include "cpu.h"
 
-
-extern bool xx; // turns on the new impl
-
 #define NOOP [](CPU&) {}
 
 #define LD_WORD_d16(hi, lo) [](CPU& cpu) { \
@@ -494,12 +491,7 @@ CP8_HELPER(a)
 
 #define RET_COND(cond) [](CPU& cpu) { \
   if (cond) { \
-    word loc; \
-    if (xx) { \
-    loc = (cpu.mmu[cpu.sp + 2] << 8) | cpu.mmu[cpu.sp + 1]; \
-    } else { \
-    loc = (cpu.mmu[cpu.sp + 1] << 8) | cpu.mmu[cpu.sp + 2]; \
-    } \
+    word loc = (cpu.mmu[cpu.sp + 2] << 8) | cpu.mmu[cpu.sp + 1]; \
     cpu.sp += 2; \
     cpu.pc = loc; \
     cpu.cycles += 12; \
@@ -507,39 +499,21 @@ CP8_HELPER(a)
 }
 
 #define POP_WORD(hi, lo) [](CPU& cpu) { \
-  if (xx) { \
   cpu.hi = cpu.mmu[cpu.sp + 2]; \
   cpu.lo = cpu.mmu[cpu.sp + 1]; \
   cpu.sp += 2; \
-  } else { \
-  cpu.hi = cpu.mmu[cpu.sp + 1]; \
-  cpu.lo = cpu.mmu[cpu.sp + 2]; \
-  cpu.sp += 2; \
-  } \
 }
 
 #define POP_AF() [](CPU& cpu) { \
-  if (xx) { \
   cpu.a = cpu.mmu[cpu.sp + 2]; \
   cpu.f = cpu.mmu[cpu.sp + 1] & 0xf0; \
   cpu.sp += 2; \
-  } else { \
-  cpu.a = cpu.mmu[cpu.sp + 1]; \
-  cpu.f = cpu.mmu[cpu.sp + 2] & 0xf0; \
-  cpu.sp += 2; \
-  } \
 }
 
 #define PUSH_WORD(hi, lo) [](CPU& cpu) { \
-  if (xx) { \
   cpu.mmu.set(cpu.sp - 1, cpu.lo); \
   cpu.mmu.set(cpu.sp, cpu.hi); \
   cpu.sp -= 2; \
-  } else { \
-  cpu.mmu.set(cpu.sp - 1, cpu.hi); \
-  cpu.mmu.set(cpu.sp, cpu.lo); \
-  cpu.sp -= 2; \
-  } \
 }
 
 #define JP_COND_a16(cond) [](CPU& cpu) { \
@@ -553,13 +527,8 @@ CP8_HELPER(a)
 }
 
 #define RST(addr) [](CPU& cpu) { \
-  if (xx) { \
   cpu.mmu.set(cpu.sp - 1, cpu.pc & 0xff); \
   cpu.mmu.set(cpu.sp, cpu.pc >> 8); \
-  } else { \
-  cpu.mmu.set(cpu.sp - 1, cpu.pc >> 8); \
-  cpu.mmu.set(cpu.sp, cpu.pc & 0xff); \
-  } \
   cpu.sp -= 2; \
   cpu.pc = addr; \
 }
@@ -568,13 +537,8 @@ CP8_HELPER(a)
   word a16 = cpu.get_word(); \
   cpu.pc += 2; \
   if (cond) { \
-    if (xx) { \
     cpu.mmu.set(cpu.sp - 1, cpu.pc & 0xff); \
     cpu.mmu.set(cpu.sp, cpu.pc >> 8); \
-    } else { \
-    cpu.mmu.set(cpu.sp - 1, cpu.pc >> 8); \
-    cpu.mmu.set(cpu.sp, cpu.pc & 0xff); \
-    } \
     cpu.sp -= 2; \
     cpu.pc = a16; \
     cpu.cycles += 12; \
@@ -646,12 +610,7 @@ CP8_HELPER(a)
 }
 
 #define RETI() [](CPU& cpu) { \
-  word loc; \
-  if (xx) { \
-  loc = (cpu.mmu[cpu.sp + 2] << 8) | cpu.mmu[cpu.sp + 1]; \
-  } else { \
-  loc = (cpu.mmu[cpu.sp + 1] << 8) | cpu.mmu[cpu.sp + 2]; \
-  } \
+  word loc = (cpu.mmu[cpu.sp + 2] << 8) | cpu.mmu[cpu.sp + 1]; \
   cpu.sp += 2; \
   cpu.pc = loc; \
   cpu.enable_interrupts(); \
