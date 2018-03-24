@@ -18,6 +18,7 @@ using namespace std;
 #include "mbc_types.h"
 #include "mbc_base.h"
 #include "header_type.h"
+#include "rang.hpp"
 
 extern bool in_title;
 
@@ -62,12 +63,12 @@ public:
   byte& _read_mem(word loc);
   
   void dump_cartridge_info() {
-    std::cout << "Title\t\t" << (char*)header.title_or_manufacturer.title << std::endl;
-    std::cout << "Type\t\t"  << header.cartridge_type << std::endl;
-    std::cout << "ROM\t\t" << (1 << (15 + header.rom_size)) << std::endl;
-    std::cout << "RAM\t\t" << static_cast<int>(header.ram_size) << std::endl;
-    std::cout << "SGB\t\t" << static_cast<int>(header.sgb == 0x3) << std::endl;
-    std::cout << "NJP\t\t"  << static_cast<int>(header.destination) << std::endl;
+    std::cout << rang::style::dim << rang::fg::gray << "Title\t\t" << rang::fg::black << rang::style::reset << (char*)header.title_or_manufacturer.title << rang::fg::reset << rang::style::reset << std::endl;
+    std::cout << rang::style::dim << rang::fg::gray << "Type\t\t" << rang::fg::black << rang::style::reset  << header.cartridge_type << rang::fg::reset << rang::style::reset << std::endl;
+    std::cout << rang::style::dim << rang::fg::gray << "ROM\t\t" << rang::fg::black << rang::style::reset << (1 << (15 + header.rom_size)) << rang::fg::reset << rang::style::reset << std::endl;
+    std::cout << rang::style::dim << rang::fg::gray << "RAM\t\t" << rang::fg::black << rang::style::reset << static_cast<int>(header.ram_size) << rang::fg::reset << rang::style::reset << std::endl;
+    std::cout << rang::style::dim << rang::fg::gray << "SGB\t\t" << rang::fg::black << rang::style::reset << static_cast<int>(header.sgb == 0x3) << rang::fg::reset << rang::style::reset << std::endl;
+    std::cout << rang::style::dim << rang::fg::gray << "NJP\t\t" << rang::fg::black << rang::style::reset  << static_cast<int>(header.destination) << rang::fg::reset << rang::style::reset << std::endl;
   }
   
   void handle_joypad();
