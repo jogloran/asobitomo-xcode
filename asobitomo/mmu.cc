@@ -55,6 +55,9 @@ byte& MMU::_read_mem(word loc) {
 }
 
 void MMU::set(word loc, byte value) {
+  if (loc == 0x1e21) {
+  ;
+  }
   if (mbc->set(loc, value)) {
     return;
   }
