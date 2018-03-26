@@ -15,7 +15,7 @@ MBC3::get(word loc) {
     int full_bank = (bank_hi << 5) + bank; // TODO: need wraparound behaviour?
     return &mmu.cart[full_bank * 0x4000 + (loc - 0x4000)];
   } else if (loc >= 0xa000 && loc <= 0xbfff) {
-    return &external_ram[loc - 0xa000];
+    return &external_ram[ram_bank * 0x2000 + (loc - 0xa000)];
   }
   
   return nullptr;
@@ -62,7 +62,5 @@ void MBC3::save(std::string path) {
 
 void MBC3::load(std::string path) {
   std::ifstream eram(path, std::ios::binary);
-  if (!eram.read((char*)external_ram.data(), 0x2000*4)) {
-    throw new std::runtime_error("Problem reading");
-  }
+  eram.read((char*)external_ram.data(), 0x2000*4);
 }
