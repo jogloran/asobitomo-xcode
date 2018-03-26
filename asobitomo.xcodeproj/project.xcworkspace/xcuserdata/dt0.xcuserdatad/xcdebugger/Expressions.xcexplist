@@ -120,10 +120,13 @@
          contextName = "main:main.cc">
          <PersistentStrings>
             <PersistentString
-               value = "cpu.pc">
+               value = "cpu.ppu.ncycles">
             </PersistentString>
             <PersistentString
-               value = "cpu.ppu.ncycles">
+               value = "cpu.sp">
+            </PersistentString>
+            <PersistentString
+               value = "cpu.pc">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
