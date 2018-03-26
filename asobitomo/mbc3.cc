@@ -54,3 +54,15 @@ MBC3::set(word loc, byte value) {
   
   return false;
 }
+
+void MBC3::save(std::string path) {
+  std::ofstream eram(path, std::ios::binary);
+  eram.write((char*)external_ram.data(), 0x2000*4);
+}
+
+void MBC3::load(std::string path) {
+  std::ifstream eram(path, std::ios::binary);
+  if (!eram.read((char*)external_ram.data(), 0x2000*4)) {
+    throw new std::runtime_error("Problem reading");
+  }
+}

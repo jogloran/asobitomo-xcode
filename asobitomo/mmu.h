@@ -45,6 +45,7 @@ public:
     
     MBC cartridge_type = h->cartridge_type;
     mbc = mbc_for(cartridge_type, *this);
+    mbc->load("eram.sav");
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);
