@@ -98,20 +98,20 @@ public:
   }
   
   word pop_word() {
-    word result = (mmu[sp + 2] << 8) | mmu[sp + 1];
+    word result = (mmu[sp + 1] << 8) | mmu[sp + 0];
     sp += 2;
     return result;
   }
   
   void push_word(word w) {
-    mmu.set(sp - 1, w & 0xff);
-    mmu.set(sp, w >> 8);
+    mmu.set(sp - 1, w >> 8);
+    mmu.set(sp - 2, w & 0xff);
     sp -= 2;
   }
   
   void push_word(byte hi, byte lo) {
-    mmu.set(sp - 1, lo);
-    mmu.set(sp, hi);
+    mmu.set(sp - 1, hi);
+    mmu.set(sp - 2, lo);
     sp -= 2;
   }
   

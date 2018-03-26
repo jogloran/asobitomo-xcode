@@ -2,6 +2,7 @@
 #include "mmu.h"
 
 #include "mbc1.h"
+#include "mbc2.h"
 #include "mbc3.h"
 
 std::ostream& operator<<(std::ostream& out, MBC mbc) {
@@ -35,6 +36,7 @@ std::unique_ptr<MBCBase> mbc_for(MBC mbc, MMU& mmu) {
       
     case MBC::MBC2:
     case MBC::MBC2_BATTERY:
+      return std::make_unique<MBC2>(mmu);
     
     case MBC::MBC5:
     case MBC::MBC5_RAM:
@@ -44,6 +46,6 @@ std::unique_ptr<MBCBase> mbc_for(MBC mbc, MMU& mmu) {
     case MBC::MBC5_RUMBLE_RAM_BATTERY:
       
     default:
-      throw std::runtime_error("Unsupported MBC");
+      throw std::runtime_error(std::string("Unsupported MBC: ") + mbc_string[mbc]);
   }
 }

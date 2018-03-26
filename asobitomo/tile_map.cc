@@ -93,8 +93,20 @@ TM::show() {
     
     std::cout << "address: " << setw(4) << setfill('0') << hex <<  (ppu_.bg_tilemap_offset + (mouse_y / scale_) * 32 + (mouse_x / scale_)) << std::endl;
     byte tile_index = ppu_.cpu.mmu[ppu_.bg_tilemap_offset + (mouse_y / scale_) * 32 + (mouse_x / scale_)];
-////    byte tile_data = ppu_.cpu.mmu[ppu_.bg_window_tile_data_offset + tile_index*16];
-////
+    std::cout << "tile data offset: " << hex << setw(4) << ppu_.bg_window_tile_data_offset << std::endl;
+    std::cout << "tile data start: " << hex << setw(4) << (ppu_.bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(tile_index))*16) << std::endl;
+    
+    for (int i = 0; i < 8; ++i) {
+      auto row = ppu_.tilemap_index_to_tile(tile_index, i, 0);
+
+      for (PPU::PaletteIndex idx: row) {
+        word addr = ppu_.bg_window_tile_data_offset + 0x800 +
+          static_cast<signed char>(tile_index)*16 + i*2;
+        std::cout << setw(4) << addr << ' ' << Console::d[idx] << Console::d[idx] << ' ';
+      }
+      std::cout << std::endl;
+    }
+    
      std::cout << hex << setfill('0') << setw(2) << int(mouse_x / scale_) << ' ' << setw(2) << int(mouse_y / scale_) << ' ' << setw(2) << int(tile_index) << std::endl;
   }
 }

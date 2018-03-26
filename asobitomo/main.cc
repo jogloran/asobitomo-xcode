@@ -100,6 +100,7 @@ int main(int argc, char** argv) {
     if (FLAGS_dump_states_to_file != "") {
       cpu.dump_registers_to_file(states_file);
     }
+    
     ++ninstrs;
   }
 }

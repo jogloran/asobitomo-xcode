@@ -58,7 +58,12 @@ GL::blit() {
     cpu_.dump_state();
   } else if (keystates[SDL_SCANCODE_X]) {
     for (word addr = 0xc4f4; addr <= 0xc506; ++addr) {
-      std::cout << hex << setw(2) << int(cpu_.mmu._read_mem(addr)) << ' ';
+      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu._read_mem(addr)) << ' ';
+    }
+    std::cout << std::endl;
+  } else if (keystates[SDL_SCANCODE_Y]) {
+    for (word addr = 0x5b4a; addr <= 0x5b4a + 16; ++addr) {
+      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu._read_mem(addr)) << ' ';
     }
     std::cout << std::endl;
   }

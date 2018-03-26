@@ -153,11 +153,6 @@
   } else { \
     cpu.unset_flags(Cf); \
   } \
-  if ((hl & 0xfff) + (bc & 0xfff) > 0xfff) { /* somehow duplicated */\
-    cpu.set_flags(Hf); \
-  } else { \
-    cpu.unset_flags(Hf); \
-  } \
 }
 
 #define ADD_WORD_WWORD(hi, lo, wword) [](CPU& cpu) { \
@@ -475,14 +470,14 @@ CP8_HELPER(a)
 }
 
 #define POP_WORD(hi, lo) [](CPU& cpu) { \
-  cpu.hi = cpu.mmu[cpu.sp + 2]; \
-  cpu.lo = cpu.mmu[cpu.sp + 1]; \
+  cpu.lo = cpu.mmu[cpu.sp]; \
+  cpu.hi = cpu.mmu[cpu.sp + 1]; \
   cpu.sp += 2; \
 }
 
 #define POP_AF() [](CPU& cpu) { \
-  cpu.a = cpu.mmu[cpu.sp + 2]; \
-  cpu.f = cpu.mmu[cpu.sp + 1] & 0xf0; \
+  cpu.f = cpu.mmu[cpu.sp] & 0xf0; \
+  cpu.a = cpu.mmu[cpu.sp + 1]; \
   cpu.sp += 2; \
 }
 
