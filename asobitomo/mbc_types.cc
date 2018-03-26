@@ -4,6 +4,7 @@
 #include "mbc1.h"
 #include "mbc2.h"
 #include "mbc3.h"
+#include "mbc5.h"
 
 std::ostream& operator<<(std::ostream& out, MBC mbc) {
   if (mbc_string.find(mbc) != mbc_string.end()) {
@@ -44,6 +45,7 @@ std::unique_ptr<MBCBase> mbc_for(MBC mbc, MMU& mmu) {
     case MBC::MBC5_RUMBLE_RAM:
     case MBC::MBC5_RAM_BATTERY:
     case MBC::MBC5_RUMBLE_RAM_BATTERY:
+      return std::make_unique<MBC5>(mmu);
       
     default:
       throw std::runtime_error(std::string("Unsupported MBC: ") + mbc_string[mbc]);
