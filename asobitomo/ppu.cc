@@ -205,8 +205,12 @@ PPU::rasterise_line() {
     std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
       return tilemap_index_to_tile(index, (line + scy) % 8, scx % 8);
     });
+    // map this through the colour map
     
     flatten(tile_data, 160, raster_row.begin());
+    
+    // write to raster
+    typedef std::vector<byte>::size_type diff;
 
     auto offset = static_cast<int>(scx % 8);
     
@@ -261,52 +265,54 @@ PPU::rasterise_line() {
   
       auto sprite_height = sprite_mode == SpriteMode::S8x8 ? 8 : 16;
   
-      if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
-          line + 16 >= entry.y && line + 16 < entry.y + sprite_height) {
-        // sprite is visible on this line
-        // get tile data for sprite
-        
-        auto tile_index = entry.tile_index;
-        if (sprite_mode == SpriteMode::S8x16) {
-          auto tile_y = (line - (entry.y - 16));
-          if (tile_y < 8) {
-            tile_index &= 0xfe;
-          } else {
-            tile_y -= 8;
-            tile_index |= 0x01;
+      for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
+        if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
+            line + 16 >= entry.y && line + 16 < entry.y + sprite_height) {
+          // sprite is visible on this line
+          // get tile data for sprite
+          
+          auto tile_index = entry.tile_index;
+          if (sprite_mode == SpriteMode::S8x16) {
+            auto tile_y = (line - (entry.y - 16));
+            if (tile_y < 8) {
+              tile_index &= 0xfe;
+            } else {
+              tile_y -= 8;
+              tile_index |= 0x01;
+            }
           }
-        }
-        
-        // sprites are not necessarily aligned to the 8x8 grid
-        // we need to be able to tell which line of the sprite
-        // intersects the current scanline
-        
-        // if we are in this section, then entry.y - 16 <= line < entry.y - 8
-        // need to get the relevant row in the tile
-        byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
-        if (entry.flags & (1 << 6)) { // y flip
-          // TODO: account for 8x16 tiles
-          // in the event that 8 <= row_offset_within_tile <= 15,
-          // we need to take from the second tile
-          row_offset_within_tile = 8 - row_offset_within_tile - 1;
-        }
-        
-        // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
-        word tile_data_begin = 0x8000 + tile_index * 16;
-        word tile_data_address = tile_data_begin + row_offset_within_tile * 2;
-        
-        byte b1 = cpu.mmu._read_mem(tile_data_address);
-        byte b2 = cpu.mmu._read_mem(tile_data_address + 1);
-        
-        // Map the sprite indices through the palette map
-        auto decoded = unpack_bits(b1, b2, 0);
+          
+          // sprites are not necessarily aligned to the 8x8 grid
+          // we need to be able to tell which line of the sprite
+          // intersects the current scanline
+          
+          // if we are in this section, then entry.y - 16 <= line < entry.y - 8
+          // need to get the relevant row in the tile
+          byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
+          if (entry.flags & (1 << 6)) { // y flip
+            // TODO: account for 8x16 tiles
+            // in the event that 8 <= row_offset_within_tile <= 15,
+            // we need to take from the second tile
+            row_offset_within_tile = 8 - row_offset_within_tile - 1;
+          }
+          
+          // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
+          word tile_data_begin = 0x8000 + tile_index * 16;
+          word tile_data_address = tile_data_begin + row_offset_within_tile * 2;
+          
+          byte b1 = cpu.mmu._read_mem(tile_data_address);
+          byte b2 = cpu.mmu._read_mem(tile_data_address + 1);
+          
+          // Map the sprite indices through the palette map
+          auto decoded = unpack_bits(b1, b2, 0);
 
-        if (entry.flags & (1 << 5)) {
-          std::reverse(decoded.begin(), decoded.end());
+          if (entry.flags & (1 << 5)) {
+            std::reverse(decoded.begin(), decoded.end());
+          }
+          
+          visible.emplace_back(RenderedSprite(entry, j, decoded));
+          break;
         }
-        
-        visible.emplace_back(RenderedSprite(entry, j, decoded));
-        break;
       }
     }
 
