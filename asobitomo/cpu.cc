@@ -327,10 +327,8 @@ void CPU::fire_interrupts() {
   interrupt_enabled = InterruptState::Disabled;
   
   mmu.set(0xff0f, interrupt_flags & ~handled_interrupt);
-  mmu[sp - 1] = pc & 0xff;
-  mmu[sp] = pc >> 8;
   
-  sp -= 2;
+  push_word(pc);
   pc = handler;
 }
 
