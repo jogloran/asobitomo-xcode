@@ -471,16 +471,14 @@ CP8_HELPER(a)
 
 #define POP_WORD(hi, lo) [](CPU& cpu) { \
   cpu.lo = cpu.mmu[cpu.sp]; \
-  cpu.sp += 1; \
-  cpu.hi = cpu.mmu[cpu.sp]; \
-  cpu.sp += 1; \
+  cpu.hi = cpu.mmu[cpu.sp + 1]; \
+  cpu.sp += 2; \
 }
 
 #define POP_AF() [](CPU& cpu) { \
   cpu.f = cpu.mmu[cpu.sp] & 0xf0; \
-  cpu.sp += 1; \
-  cpu.a = cpu.mmu[cpu.sp]; \
-  cpu.sp += 1; \
+  cpu.a = cpu.mmu[cpu.sp + 1]; \
+  cpu.sp += 2; \
 }
 
 #define PUSH_WORD(hi, lo) [](CPU& cpu) { \

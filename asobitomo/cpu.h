@@ -104,17 +104,15 @@ public:
   }
   
   void push_word(word w) {
-    sp -= 1;
-    mmu.set(sp, w >> 8);
-    sp -= 1;
-    mmu.set(sp, w & 0xff);
+    mmu.set(sp - 1, w >> 8);
+    mmu.set(sp - 2, w & 0xff);
+    sp -= 2;
   }
   
   void push_word(byte hi, byte lo) {
-    sp -= 1;
-    mmu.set(sp, hi);
-    sp -= 1;
-    mmu.set(sp, lo);
+    mmu.set(sp - 1, hi);
+    mmu.set(sp - 2, lo);
+    sp -= 2;
   }
   
   bool wake_if_interrupt_requested();
