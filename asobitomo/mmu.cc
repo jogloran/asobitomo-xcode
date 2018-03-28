@@ -10,6 +10,11 @@ byte& MMU::_read_mem(word loc) {
     return *result;
   }
   
+  result = apu.get(loc);
+  if (result != nullptr) {
+    return *result;
+  }
+  
   // TODO: ff03 should have the lower byte of timer div
   if (loc == 0xff04) { // timer DIV
     return timer.div();
@@ -55,12 +60,13 @@ byte& MMU::_read_mem(word loc) {
 }
 
 void MMU::set(word loc, byte value) {
-  if (loc == 0x1e21) {
-  ;
-  }
   if (mbc->set(loc, value)) {
     return;
   }
+  if (apu.set(loc, value)) {
+    return;
+  }
+  
   mem[loc] = value;
   
   // serial write

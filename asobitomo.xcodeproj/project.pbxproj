@@ -15,6 +15,7 @@
 		093DACE02044F4F80087724B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 093DACDF2044F4F80087724B /* OpenGL.framework */; };
 		09BC5852206896750005BC76 /* mbc2.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09BC5850206896740005BC76 /* mbc2.cc */; };
 		09C92A292069E34E00560357 /* apu.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09C92A272069E34E00560357 /* apu.cc */; };
+		09C92A38206B440E00560357 /* audio_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09C92A2A206B43DD00560357 /* audio_test.cpp */; };
 		09D0119F205B405400A62FE4 /* tile_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09D0119E205B405400A62FE4 /* tile_map.cc */; };
 		09D011A0205CAB9400A62FE4 /* gl_screen.cc in Sources */ = {isa = PBXBuildFile; fileRef = 093DACDB2044F4100087724B /* gl_screen.cc */; };
 		09D011A22061BEA400A62FE4 /* mbc_types.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09D011A12061BEA400A62FE4 /* mbc_types.cc */; };
@@ -30,6 +31,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		09C92A2F206B43FE00560357 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		A2CCE561203A97FD00F3FD4F /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -61,6 +71,10 @@
 		09BC5851206896750005BC76 /* mbc2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mbc2.h; sourceTree = "<group>"; };
 		09C92A272069E34E00560357 /* apu.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = apu.cc; sourceTree = "<group>"; };
 		09C92A282069E34E00560357 /* apu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = apu.h; sourceTree = "<group>"; };
+		09C92A2A206B43DD00560357 /* audio_test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = audio_test.cpp; sourceTree = "<group>"; };
+		09C92A2B206B43DD00560357 /* audio_test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = audio_test.hpp; sourceTree = "<group>"; };
+		09C92A31206B43FE00560357 /* audio_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = audio_test; sourceTree = BUILT_PRODUCTS_DIR; };
+		09C92A33206B43FE00560357 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		09D0119D205B404700A62FE4 /* tile_map.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tile_map.h; sourceTree = "<group>"; };
 		09D0119E205B405400A62FE4 /* tile_map.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tile_map.cc; sourceTree = "<group>"; };
 		09D011A12061BEA400A62FE4 /* mbc_types.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mbc_types.cc; sourceTree = "<group>"; };
@@ -93,6 +107,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		09C92A2E206B43FE00560357 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A2CCE560203A97FD00F3FD4F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -116,10 +137,19 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		09C92A32206B43FE00560357 /* audio_test */ = {
+			isa = PBXGroup;
+			children = (
+				09C92A33206B43FE00560357 /* main.cpp */,
+			);
+			path = audio_test;
+			sourceTree = "<group>";
+		};
 		A2CCE55A203A97FD00F3FD4F = {
 			isa = PBXGroup;
 			children = (
 				A2CCE565203A97FD00F3FD4F /* asobitomo */,
+				09C92A32206B43FE00560357 /* audio_test */,
 				A2CCE564203A97FD00F3FD4F /* Products */,
 				093DACDC2044F43A0087724B /* Frameworks */,
 			);
@@ -129,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				A2CCE563203A97FD00F3FD4F /* asobitomo */,
+				09C92A31206B43FE00560357 /* audio_test */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -178,6 +209,8 @@
 				09F569FB2065B10600FE8307 /* ppu_util.h */,
 				09C92A272069E34E00560357 /* apu.cc */,
 				09C92A282069E34E00560357 /* apu.h */,
+				09C92A2A206B43DD00560357 /* audio_test.cpp */,
+				09C92A2B206B43DD00560357 /* audio_test.hpp */,
 			);
 			path = asobitomo;
 			sourceTree = "<group>";
@@ -185,6 +218,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		09C92A30206B43FE00560357 /* audio_test */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 09C92A35206B43FE00560357 /* Build configuration list for PBXNativeTarget "audio_test" */;
+			buildPhases = (
+				09C92A2D206B43FE00560357 /* Sources */,
+				09C92A2E206B43FE00560357 /* Frameworks */,
+				09C92A2F206B43FE00560357 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = audio_test;
+			productName = audio_test;
+			productReference = 09C92A31206B43FE00560357 /* audio_test */;
+			productType = "com.apple.product-type.tool";
+		};
 		A2CCE562203A97FD00F3FD4F /* asobitomo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A2CCE56A203A97FD00F3FD4F /* Build configuration list for PBXNativeTarget "asobitomo" */;
@@ -211,6 +261,10 @@
 				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = Overpunch;
 				TargetAttributes = {
+					09C92A30206B43FE00560357 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
 					A2CCE562203A97FD00F3FD4F = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
@@ -230,11 +284,20 @@
 			projectRoot = "";
 			targets = (
 				A2CCE562203A97FD00F3FD4F /* asobitomo */,
+				09C92A30206B43FE00560357 /* audio_test */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		09C92A2D206B43FE00560357 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				09C92A38206B440E00560357 /* audio_test.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A2CCE55F203A97FD00F3FD4F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -261,6 +324,39 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		09C92A36206B43FE00560357 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_STYLE = Automatic;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/gflags/2.2.1/lib,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = "-lSDL2";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		09C92A37206B43FE00560357 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/gflags/2.2.1/lib,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = "-lSDL2";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		A2CCE568203A97FD00F3FD4F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -431,6 +527,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		09C92A35206B43FE00560357 /* Build configuration list for PBXNativeTarget "audio_test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				09C92A36206B43FE00560357 /* Debug */,
+				09C92A37206B43FE00560357 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A2CCE55E203A97FD00F3FD4F /* Build configuration list for PBXProject "asobitomo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

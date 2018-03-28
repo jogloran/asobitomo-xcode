@@ -60,7 +60,7 @@ class CPU {
 public:
   CPU(std::string path): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
     pc(0x0000), sp(0x0000), cycles(0), timer(*this),
-    ppu(*this), mmu(path, ppu, timer),
+    ppu(*this), apu(), mmu(path, ppu, apu, timer),
     halted(false), in_halt_bug(false), interrupt_flags_before_halt(0),
     interrupt_enabled(InterruptState::Disabled), in_cb(false) {
   }
@@ -150,6 +150,7 @@ public:
 
   Timer timer;
   PPU ppu;
+  APU apu;
   MMU mmu;
   
   bool halted;

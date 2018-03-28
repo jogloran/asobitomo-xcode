@@ -1,6 +1,8 @@
 #include "apu.h"
+#include <SDL2/SDL.h>
+#include <iomanip>
 
-void
+bool
 APU::set(word loc, byte value) {
   // ff10-ff14 Square 1
   // ff16-ff19 Square 2
@@ -83,20 +85,97 @@ APU::set(word loc, byte value) {
       ch4.set_counter_consecutive(value);
       break;
     case 0xff24:
-      set_channel_levels(value);
+      set_channel_control(value);
       break;
     case 0xff25:
       set_sound_output(value);
       break;
     case 0xff26:
-      set_channel_control(value);
+      set_channel_levels(value);
       break;
+      
+    default:
+      return false;
   }
+  
+  return true;
 }
 
 byte*
 APU::get(word loc) {
-
-
+  switch (loc) {
+    case 0xff10:
+      return &ch1.values[0];
+      break;
+    case 0xff11:
+      return &ch1.values[1];
+      break;
+    case 0xff12:
+      return &ch1.values[2];
+      break;
+    case 0xff13:
+      return &ch1.values[3];
+      break;
+    case 0xff14:
+      return &ch1.values[4];
+      break;
+  }
+  
   return nullptr;
+}
+
+void
+APU::step(long delta) {
+  ch1.tick();
+  ch2.tick();
+  ch3.tick();
+  ch4.tick();
+  
+  //  std::cout << seq << ' ' << sample_timer << std::endl;
+  if (seq-- == 0) {
+    seq = 8192;
+  }
+  if (sample_timer-- == 0) {
+    //    std::cout << "sample" << std::endl;
+    int16_t L = 0, R = 0;
+    int16_t v1 = ch1();
+    int16_t v2 = ch2();
+    L += v1;
+    R += v1;
+    L += v2;
+    R += v2;
+    
+    L *= 1024;
+    R *= 1024;
+    
+    *buf_ptr++ = L;
+    *buf_ptr++ = R;
+    
+    if (buf_ptr >= buf.end()) {
+//      while (SDL_GetQueuedAudioSize(dev) > buf.size() * sizeof(int16_t)) {
+//        SDL_Delay(1);
+//      }
+      SDL_QueueAudio(dev, (void*)buf.data(), buf.size() * sizeof(int16_t));
+      
+      buf_ptr = buf.begin();
+    }
+    
+    sample_timer = 87;
+  }
+}
+
+void
+APU::sdl_setup() {
+  SDL_InitSubSystem(SDL_INIT_AUDIO);
+  
+  SDL_AudioSpec want, have;
+  SDL_zero(want);
+  want.freq = 48000;
+  want.format = AUDIO_S16;
+  want.channels = NCHANNELS;
+  want.samples = BUFSIZE;
+  want.callback = NULL;
+  
+  dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_ANY_CHANGE);
+  SDL_PauseAudioDevice(dev, 0);
 }
