@@ -47,8 +47,8 @@ TM::show() {
     }
   }
   
-  byte scx = ppu_.cpu.mmu._read_mem(0xff43);
-  byte scy = ppu_.cpu.mmu._read_mem(0xff42);
+  byte scx = ppu_.cpu.mmu[0xff43];
+  byte scy = ppu_.cpu.mmu[0xff42];
   
 //  static char s[64];
 //  sprintf(s, "scx %02x scy %02x", scx, scy);

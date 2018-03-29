@@ -54,15 +54,7 @@ public:
 
   void set(word loc, byte value);
 
-  byte& operator[](int loc) {
-    if (loc < 0x0000 || loc > RAM_BYTES) {
-      throw std::range_error("invalid location");
-    }
-
-    return _read_mem(loc);
-  }
-
-  byte& _read_mem(word loc);
+  byte& operator[](word loc);
   
   void dump_cartridge_info() {
     std::cout << rang::style::dim << rang::fg::gray << "Title\t\t" << rang::fg::black << rang::style::reset << (char*)header.title_or_manufacturer.title << rang::fg::reset << rang::style::reset << std::endl;

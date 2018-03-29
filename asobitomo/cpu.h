@@ -194,6 +194,14 @@ public:
     }
   }
   
+  inline void check_carry(int result) {
+    if (result & (1 << 8)) {
+      set_flags(Cf);
+    } else {
+      unset_flags(Cf);
+    }
+  }
+  
   void check_half_carry_sub(byte reg, byte operand, byte carry=0x0) {
     if ((reg & 0xf) < ((operand & 0xf) + carry)) {
       set_flags(Hf);

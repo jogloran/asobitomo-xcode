@@ -4,7 +4,7 @@
 #include "mbc1.h"
 #include "mbc3.h"
 
-byte& MMU::_read_mem(word loc) {
+byte& MMU::operator[](word loc) {
   byte* result = mbc->get(loc);
   if (result != nullptr) {
     return *result;

@@ -272,11 +272,7 @@ SUB_A8_HELPER(a)
 
 #define SUB_A8_HELPER(src) [](CPU& cpu) { \
   int result = static_cast<int>(cpu.a) - cpu.src; \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.check_half_carry_sub(cpu.a, cpu.src); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
@@ -286,11 +282,7 @@ SUB_A8_HELPER(a)
 #define SUB_A8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc]; \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.check_half_carry_sub(cpu.a, cpu.mmu[loc]); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
@@ -299,11 +291,7 @@ SUB_A8_HELPER(a)
 
 #define ADD_A8_HELPER(src) [](CPU& cpu) { \
   word result = cpu.a + cpu.src; \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.check_half_carry(cpu.a, cpu.src); \
   cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
@@ -322,11 +310,7 @@ ADD_A8_HELPER(a)
 #define ADD_A8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   word result = cpu.a + cpu.mmu[loc]; \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.check_half_carry(cpu.a, cpu.mmu[loc]); \
   cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
@@ -336,11 +320,7 @@ ADD_A8_HELPER(a)
 #define ADC_A8_HELPER(src) [](CPU& cpu) { \
   word result = cpu.a + cpu.src + cpu.C(); \
   cpu.check_half_carry(cpu.a, cpu.src, cpu.C()); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
   cpu.check_zero(cpu.a); \
@@ -350,11 +330,7 @@ ADD_A8_HELPER(a)
   word loc = cpu.get_word(cpu.h, cpu.l); \
   word result = cpu.a + cpu.mmu[loc] + cpu.C(); \
   cpu.check_half_carry(cpu.a, cpu.mmu[loc], cpu.C()); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
   cpu.check_zero(cpu.a); \
@@ -394,11 +370,7 @@ GEN8_HELPER(op, a)
 #define SBC_A8_HELPER(src) [](CPU& cpu) { \
   int result = static_cast<int>(cpu.a) - cpu.src - cpu.C(); \
   cpu.check_half_carry_sub(cpu.a, cpu.src, cpu.C()); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   cpu.check_zero(cpu.a); \
@@ -408,11 +380,7 @@ GEN8_HELPER(op, a)
   word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc] - cpu.C(); \
   cpu.check_half_carry_sub(cpu.a, cpu.mmu[loc], cpu.C()); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   cpu.check_zero(cpu.a); \
@@ -442,11 +410,7 @@ SBC_A8_HELPER(a)
 #define CP8_HL_LOC_HELPER() [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.h, cpu.l); \
   int result = static_cast<int>(cpu.a) - cpu.mmu[loc]; \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.check_half_carry_sub(cpu.a, cpu.mmu[loc]); \
   cpu.set_flags(Nf); \
   cpu.check_zero(result); \
@@ -518,11 +482,7 @@ CP8_HELPER(a)
   cpu.a = static_cast<byte>(result); \
   cpu.check_zero(cpu.a); \
   cpu.unset_flags(Nf); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
 }
 
 #define ADC_A_d8() [](CPU& cpu) { \
@@ -530,11 +490,7 @@ CP8_HELPER(a)
   cpu.pc += 1; \
   word result = cpu.a + d8 + cpu.C(); \
   cpu.check_half_carry(cpu.a, d8, cpu.C()); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.a = static_cast<byte>(result); \
   cpu.unset_flags(Nf); \
   cpu.check_zero(cpu.a); \
@@ -549,11 +505,7 @@ CP8_HELPER(a)
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   cpu.check_zero(cpu.a); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
 }
 
 #define SBC_A_d8() [](CPU& cpu) { \
@@ -561,11 +513,7 @@ CP8_HELPER(a)
   cpu.pc += 1; \
   int result = (static_cast<int>(cpu.a) - d8 - cpu.C()); \
   cpu.check_half_carry_sub(cpu.a, d8, cpu.C()); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.a = static_cast<byte>(result); \
   cpu.set_flags(Nf); \
   cpu.check_zero(cpu.a); \
@@ -601,11 +549,7 @@ CP8_HELPER(a)
   cpu.check_half_carry_sub(cpu.a, d8); \
   cpu.set_flags(Nf); \
   cpu.check_zero(result); \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
 }
 
 #define JP_HL() [](CPU& cpu) { \
@@ -635,11 +579,7 @@ CP8_HELPER(a)
   cpu.pc += 1; \
   cpu.check_half_carry(cpu.sp, r8); \
   int result = static_cast<int>(cpu.sp) + r8; \
-  if (result & (1 << 8)) { \
-    cpu.set_flags(Cf); \
-  } else { \
-    cpu.unset_flags(Cf); \
-  } \
+  cpu.check_carry(result); \
   cpu.sp += r8; \
   cpu.unset_flags(Zf | Nf); \
 }
