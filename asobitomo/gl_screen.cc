@@ -5,8 +5,8 @@ GL::GL(CPU& cpu, int scale)
 : cpu_(cpu), buf(), scale_(scale), last_(std::chrono::high_resolution_clock::now()) {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_InitSubSystem(SDL_INIT_VIDEO);
-  window_ = SDL_CreateWindow("test", 0, 0,
-    Screen::BUF_WIDTH*scale_, Screen::BUF_HEIGHT*scale_, 0);
+  window_ = SDL_CreateWindow("Game", 0, 0,
+    Screen::BUF_WIDTH*scale_, Screen::BUF_HEIGHT*scale_, SDL_WINDOW_INPUT_GRABBED);
   renderer_ = SDL_CreateRenderer(window_, -1, 0);
   SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
   SDL_RenderSetLogicalSize(renderer_, Screen::BUF_WIDTH, Screen::BUF_HEIGHT);
