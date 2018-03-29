@@ -183,7 +183,7 @@ APU::step(long delta) {
       R += v3;
       L += v4;
       R += v4;
-      
+
       L *= (left.volume << 4);
       R *= (right.volume << 4);
       
@@ -196,7 +196,7 @@ APU::step(long delta) {
 //      std::cout << std::endl;
       std::cout << SDL_GetQueuedAudioSize(dev) << std::endl;
         while (SDL_GetQueuedAudioSize(dev) > buf.size() * sizeof(int16_t)) {
-          SDL_Delay(10);
+          SDL_Delay(1);
         }
         SDL_QueueAudio(dev, (void*)buf.data(), buf.size() * sizeof(int16_t));
         
