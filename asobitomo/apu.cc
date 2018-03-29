@@ -119,6 +119,19 @@ APU::get(word loc) {
     case 0xff14:
       return &ch1.values[4];
       break;
+      
+    case 0xff20:
+      return &ch4.values[0];
+      break;
+    case 0xff21:
+      return &ch4.values[1];
+      break;
+    case 0xff22:
+      return &ch4.values[2];
+      break;
+    case 0xff23:
+      return &ch4.values[3];
+      break;
   }
   
   return nullptr;
@@ -160,10 +173,16 @@ APU::step(long delta) {
       int16_t L = 0, R = 0;
       int16_t v1 = ch1();
       int16_t v2 = ch2();
+      int16_t v3 = ch3();
+      int16_t v4 = ch4();
       L += v1;
       R += v1;
       L += v2;
       R += v2;
+      L += v3;
+      R += v3;
+      L += v4;
+      R += v4;
       
       L *= (left.volume << 4);
       R *= (right.volume << 4);
