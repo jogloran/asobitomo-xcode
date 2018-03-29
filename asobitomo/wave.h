@@ -2,7 +2,6 @@
 
 #include <array>
 #include <iostream>
-#include <SDL2/SDL.h>
 
 class Wave : public Voice {
 public:

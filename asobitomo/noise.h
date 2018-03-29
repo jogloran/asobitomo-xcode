@@ -2,7 +2,6 @@
 
 #include <array>
 #include <iostream>
-#include <SDL2/SDL.h>
 
 class Noise : public Voice {
 public:
