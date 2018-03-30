@@ -67,10 +67,10 @@ private:
   int step_count;
   
   constexpr static int CYCLES_PER_SECOND = 4'194'304;
-  constexpr static int SAMPLE_RATE = 48'000 * 2;
+  constexpr static int SAMPLE_RATE = 24'000;
   SDL_AudioDeviceID dev;
   
-  constexpr static int BUFSIZE = 8192;
+  constexpr static int BUFSIZE = 1024;
   constexpr static int NCHANNELS = 2;
   std::array<int16_t, BUFSIZE * NCHANNELS> buf;
   std::array<int16_t, BUFSIZE * NCHANNELS>::iterator buf_ptr;

@@ -8,14 +8,10 @@
 class Square : public Voice {
 public:
   enum Duty : byte {
-//    Eighth = 0x7f,
-//    Quarter = 0x3f,
-//    Half = 0xf,
-//    ThreeQuarters = 0x3
-    Eighth = 0x1,
-    Quarter = 0x81,
-    Half = 0x87,
-    ThreeQuarters = 0x7e,
+    Eighth = 0b01111111,
+    Quarter = 0b00111111,
+    Half = 0b00001111,
+    ThreeQuarters = 0x00000011,
   };
   
   Square(): timer(8192), duty_index(0) {}
@@ -31,11 +27,11 @@ public:
   
   int16_t operator()() {
 //  std::cout << enabled << std::endl;
-//    if (!enabled) return 0;
+    if (!enabled) return 0;
     bool duty_on = (static_cast<byte>(duty) & (1 << (7 - duty_index))) != 0;
     
     if (duty_on) {
-      return initial_volume;
+      return volume;
     } else {
       return 0;
     }
@@ -61,13 +57,13 @@ public:
       case 3: duty = Duty::ThreeQuarters; break;
     }
     
-    length = value & 0x1f;
+    length = 64 - (value & 0x1f);
   }
   void set_envelope(byte value) {
     values[2] = value;
-    initial_volume = value >> 4;
+    volume = initial_volume = value >> 4;
     increasing = (value & 0x8) != 0;
-    sweep_number = value & 0x7;
+    volume_timer = volume_period = value & 0x7;
   }
   void set_frequency_low(byte value) {
     values[3] = value;
@@ -78,6 +74,21 @@ public:
   // initial
     freq_hi = value & 0x7;
     counter_selection = (value & 0x40) != 0;
+    
+    if (value & (1 << 7)) {
+      trigger();
+    }
+  }
+  
+  void trigger() {
+    duty_index = 0;
+    enabled = true;
+    if (length == 0) {
+      length = 64;
+    }
+    volume = initial_volume;
+    volume_timer = volume_period;
+    timer = (2048 - freq()) * 4;
   }
   
 //private:
@@ -88,12 +99,6 @@ public:
   
   byte freq_lo;
   byte freq_hi;
-  
-  byte initial_volume;
-  bool increasing;
-  
-  byte sweep_number;
-
   
   std::array<byte, 5> values;
   
@@ -106,6 +111,6 @@ class Square1 : public Square {
 };
 
 class Square2 : public Square {
-
+  void tick_sweep() {}
 };
 

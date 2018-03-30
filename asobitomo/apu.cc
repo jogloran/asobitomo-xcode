@@ -3,14 +3,7 @@
 #include <iomanip>
 
 bool
-APU::set(word loc, byte value) {
-  // ff10-ff14 Square 1
-  // ff16-ff19 Square 2
-  // ff1a-ff1e Wave
-  // ff20-ff23 Noise
-  // ff24-ff26 Sound control
-  // ff30-ff3f Wave data
-  
+APU::set(word loc, byte value) {  
   switch (loc) {
     case 0xff10:
       ch1.set_sweep(value);
@@ -105,32 +98,33 @@ byte*
 APU::get(word loc) {
   switch (loc) {
     case 0xff10:
-      return &ch1.values[0];
-      break;
     case 0xff11:
-      return &ch1.values[1];
-      break;
     case 0xff12:
-      return &ch1.values[2];
-      break;
     case 0xff13:
-      return &ch1.values[3];
-      break;
     case 0xff14:
-      return &ch1.values[4];
+      return &ch1.values[loc - 0xff10];
+      break;
+      
+    case 0xff16:
+    case 0xff17:
+    case 0xff18:
+    case 0xff19:
+      return &ch2.values[loc - 0xff16];
+      break;
+      
+    case 0xff1a:
+    case 0xff1b:
+    case 0xff1c:
+    case 0xff1d:
+    case 0xff1e:
+      return &ch3.values[loc - 0xff1a];
       break;
       
     case 0xff20:
-      return &ch4.values[0];
-      break;
     case 0xff21:
-      return &ch4.values[1];
-      break;
     case 0xff22:
-      return &ch4.values[2];
-      break;
     case 0xff23:
-      return &ch4.values[3];
+      return &ch4.values[loc - 0xff20];
       break;
   }
   
@@ -140,14 +134,13 @@ APU::get(word loc) {
 void
 APU::step(long delta) {
   for (int n = 0; n < delta; ++n) {
+    //  std::cout << seq << ' ' << sample_timer << std::endl;
     ch1.tick();
     ch2.tick();
     ch3.tick();
     ch4.tick();
     
-    //  std::cout << seq << ' ' << sample_timer << std::endl;
-    if (seq > 0) --seq;
-    if (seq == 0) {
+    if (seq && seq-- == 0) {
       if (seq_step % 2 == 0) {
         ch1.tick_length();
         ch2.tick_length();
@@ -157,7 +150,7 @@ APU::step(long delta) {
       
       if (seq_step == 7) {
         ch1.tick_volume();
-        ch3.tick_volume();
+        ch2.tick_volume();
         ch4.tick_volume();
       }
       
@@ -168,6 +161,7 @@ APU::step(long delta) {
       seq_step = (seq_step + 1) % 8;
       seq = 8192;
     }
+    
     if (sample_timer-- == 0) {
       //    std::cout << "sample" << std::endl;
       int16_t L = 0, R = 0;
@@ -183,27 +177,26 @@ APU::step(long delta) {
       R += v3;
       L += v4;
       R += v4;
-
-      L *= (left.volume << 4);
-      R *= (right.volume << 4);
+      
+      L *= (left.volume << 3);
+      R *= (right.volume << 3);
       
       *buf_ptr++ = L;
       *buf_ptr++ = R;
       
       if (buf_ptr >= buf.end()) {
-//      std::cout << std::hex << std::setfill('0') << std::setw(4);
-//      std::copy(buf.begin(), buf.end(), std::ostream_iterator<int16_t>(std::cout, " "));
-//      std::cout << std::endl;
-      std::cout << SDL_GetQueuedAudioSize(dev) << std::endl;
-        while (SDL_GetQueuedAudioSize(dev) > buf.size() * sizeof(int16_t)) {
-          SDL_Delay(1);
-        }
-        SDL_QueueAudio(dev, (void*)buf.data(), buf.size() * sizeof(int16_t));
-        
         buf_ptr = buf.begin();
+        
+        while (SDL_GetQueuedAudioSize(dev) > buf.size() * sizeof(int16_t)) {
+          std::cout << (SDL_GetQueuedAudioSize(dev)) << std::endl;
+          SDL_Delay(1);
+          std::cout << '-'<<(SDL_GetQueuedAudioSize(dev)) << std::endl;
+        }
+        
+        SDL_QueueAudio(dev, (void*)buf.data(), static_cast<uint32_t>(buf.size()) * sizeof(int16_t));
       }
       
-      sample_timer = CYCLES_PER_SECOND / SAMPLE_RATE / 2;
+      sample_timer = CYCLES_PER_SECOND / SAMPLE_RATE;
     }
   }
 }
@@ -214,7 +207,7 @@ APU::sdl_setup() {
   
   SDL_AudioSpec want, have;
   SDL_zero(want);
-  want.freq = SAMPLE_RATE * 2;
+  want.freq = SAMPLE_RATE;
   want.format = AUDIO_S16;
   want.channels = NCHANNELS;
   want.samples = BUFSIZE;

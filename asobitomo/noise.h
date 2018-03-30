@@ -5,7 +5,19 @@
 
 class Noise : public Voice {
 public:
-  Noise(): noise_reg(0x7FFF) {}
+  Noise(): noise_reg(0x7fff) {}
+  
+  void trigger() {
+    enabled = true;
+    if (length == 0) {
+      length = 64;
+    }
+    volume = initial_volume;
+    volume_timer = volume_period;
+    timer = divisor() << shift_clock_frequency;
+    
+    noise_reg = 0x7fff;
+  }
   
   byte divisor() {
     static byte table[] {
@@ -30,33 +42,43 @@ public:
   }
   
   int16_t operator()() {
-    if (~(noise_reg & 0x1)) {
-      return initial_volume;
+    return 0;
+    if (!enabled) return 0;
+    
+    if ((noise_reg & 0x1) != 0) {
+      return volume;
     }
     return 0;
   }
   
   void set_length(byte value) {
     values[0] = value;
-    length = value & 0x1f;
+    length = 64 - (value & 0x1f);
   }
   
   void set_volume_envelope(byte value) {
     values[1] = value;
-    initial_volume = value >> 4;
+    volume = initial_volume = value >> 4;
     increasing = (value & 0x8) != 0;
-    sweep_number = value & 0x7;
+    volume_timer = volume_period = value & 0x7;
   }
   
   void set_polynomial_counter(byte value) {
     values[2] = value;
+    
     shift_clock_frequency = value >> 4;
+    timer = divisor() << shift_clock_frequency;
+    
     counter_width_is_15 = (value & 0x8) == 0;
     dividing_ratio = value & 0x7;
   }
   void set_counter_consecutive(byte value) {
     values[3] = value;
     counter_selection = (value & 0x40) != 0;
+    
+    if (value & (1 << 7)) {
+      trigger();
+    }
   }
   
 //private:
@@ -65,7 +87,6 @@ public:
   
   byte initial_volume;
   bool increasing;
-  byte sweep_number;
   
   byte shift_clock_frequency;
   bool counter_width_is_15;
