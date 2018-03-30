@@ -24,7 +24,8 @@
 
 #define LD_LOC_SP() [](CPU& cpu) { \
   word loc = cpu.get_word(); \
-  cpu.mmu.set(loc, cpu.sp); \
+  cpu.mmu.set(loc - 2, cpu.sp & 0xff); \
+  cpu.mmu.set(loc - 1, cpu.sp >> 8); \
   cpu.pc += 2; \
 }
 
