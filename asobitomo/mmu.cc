@@ -101,9 +101,12 @@ void MMU::set(word loc, byte value) {
   
   if (loc == 0xff46) { // DMA
     word src = value << 8;
-    for (word addr = 0xfe00; addr < 0xfea0; ++addr) {
-      (*this)[addr] = (*this)[src++];
-    }
+//    for (word addr = 0xfe00; addr < 0xfea0; ++addr) {
+//      (*this)[addr] = (*this)[src++];
+//    }
+    // This isn't valid if we are reading from "special"
+    // memory locations (i.e. memory mapped I/O registers etc)
+    std::copy_n(&mem[src], 0xa0, &mem[0xfe00]);
   }
   
   if (loc == 0xff50) { // unmap rom
