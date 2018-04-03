@@ -159,6 +159,11 @@
 #define ADD_WORD_WWORD(hi, lo, wword) [](CPU& cpu) { \
   word hl = cpu.get_word(cpu.hi, cpu.lo); \
   word bc = cpu.wword; \
+  if ((hl & 0xfff) + (bc & 0xfff) > 0xfff) { \
+    cpu.set_flags(Hf); \
+  } else { \
+    cpu.unset_flags(Hf); \
+  } \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
   hl = static_cast<word>(result); \
   cpu.hi = hl >> 8; \
@@ -576,23 +581,25 @@ CP8_HELPER(a)
 }
 
 #define ADD_SP_r8() [](CPU& cpu) { \
-  int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc + 1]); \
+  int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc]); \
+  cpu.check_half_carry(cpu.sp & 0xff, r8); \
+  word unsigned_result = static_cast<word>(cpu.sp & 0xff) + static_cast<word>(cpu.mmu[cpu.pc]); \
+  cpu.check_carry(unsigned_result); \
   cpu.pc += 1; \
-  cpu.check_half_carry(cpu.sp, r8); \
-  int result = static_cast<int>(cpu.sp) + r8; \
-  cpu.check_carry(result); \
-  cpu.sp += r8; \
+  cpu.sp = static_cast<int>(cpu.sp) + r8; \
   cpu.unset_flags(Zf | Nf); \
 }
 
 #define LD_HL_SP_plus_r8() [](CPU& cpu) { \
   int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc]); \
+  cpu.check_half_carry(cpu.sp & 0xff, r8); \
+  word unsigned_result = static_cast<word>(cpu.sp & 0xff) + static_cast<word>(cpu.mmu[cpu.pc]); \
+  cpu.check_carry(unsigned_result); \
   cpu.pc += 1; \
-  word hl = cpu.sp + r8; \
+  int hl = static_cast<int>(cpu.sp) + r8; \
   cpu.h = hl >> 8; \
   cpu.l = hl & 0xff; \
   cpu.unset_flags(Zf | Nf); \
-  /* need to set H, C conditionally */ \
 }
 
 #define LD_LOC_REG_AUG(op, hi, lo, reg) [](CPU& cpu) { \

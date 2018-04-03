@@ -14,7 +14,7 @@
 #include <cstdlib>
 
 enum class Argument {
-  None, Word, U16, U8, Offset
+  None, Word, U16, U8, Offset, S8
 };
 
 std::string formatted(const char* fmt, int value) {
@@ -61,6 +61,13 @@ struct Op {
       return formatted(fmt, pc_plus_offset);
       break;
     }
+    case Argument::S8: {
+      byte value = cpu.mmu[cpu.pc+1];
+      signed char signed_value = static_cast<signed char>(value);
+      
+      return formatted(fmt, signed_value);
+      break;
+    }
     case Argument::None:
     default:
       return mnemonic;
@@ -94,7 +101,7 @@ Op { 0x14, "INC D", "INC D", Argument::None },
 Op { 0x15, "DEC D", "DEC D", Argument::None },
 Op { 0x16, "LD D, %02x", "LD D, %02x", Argument::U8 },
 Op { 0x17, "RLA", "RLA", Argument::None },
-Op { 0x18, "JR 0x%04x", "JR 0x%04x", Argument::Offset },
+Op { 0x18, "JR 0x%02x", "JR 0x%02x", Argument::Offset },
 Op { 0x19, "ADD HL, DE", "ADD HL, DE", Argument::None },
 Op { 0x1a, "LD A, (DE)", "LD A, (DE)", Argument::None },
 Op { 0x1b, "DEC DE", "DEC DE", Argument::None },
@@ -302,7 +309,7 @@ Op { 0xe4, "(invalid)", "(invalid)", Argument::None },
 Op { 0xe5, "PUSH HL", "PUSH HL", Argument::None },
 Op { 0xe6, "AND %02x", "AND %02x", Argument::U8 },
 Op { 0xe7, "RST 20", "RST 20", Argument::None },
-Op { 0xe8, "ADD SP, 0x%04x", "ADD SP, 0x%04x", Argument::Offset },
+Op { 0xe8, "ADD SP, 0x%+02hhx", "ADD SP, 0x%+02hhx", Argument::S8 },
 Op { 0xe9, "JP HL", "JP HL", Argument::None },
 Op { 0xea, "LD (0x%04x), A", "LD (0x%04x), A", Argument::Word },
 Op { 0xeb, "(invalid)", "(invalid)", Argument::None },
