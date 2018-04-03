@@ -201,6 +201,22 @@ public:
     }
   }
   
+  void check_carry(word value) {
+    if (value & (1 << 8)) {
+      set_flags(Cf);
+    } else {
+      unset_flags(Cf);
+    }
+  }
+  
+  void check_carry_word(uint32_t value) {
+    if (value & (1 << 16)) {
+      set_flags(Cf);
+    } else {
+      unset_flags(Cf);
+    }
+  }
+  
   byte check_carry_if_lobit_set(byte value) {
     byte lobit = value & 0x1;
     if (lobit) {
