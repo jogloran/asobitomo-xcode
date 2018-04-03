@@ -250,13 +250,13 @@ void CPU::dump_state() {
     "bc " << two_byte_fmt(b, c) << ' ' <<
     "de " << two_byte_fmt(d, e) << ' ' <<
     "hl " << two_byte_fmt(h, l) << ' ' <<
-    "(hl) " << setw(2) << static_cast<int>(mmu._read_mem((h << 8) | l))
+    "(hl) " << setw(2) << static_cast<int>(mmu[h << 8 | l])
     << " sp: " << setw(4) << hex <<
       static_cast<int>(sp) << ' '
-    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff44))
-    << "|" << setw(2) << hex << static_cast<int>(mmu._read_mem(0xff45))
-    << " LCDC: " << binary(mmu._read_mem(0xff40))
-    << " STAT: " << binary(mmu._read_mem(0xff41))
+    << "LY|C: " << setw(2) << hex << static_cast<int>(mmu[0xff44])
+    << "|" << setw(2) << hex << static_cast<int>(mmu[0xff45])
+    << " LCDC: " << binary(mmu[0xff40])
+    << " STAT: " << binary(mmu[0xff41])
     << " on:" << int(timer.enabled)
 //    << setfill('0')
 //    << " tac:" << setw(2) << int(timer.tac_)
@@ -265,13 +265,13 @@ void CPU::dump_state() {
 //    << " div:" << setfill('0') << setw(4)
 //    << int((timer.divider_hi << 8) | timer.divider)
 //    << " mod:" << int(timer.modulo)
-//    << " bgp:" << binary(mmu._read_mem(0xff47))
-//    << " obp0:" << binary(mmu._read_mem(0xff48))
-//    << " obp1:" << binary(mmu._read_mem(0xff49))
+//    << " bgp:" << binary(mmu[0xff47])
+//    << " obp0:" << binary(mmu[0xff48])
+//    << " obp1:" << binary(mmu[0xff49])
 //    << " rom:" << int(mmu.bank)
 //    << " ram:" << int(mmu.ram_bank)
-    << " IF: " << binary(mmu._read_mem(0xff0f))
-    << " IE: " << binary(mmu._read_mem(0xffff))
+    << " IF: " << binary(mmu[0xff0f])
+    << " IE: " << binary(mmu[0xffff])
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
     << " (" << ppu_state_as_string(ppu.mode) << ")"
     << "\t" << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
@@ -297,8 +297,8 @@ void CPU::fire_interrupts() {
     return;
   }
 
-  byte interrupt_enable = mmu._read_mem(0xffff);
-  byte interrupt_flags = mmu._read_mem(0xff0f);
+  byte interrupt_enable = mmu[0xffff];
+  byte interrupt_flags = mmu[0xff0f];
 
   byte candidate_interrupts = interrupt_enable & interrupt_flags;
 
@@ -351,8 +351,8 @@ void CPU::stop() {
 
 void CPU::halt() {
   if (interrupt_enabled == InterruptState::Disabled) {
-    byte interrupt_enable = mmu._read_mem(0xffff);
-    byte interrupt_flags = mmu._read_mem(0xff0f);
+    byte interrupt_enable = mmu[0xffff];
+    byte interrupt_flags = mmu[0xff0f];
     
     byte candidate_interrupts = interrupt_enable & interrupt_flags;
     // The HALT bug occurs when IME is zero, and some interrupt is
@@ -387,6 +387,7 @@ void CPU::step(bool debug)  {
   
   if (halted) {
     ppu.step(4);
+    apu.step(4);
     timer.step(4);
     
     cycles += 4;
@@ -409,6 +410,7 @@ void CPU::step(bool debug)  {
     cycles += ncycles[instr];
     
     ppu.step(cycles - old_cycles);
+    apu.step(cycles - old_cycles);
     timer.step(cycles - old_cycles);
     
     if (instr != 0xf3 && instr != 0xfb) {

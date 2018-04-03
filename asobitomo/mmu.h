@@ -14,6 +14,7 @@ using namespace std;
 #include "sdl_input.h"
 #include "types.h"
 #include "ppu.h"
+#include "apu.h"
 #include "timer.h"
 #include "mbc_types.h"
 #include "mbc_base.h"
@@ -24,8 +25,8 @@ extern bool in_title;
 
 class MMU {
 public:
-  MMU(std::string path, PPU& ppu, Timer& timer):
-    cart(32768, 0), rom_mapped(true), ppu(ppu), timer(timer),
+  MMU(std::string path, PPU& ppu, APU& apu, Timer& timer):
+    cart(32768, 0), rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
     joypad(0xf),
     input(), mbc() {
     fill(mem.begin(), mem.end(), 0);
@@ -53,15 +54,7 @@ public:
 
   void set(word loc, byte value);
 
-  byte& operator[](int loc) {
-    if (loc < 0x0000 || loc > RAM_BYTES) {
-      throw std::range_error("invalid location");
-    }
-
-    return _read_mem(loc);
-  }
-
-  byte& _read_mem(word loc);
+  byte& operator[](word loc);
   
   void dump_cartridge_info() {
     std::cout << rang::style::dim << rang::fg::gray << "Title\t\t" << rang::fg::black << rang::style::reset << (char*)header.title_or_manufacturer.title << rang::fg::reset << rang::style::reset << std::endl;
@@ -78,6 +71,7 @@ public:
   static constexpr word CARTRIDGE_TYPE_OFFSET = 0x0147;
 
   PPU& ppu;
+  APU& apu;
   Timer& timer;
   
   std::array<byte, 0x100> rom {

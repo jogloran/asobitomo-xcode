@@ -176,18 +176,18 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset, byte x_offset) {
 
 void
 PPU::rasterise_line() {
-  byte& oam_ref = cpu.mmu._read_mem(0xfe00);
+  byte& oam_ref = cpu.mmu[0xfe00];
   OAM* oam = reinterpret_cast<OAM*>(&oam_ref);
   
-  byte scx = cpu.mmu._read_mem(0xff43);
-  byte scy = cpu.mmu._read_mem(0xff42);
+  byte scx = cpu.mmu[0xff43];
+  byte scy = cpu.mmu[0xff42];
 
   // For the sprite palettes, the lowest two bits should always map to 0
-  byte obp0 = cpu.mmu._read_mem(0xff48) & 0xfc;
-  byte obp1 = cpu.mmu._read_mem(0xff49) & 0xfc;
+  byte obp0 = cpu.mmu[0xff48] & 0xfc;
+  byte obp1 = cpu.mmu[0xff49] & 0xfc;
   
   // Background palette
-  byte palette = cpu.mmu._read_mem(0xff47);
+  byte palette = cpu.mmu[0xff47];
 
   if (bg_display) {
     // get the sequence of tiles which are touched
@@ -224,8 +224,8 @@ PPU::rasterise_line() {
   }
   
   if (window_display) {
-    byte wx = cpu.mmu._read_mem(0xff4b);
-    byte wy = cpu.mmu._read_mem(0xff4a);
+    byte wx = cpu.mmu[0xff4b];
+    byte wy = cpu.mmu[0xff4a];
     
     if (line >= wy) {
       byte row_touched = (line - wy) / 8;
@@ -272,8 +272,21 @@ PPU::rasterise_line() {
           // get tile data for sprite
           
           auto tile_index = entry.tile_index;
+          
+          auto tile_y = (line - (entry.y - 16));
+          
+          // sprites are not necessarily aligned to the 8x8 grid
+          // we need to be able to tell which line of the sprite
+          // intersects the current scanline
+          
+          // if we are in this section, then entry.y - 16 <= line < entry.y - 8
+          // need to get the relevant row in the tile
+//          byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
+          if (entry.flags & (1 << 6)) { // y flip
+            tile_y = sprite_height - tile_y - 1;
+          }
+          
           if (sprite_mode == SpriteMode::S8x16) {
-            auto tile_y = (line - (entry.y - 16));
             if (tile_y < 8) {
               tile_index &= 0xfe;
             } else {
@@ -282,26 +295,12 @@ PPU::rasterise_line() {
             }
           }
           
-          // sprites are not necessarily aligned to the 8x8 grid
-          // we need to be able to tell which line of the sprite
-          // intersects the current scanline
-          
-          // if we are in this section, then entry.y - 16 <= line < entry.y - 8
-          // need to get the relevant row in the tile
-          byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
-          if (entry.flags & (1 << 6)) { // y flip
-            // TODO: account for 8x16 tiles
-            // in the event that 8 <= row_offset_within_tile <= 15,
-            // we need to take from the second tile
-            row_offset_within_tile = 8 - row_offset_within_tile - 1;
-          }
-          
           // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
           word tile_data_begin = 0x8000 + tile_index * 16;
-          word tile_data_address = tile_data_begin + row_offset_within_tile * 2;
+          word tile_data_address = tile_data_begin + tile_y * 2;
           
-          byte b1 = cpu.mmu._read_mem(tile_data_address);
-          byte b2 = cpu.mmu._read_mem(tile_data_address + 1);
+          byte b1 = cpu.mmu[tile_data_address];
+          byte b2 = cpu.mmu[tile_data_address + 1];
           
           // Map the sprite indices through the palette map
           auto decoded = unpack_bits(b1, b2, 0);
@@ -371,8 +370,8 @@ PPU::decode(word start_loc, byte start_y, byte start_x) {
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows
   
-  byte b1 = cpu.mmu._read_mem(start_loc + start_y*2);
-  byte b2 = cpu.mmu._read_mem(start_loc + start_y*2 + 1);
+  byte b1 = cpu.mmu[start_loc + start_y*2];
+  byte b2 = cpu.mmu[start_loc + start_y*2 + 1];
   
   // b1/b2 is packed:
   // b1            b2

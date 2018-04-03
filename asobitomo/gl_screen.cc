@@ -5,7 +5,7 @@ GL::GL(CPU& cpu, int scale)
 : cpu_(cpu), buf(), scale_(scale), last_(std::chrono::high_resolution_clock::now()) {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_InitSubSystem(SDL_INIT_VIDEO);
-  window_ = SDL_CreateWindow("test", 0, 0,
+  window_ = SDL_CreateWindow("Game", 0, 0,
     Screen::BUF_WIDTH*scale_, Screen::BUF_HEIGHT*scale_, 0);
   renderer_ = SDL_CreateRenderer(window_, -1, 0);
   SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
@@ -58,12 +58,12 @@ GL::blit() {
     cpu_.dump_state();
   } else if (keystates[SDL_SCANCODE_X]) {
     for (word addr = 0xc4f4; addr <= 0xc506; ++addr) {
-      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu._read_mem(addr)) << ' ';
+      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu[addr]) << ' ';
     }
     std::cout << std::endl;
   } else if (keystates[SDL_SCANCODE_Y]) {
     for (word addr = 0x5b4a; addr <= 0x5b4a + 16; ++addr) {
-      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu._read_mem(addr)) << ' ';
+      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu[addr]) << ' ';
     }
     std::cout << std::endl;
   }
