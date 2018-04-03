@@ -272,8 +272,21 @@ PPU::rasterise_line() {
           // get tile data for sprite
           
           auto tile_index = entry.tile_index;
+          
+          auto tile_y = (line - (entry.y - 16));
+          
+          // sprites are not necessarily aligned to the 8x8 grid
+          // we need to be able to tell which line of the sprite
+          // intersects the current scanline
+          
+          // if we are in this section, then entry.y - 16 <= line < entry.y - 8
+          // need to get the relevant row in the tile
+//          byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
+          if (entry.flags & (1 << 6)) { // y flip
+            tile_y = sprite_height - tile_y - 1;
+          }
+          
           if (sprite_mode == SpriteMode::S8x16) {
-            auto tile_y = (line - (entry.y - 16));
             if (tile_y < 8) {
               tile_index &= 0xfe;
             } else {
@@ -282,23 +295,9 @@ PPU::rasterise_line() {
             }
           }
           
-          // sprites are not necessarily aligned to the 8x8 grid
-          // we need to be able to tell which line of the sprite
-          // intersects the current scanline
-          
-          // if we are in this section, then entry.y - 16 <= line < entry.y - 8
-          // need to get the relevant row in the tile
-          byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
-          if (entry.flags & (1 << 6)) { // y flip
-            // TODO: account for 8x16 tiles
-            // in the event that 8 <= row_offset_within_tile <= 15,
-            // we need to take from the second tile
-            row_offset_within_tile = 8 - row_offset_within_tile - 1;
-          }
-          
           // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
           word tile_data_begin = 0x8000 + tile_index * 16;
-          word tile_data_address = tile_data_begin + row_offset_within_tile * 2;
+          word tile_data_address = tile_data_begin + tile_y * 2;
           
           byte b1 = cpu.mmu[tile_data_address];
           byte b2 = cpu.mmu[tile_data_address + 1];
