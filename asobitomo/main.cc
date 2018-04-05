@@ -14,7 +14,7 @@
 bool should_dump = false;
 
 DEFINE_bool(dis, false, "Dump disassembly");
-DEFINE_bool(dis_detect_loops, false, "When dumping disassembly, detect and condense loops");
+DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops");
 DEFINE_bool(headless, false, "No display");
 DEFINE_bool(limit_framerate, true, "Limit framerate to 59.7 fps");
 DEFINE_int32(run_for_n, -1, "Run for n instructions");
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
-  const bool debug = FLAGS_dis_detect_loops;
+  const bool debug = FLAGS_cloop;
   
   if (FLAGS_fake_boot) {
     cpu.fake_boot();
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
   
   long ninstrs = 0;
   while (run_for_n == -1 || ninstrs < run_for_n) {
-    if (FLAGS_dis_detect_loops) {
+    if (FLAGS_cloop) {
       history.emplace_back(cpu.pc);
       if (history.size() >= 20) {
         history.pop_front();

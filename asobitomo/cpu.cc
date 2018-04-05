@@ -205,7 +205,7 @@ std::string CPU::interrupt_state_as_string(InterruptState state) {
 
 std::string CPU::ppu_state_as_string(PPU::Mode mode) {
   static std::string mode_strings[] {
-    "hblank", "vblank", "oam", "vram"
+    "hblk", "vblk", "oam ", "vram"
   };
   return mode_strings[static_cast<int>(mode)];
 }
@@ -246,7 +246,8 @@ void CPU::dump_state() {
   byte instr = mmu[pc];
   cout << setfill('0') <<
     "[0x" << setw(4) << hex << pc << "] "
-    "af " << two_byte_fmt(a, f) << ' ' <<
+    "af " << setw(2) << hex << static_cast<int>(a)
+          << ' ' << to_flag_string(f) << ' ' <<
     "bc " << two_byte_fmt(b, c) << ' ' <<
     "de " << two_byte_fmt(d, e) << ' ' <<
     "hl " << two_byte_fmt(h, l) << ' ' <<
@@ -268,8 +269,7 @@ void CPU::dump_state() {
 //    << " bgp:" << binary(mmu[0xff47])
 //    << " obp0:" << binary(mmu[0xff48])
 //    << " obp1:" << binary(mmu[0xff49])
-//    << " rom:" << int(mmu.bank)
-//    << " ram:" << int(mmu.ram_bank)
+    << " rom:" << mmu.mbc->bank_no()
     << " IF: " << binary(mmu[0xff0f])
     << " IE: " << binary(mmu[0xffff])
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"

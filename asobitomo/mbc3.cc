@@ -2,6 +2,11 @@
 
 #include "mmu.h"
 
+int
+MBC3::bank_no() {
+  return (bank_hi << 5) + bank;
+}
+
 byte*
 MBC3::get(word loc) {
   if (loc <= 0x1fff) {

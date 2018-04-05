@@ -10,4 +10,6 @@ public:
   
   virtual void save(std::string path) {}
   virtual void load(std::string path) {}
+  
+  virtual int bank_no() = 0;
 };
