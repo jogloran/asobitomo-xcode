@@ -23,6 +23,8 @@ public:
   byte* get(word loc);
   bool set(word loc, byte value);
   
+  int bank_no();
+  
   void save(std::string path);
   void load(std::string path);
   

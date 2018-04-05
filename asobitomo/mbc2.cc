@@ -2,6 +2,11 @@
 
 #include "mmu.h"
 
+int
+MBC2::bank_no() {
+  return bank;
+}
+
 byte*
 MBC2::get(word loc) {
   if (loc <= 0x1fff) {
@@ -35,7 +40,9 @@ MBC2::set(word loc, byte value) {
     return true; // Do not actually modify RAM
   } else if (loc <= 0x3fff) {
     if (loc & 0x100) {
-      bank = value & 0xf;
+      if (value <= 0xf) {
+        bank = value & 0xf;
+      }
     }
     
     return true;

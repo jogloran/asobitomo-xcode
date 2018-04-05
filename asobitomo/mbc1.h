@@ -23,6 +23,8 @@ public:
   byte* get(word loc);
   bool set(word loc, byte value);
   
+  int bank_no();
+  
   MMU& mmu;
   
   int nbanks;

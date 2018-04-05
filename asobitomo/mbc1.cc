@@ -2,6 +2,11 @@
 
 #include "mmu.h"
 
+int
+MBC1::bank_no() {
+  return (bank_hi << 5) + bank;
+}
+
 byte*
 MBC1::get(word loc) {
   if (loc <= 0x1fff) {
@@ -10,9 +15,11 @@ MBC1::get(word loc) {
     return &mmu.cart[loc];
   } else if (loc <= 0x5fff) {
     int full_bank = (bank_hi << 5) + bank; // TODO: need wraparound behaviour?
+    if (full_bank > 0x1f) full_bank = 0x1f;
     return &mmu.cart[full_bank * 0x4000 + (loc - 0x4000)];
   } else if (loc <= 0x7fff) {
     int full_bank = (bank_hi << 5) + bank; // TODO: need wraparound behaviour?
+    if (full_bank > 0x1f) full_bank = 0x1f;
     return &mmu.cart[full_bank * 0x4000 + (loc - 0x4000)];
   } else if (loc >= 0xa000 && loc <= 0xbfff) {
     return &external_ram[loc - 0xa000];
@@ -47,7 +54,11 @@ MBC1::set(word loc, byte value) {
     if (select_external_ram) {
       ram_bank = value & 0x3;
     } else {
-      bank_hi = value & 0x3;
+      // Is the right behaviour to ignore values that
+      // are out of range?
+      if (value <= 3) {
+        bank_hi = value & 0x3;
+      }
     }
     return true;
   } else if (loc <= 0x7fff) {
