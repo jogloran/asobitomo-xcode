@@ -65,3 +65,21 @@ size_t history_repeating(std::deque<word> history) {
   
   return 0;
 }
+
+const char* to_flag_string(byte f)  {
+  // z = zero
+  // n = subtract
+  // Z = zero + subtract
+  // --
+  // c = carry
+  // h = half carry
+  // C = half carry + carry
+  static const char* flags[] {
+    "__", "_c", "_h", "_C", // 0000 01 10 11
+    "n_", "nc", "nh", "nC", // 0100 01 10 11
+    "z_", "zc", "zh", "zC", // 1000 01 10 11
+    "Z_", "Zc", "Zh", "ZC", // 1100 01 10 11
+  };
+  
+  return flags[f >> 4];
+}

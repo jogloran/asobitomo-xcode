@@ -12,6 +12,8 @@
 std::string binary(byte b);
 std::string interrupt_flags_to_description(byte flags);
 
+const char* to_flag_string(byte f);
+
 size_t history_repeating(std::deque<word> history);
 
 struct two_byte_fmt_manip {
