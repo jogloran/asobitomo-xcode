@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <sstream>
 
-template <typename T> void
-flatten(const std::array<std::array<T, 8>, 21>& in, size_t out_size, typename std::array<T, 168>::iterator begin) {
+template <typename T, unsigned long A, unsigned long B> void
+flatten(const std::array<std::array<T, A>, B>& in, typename std::array<T, A*B>::iterator begin) {
   auto ptr = begin;
   for (auto it = in.begin(); it != in.end(); ++it) {
     ptr = std::copy(it->begin(), it->end(), ptr);
@@ -193,7 +193,10 @@ PPU::rasterise_line() {
     // get the sequence of tiles which are touched
     auto row_touched = ((line + scy) % 256) / 8; // % 256 for scy wrap around
   
-    // create sequence of tiles to use (these can wrap around)
+    // Create sequence of tiles to use (% 32 to wrap around)
+    // Note that we actually take 21 tiles, because if
+    // scx % 8 != 0, the raster may actually span part
+    // of the first tile and part of the last
     auto starting_index = scx / 8;
     for (int i = 0; i <= 20; ++i) {
       row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
@@ -205,13 +208,10 @@ PPU::rasterise_line() {
     std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
       return tilemap_index_to_tile(index, (line + scy) % 8, scx % 8);
     });
-    // map this through the colour map
     
-    flatten(tile_data, 168, raster_row.begin());
+    flatten(tile_data, raster_row.begin());
     
     // write to raster
-    typedef std::vector<byte>::size_type diff;
-
     auto offset = static_cast<int>(scx % 8);
 
     auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
@@ -240,7 +240,7 @@ PPU::rasterise_line() {
         return tilemap_index_to_tile(index, (line - wy) % 8, (wx - 7) % 8);
       });
       
-      flatten(tile_data, 160, raster_row.begin());
+      flatten(tile_data, raster_row.begin());
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
         return apply_palette(idx, palette);
       });
@@ -260,8 +260,6 @@ PPU::rasterise_line() {
     // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
-//      if (entry.x != 0)
-//      std::cout << j << ": " << entry << std::endl;
   
       auto sprite_height = sprite_mode == SpriteMode::S8x8 ? 8 : 16;
   
@@ -360,7 +358,7 @@ PPU::rasterise_line() {
       }
     }
     
-    std::copy(oam, oam + 40, old_oam.begin());
+    std::copy_n(oam, 40, old_oam.begin());
   }
 }
 
@@ -383,7 +381,7 @@ PPU::decode(word start_loc, byte start_y, byte start_x) {
   return unpack_bits(b1, b2, start_x);
 }
 
-PPU::TileRow
+inline PPU::TileRow
 PPU::unpack_bits(byte lsb, byte msb, byte start_x) {
   PPU::TileRow result;
   
