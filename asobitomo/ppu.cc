@@ -206,7 +206,7 @@ PPU::rasterise_line() {
     std::for_each(tile_data.begin(), tile_data.end(),
                   [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
     std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
-      return tilemap_index_to_tile(index, (line + scy) % 8, scx % 8);
+      return tilemap_index_to_tile(index, (line + scy) % 8);
     });
     
     flatten(tile_data, raster_row.begin());
@@ -237,7 +237,7 @@ PPU::rasterise_line() {
       std::for_each(tile_data.begin(), tile_data.end(),
                     [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
       std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, wx, wy](byte index) {
-        return tilemap_index_to_tile(index, (line - wy) % 8, (wx - 7) % 8);
+        return tilemap_index_to_tile(index, (line - wy) % 8);
       });
       
       flatten(tile_data, raster_row.begin());
@@ -301,7 +301,7 @@ PPU::rasterise_line() {
           byte b2 = cpu.mmu[tile_data_address + 1];
           
           // Map the sprite indices through the palette map
-          auto decoded = unpack_bits(b1, b2, 0);
+          auto decoded = unpack_bits(b1, b2);
 
           if (entry.flags & (1 << 5)) {
             std::reverse(decoded.begin(), decoded.end());
