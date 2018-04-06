@@ -9,7 +9,7 @@
 #include <sstream>
 
 template <typename T> void
-flatten(const std::array<std::array<T, 8>, 20>& in, size_t out_size, typename std::array<T, 160>::iterator begin) {
+flatten(const std::array<std::array<T, 8>, 21>& in, size_t out_size, typename std::array<T, 168>::iterator begin) {
   auto ptr = begin;
   for (auto it = in.begin(); it != in.end(); ++it) {
     ptr = std::copy(it->begin(), it->end(), ptr);
@@ -195,7 +195,7 @@ PPU::rasterise_line() {
   
     // create sequence of tiles to use (these can wrap around)
     auto starting_index = scx / 8;
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i <= 20; ++i) {
       row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
     }
     
@@ -207,17 +207,15 @@ PPU::rasterise_line() {
     });
     // map this through the colour map
     
-    flatten(tile_data, 160, raster_row.begin());
+    flatten(tile_data, 168, raster_row.begin());
     
     // write to raster
     typedef std::vector<byte>::size_type diff;
 
     auto offset = static_cast<int>(scx % 8);
-    
+
     auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
     std::copy(raster_row.begin(), raster_row.begin() + offset, fin);
-//    auto fin = std::copy(raster_row.end() - offset, raster_row.end(), palette_index_row.begin());
-//    std::copy(raster_row.begin(), raster_row.end() - offset, fin);
     
     std::transform(palette_index_row.begin(), palette_index_row.end(),
       raster.begin(), [palette](PaletteIndex idx) {
