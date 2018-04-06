@@ -216,6 +216,8 @@ PPU::rasterise_line() {
     
     auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
     std::copy(raster_row.begin(), raster_row.begin() + offset, fin);
+//    auto fin = std::copy(raster_row.end() - offset, raster_row.end(), palette_index_row.begin());
+//    std::copy(raster_row.begin(), raster_row.end() - offset, fin);
     
     std::transform(palette_index_row.begin(), palette_index_row.end(),
       raster.begin(), [palette](PaletteIndex idx) {
