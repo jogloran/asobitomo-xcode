@@ -83,9 +83,9 @@ public:
 
   void rasterise_line();
   
-  TileRow decode(word start_loc, byte start_y /* 0 to 7 */, byte start_x);
-  TileRow unpack_bits(byte lsb, byte msb, byte start_x);
-  TileRow tilemap_index_to_tile(byte index, byte y_offset, byte x_offset);
+  TileRow decode(word start_loc, byte start_y /* 0 to 7 */);
+  TileRow unpack_bits(byte lsb, byte msb);
+  TileRow tilemap_index_to_tile(byte index, byte y_offset);
   GL screen;
   TD debugger;
   TM tilemap;

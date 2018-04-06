@@ -18,7 +18,7 @@ void TD::show() {
     word tile_start = tile_offset + i * 16;
     std::vector<PPU::PaletteIndex> tile_pixels;
     for (int m = 0; m < 8; ++m) {
-      auto row = ppu_.decode(tile_start, m, 0);
+      auto row = ppu_.decode(tile_start, m);
       std::copy(row.begin(), row.end(), std::back_inserter(tile_pixels));
     }
     

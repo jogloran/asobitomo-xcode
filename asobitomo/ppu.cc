@@ -154,7 +154,7 @@ std::ostream& operator<<(std::ostream& out, const OAM& oam) {
 }
 
 PPU::TileRow
-PPU::tilemap_index_to_tile(byte index, byte y_offset, byte x_offset) {
+PPU::tilemap_index_to_tile(byte index, byte y_offset) {
   // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
   // This takes each tile map index and retrieves
   // the corresponding line of the corresponding tile
@@ -164,13 +164,13 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset, byte x_offset) {
   if (bg_window_tile_data_offset == 0x8000) {
     // data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
     return decode(bg_window_tile_data_offset + index*16,
-                  y_offset, x_offset);
+                  y_offset);
   } else {
     // add 0x800 to interpret the tile map index as a signed index starting in the middle
     // of the tile data range (0x8800-97FF)
     // data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
     return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
-                  y_offset, x_offset);
+                  y_offset);
   }
 }
 
@@ -363,7 +363,7 @@ PPU::rasterise_line() {
 }
 
 PPU::TileRow
-PPU::decode(word start_loc, byte start_y, byte start_x) {
+PPU::decode(word start_loc, byte start_y) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows
@@ -378,11 +378,11 @@ PPU::decode(word start_loc, byte start_y, byte start_x) {
   // -------------------------
   // 02 02 30 31   30 31 02 12 <- we want to get this sequence
   
-  return unpack_bits(b1, b2, start_x);
+  return unpack_bits(b1, b2);
 }
 
 inline PPU::TileRow
-PPU::unpack_bits(byte lsb, byte msb, byte start_x) {
+PPU::unpack_bits(byte lsb, byte msb) {
   PPU::TileRow result;
   
   for (int i = 7; i >= 0; --i) {
