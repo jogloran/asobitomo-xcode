@@ -186,6 +186,14 @@ public:
     }
   }
   
+  void check_half_carry_word(word reg, word addend) {
+    if ((reg & 0xfff) + (addend & 0xfff) > 0xfff) {
+      set_flags(Hf);
+    } else {
+      unset_flags(Hf);
+    }
+  }
+  
   void check_half_carry(byte reg, byte addend, byte carry=0x0) {
     if (((reg & 0xf) + (addend & 0xf) + carry) > 0xf) {
       set_flags(Hf);

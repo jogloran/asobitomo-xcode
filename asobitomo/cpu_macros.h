@@ -135,11 +135,7 @@
 #define ADD_WORD_WORD(hi1, lo1, hi2, lo2) [](CPU& cpu) { \
   word hl = cpu.get_word(cpu.hi1, cpu.lo1); \
   word bc = cpu.get_word(cpu.hi2, cpu.lo2); \
-  if ((hl & 0xfff) + (bc & 0xfff) > 0xfff) { \
-    cpu.set_flags(Hf); \
-  } else { \
-    cpu.unset_flags(Hf); \
-  } \
+  cpu.check_half_carry_word(hl, bc); \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
   hl = static_cast<word>(result); \
   cpu.hi1 = hl >> 8; \
@@ -151,11 +147,7 @@
 #define ADD_WORD_WWORD(hi, lo, wword) [](CPU& cpu) { \
   word hl = cpu.get_word(cpu.hi, cpu.lo); \
   word bc = cpu.wword; \
-  if ((hl & 0xfff) + (bc & 0xfff) > 0xfff) { \
-    cpu.set_flags(Hf); \
-  } else { \
-    cpu.unset_flags(Hf); \
-  } \
+  cpu.check_half_carry_word(hl, bc); \
   uint32_t result = static_cast<uint32_t>(hl) + static_cast<uint32_t>(bc); \
   hl = static_cast<word>(result); \
   cpu.hi = hl >> 8; \
