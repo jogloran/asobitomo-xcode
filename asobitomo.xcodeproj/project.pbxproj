@@ -178,14 +178,14 @@
 				A2CCE57C203A9C3600F3FD4F /* Tetris.gb */,
 				A2CCE573203A981800F3FD4F /* cpu_cb_macros.h */,
 				A2CCE570203A981800F3FD4F /* cpu_macros.h */,
-				A2CCE572203A981800F3FD4F /* cpu.cc */,
 				A2CCE575203A981900F3FD4F /* cpu.h */,
+				A2CCE572203A981800F3FD4F /* cpu.cc */,
 				A2CCE56F203A981800F3FD4F /* flags.h */,
 				A2CCE571203A981800F3FD4F /* main.cc */,
 				A2CCE576203A981900F3FD4F /* mmu.cc */,
 				A2CCE577203A981900F3FD4F /* mmu.h */,
-				A2CCE574203A981900F3FD4F /* ppu.cc */,
 				A2CCE56E203A981800F3FD4F /* ppu.h */,
+				A2CCE574203A981900F3FD4F /* ppu.cc */,
 				A2CCE56D203A981800F3FD4F /* types.h */,
 				A2F50360203C9BDB000FCD02 /* op_names.h */,
 				0907948A2043A01F0063686E /* console_screen.cc */,
@@ -495,7 +495,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_STYLE = Automatic;
-				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
@@ -515,7 +515,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_STYLE = Automatic;
-				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,

@@ -72,20 +72,20 @@ public:
     Enabled,
   };
 
-  bool Z() { return (f & Zf) == Zf; }
-  bool N() { return (f & Nf) == Nf; }
-  bool H() { return (f & Hf) == Hf; }
-  bool C() { return (f & Cf) == Cf; }
+  bool Z() { return (f & Zf); }
+  bool N() { return (f & Nf); }
+  bool H() { return (f & Hf); }
+  bool C() { return (f & Cf); }
 
-  void unset_flags(int flags) {
+  void unset_flags(byte flags) {
     f &= ~flags;
   }
 
-  void set_flags(int flags) {
+  void set_flags(byte flags) {
     f |= flags;
   }
 
-  void toggle_flags(int flags) {
+  void toggle_flags(byte flags) {
     f ^= flags;
   }
 

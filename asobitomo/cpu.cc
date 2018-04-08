@@ -259,6 +259,7 @@ void CPU::dump_state() {
     << " LCDC: " << binary(mmu[0xff40])
     << " STAT: " << binary(mmu[0xff41])
     << " on:" << int(timer.enabled)
+    << " cy:" << dec << long(cycles)
 //    << setfill('0')
 //    << " tac:" << setw(2) << int(timer.tac_)
 //    << " cyc:" << dec << setw(2) << word(timer.counter_cycles)
@@ -408,6 +409,8 @@ void CPU::step(bool debug)  {
     
     ops[instr](*this); // calls EI, sets interrupt state to EnableNext
     cycles += ncycles[instr];
+    // ncycles[instr] accounts for different cycle lengths when taking conditional branches etc
+    // we need this correct value to be fed into ppu.step
     
     ppu.step(cycles - old_cycles);
     apu.step(cycles - old_cycles);
