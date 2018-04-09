@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
   }
   
   if (!FLAGS_headless)
-    cpu.ppu.screen.on();
+    cpu.ppu.screen->on();
   
   long ninstrs = 0;
   while (run_for_n == -1 || ninstrs < run_for_n) {

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "types.h"
+#include "screen.h"
 #include "console_screen.h"
 #include "gl_screen.h"
 #include "tile_debugger.h"
 #include "tile_map.h"
 
+#include <memory>
 #include <array>
 #include <gflags/gflags.h>
 
@@ -46,7 +48,7 @@ public:
   };
 
   
-  PPU(CPU& cpu): raster(), screen(cpu),
+  PPU(CPU& cpu): raster(), screen(std::make_unique<GL>(cpu)),
     debugger(*this), tilemap(*this),
     line(0), mode(Mode::OAM), ncycles(0), vblank_ncycles(0), cpu(cpu), lcd_on(true),
     window_tilemap_offset(0), window_display(false),
@@ -86,7 +88,7 @@ public:
   TileRow decode(word start_loc, byte start_y /* 0 to 7 */);
   TileRow unpack_bits(byte lsb, byte msb);
   TileRow tilemap_index_to_tile(byte index, byte y_offset);
-  GL screen;
+  std::unique_ptr<Screen> screen;
   TD debugger;
   TM tilemap;
   

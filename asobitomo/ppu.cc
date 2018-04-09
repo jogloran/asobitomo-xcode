@@ -68,7 +68,7 @@ PPU::step(long delta) {
         // write one row to framebuffer
         
         rasterise_line();
-        screen.set_row(line, raster.begin(), raster.end());
+        screen->set_row(line, raster.begin(), raster.end());
       }
       
       update_stat_register();
@@ -82,7 +82,7 @@ PPU::step(long delta) {
         if (line == 144) {
           mode = Mode::VBLANK;
           // last hblank: blit buffer
-          screen.blit();
+          screen->blit();
           debugger.show();
           tilemap.show();
         } else {

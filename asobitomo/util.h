@@ -12,6 +12,8 @@
 std::string binary(byte b);
 std::string interrupt_flags_to_description(byte flags);
 
+std::string replace_path_extension(std::string path, const std::string old_extension, const std::string extension);
+
 const char* to_flag_string(byte f);
 
 size_t history_repeating(std::deque<word> history);

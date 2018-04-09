@@ -20,12 +20,14 @@ using namespace std;
 #include "mbc_base.h"
 #include "header_type.h"
 #include "rang.hpp"
+#include "util.h"
 
 extern bool in_title;
 
 class MMU {
 public:
   MMU(std::string path, PPU& ppu, APU& apu, Timer& timer):
+    path(path),
     cart(32768, 0), rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
     joypad(0xf),
     input(), mbc() {
@@ -46,7 +48,12 @@ public:
     
     MBC cartridge_type = h->cartridge_type;
     mbc = mbc_for(cartridge_type, *this);
-    mbc->load("eram.sav");
+    mbc->load(replace_path_extension(path, ".gb", ".sav"));
+
+    ppu.screen->add_exit_handler([this, path]() {
+      auto sav_path = replace_path_extension(path, ".gb", ".sav");
+      mbc->save(sav_path);
+    });
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);
@@ -69,6 +76,8 @@ public:
 
 // private:
   static constexpr word CARTRIDGE_TYPE_OFFSET = 0x0147;
+
+  const std::string path;
 
   PPU& ppu;
   APU& apu;

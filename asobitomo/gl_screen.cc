@@ -71,8 +71,7 @@ GL::blit() {
   SDL_Event event;
   if (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
-      cpu_.mmu.mbc->save("eram.sav");
-      exit(0);
+      notify_exiting();
     }
   }
 }
