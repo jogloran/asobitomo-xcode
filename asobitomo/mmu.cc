@@ -29,10 +29,6 @@ byte& MMU::operator[](word loc) {
     return timer.tac();
   }
   
-  if (loc == 0xff46) { // DMA
-    return mem[loc];
-  }
-  
   if (loc == 0xff00) { //joypad
     handle_joypad();
     mem[loc] = joypad;
@@ -69,48 +65,59 @@ void MMU::set(word loc, byte value) {
   
   mem[loc] = value;
   
-  // serial write
-  if (loc == 0xff01) {
-    last = value;
-  }
-  // serial read
-  if (loc == 0xff02) {
-//    std::cout << (char)last;
-  }
-  
-  if (loc == 0xff04) { // timer DIV
-    timer.reset_div();
-  }
-  if (loc == 0xff05) { // timer counter
-    timer.counter = value;
-  }
-  if (loc == 0xff06) {
-    timer.modulo = value;
-  }
-  if (loc == 0xff07) {
-    timer.set_tac(value);
-  }
-  
-  if (loc == 0xff40) { // LCD stat
-    ppu.stat(value);
-  }
-  
-  if (loc == 0xff00) { // joypad
-    mem[loc] = value | 0xf;
-  }
-  
-  if (loc == 0xff46) { // DMA
-    word src = value << 8;
-//    for (word addr = 0xfe00; addr < 0xfea0; ++addr) {
-//      (*this)[addr] = (*this)[src++];
-//    }
-    // This isn't valid if we are reading from "special"
-    // memory locations (i.e. memory mapped I/O registers etc)
-    std::copy_n(&mem[src], 0xa0, &mem[0xfe00]);
-  }
-  
-  if (loc == 0xff50) { // unmap rom
-    rom_mapped = false;
+  switch (loc) {
+      // serial write
+    case 0xff01: {
+      last = value;
+      break;
+    }
+      // serial read
+    case 0xff02: {
+      //    std::cout << (char)last;
+    }
+      
+    case 0xff04: { // timer DIV
+      timer.reset_div();
+      break;
+    }
+    case 0xff05: { // timer counter
+      timer.counter = value;
+      break;
+    }
+    case 0xff06: {
+      timer.modulo = value;
+      break;
+    }
+    case 0xff07: {
+      timer.set_tac(value);
+      break;
+    }
+      
+    case 0xff40: { // LCD stat
+      ppu.stat(value);
+      break;
+    }
+      
+    case 0xff00: { // joypad
+      mem[loc] = value | 0xf;
+      break;
+    }
+      
+    case 0xff46: { // DMA
+      word src = value << 8;
+      //    for (word addr = 0xfe00; addr < 0xfea0; ++addr) {
+      //      (*this)[addr] = (*this)[src++];
+      //    }
+      // This isn't valid if we are reading from "special"
+      // memory locations (i.e. memory mapped I/O registers etc)
+      std::copy_n(&mem[src], 0xa0, &mem[0xfe00]);
+      break;
+    }
+      
+    case 0xff50: { // unmap rom
+      rom_mapped = false;
+      break;
+    }
   }
 }
 
