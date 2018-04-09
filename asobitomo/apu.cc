@@ -188,9 +188,7 @@ APU::step(long delta) {
         buf_ptr = buf.begin();
         
         while (SDL_GetQueuedAudioSize(dev) > buf.size() * sizeof(int16_t)) {
-          std::cout << (SDL_GetQueuedAudioSize(dev)) << std::endl;
           SDL_Delay(1);
-          std::cout << '-'<<(SDL_GetQueuedAudioSize(dev)) << std::endl;
         }
         
         SDL_QueueAudio(dev, (void*)buf.data(), static_cast<uint32_t>(buf.size()) * sizeof(int16_t));

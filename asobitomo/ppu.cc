@@ -36,7 +36,7 @@ PPU::step(long delta) {
   
   // Dr Mario seems to wait for vblank while in HALT, which leads to an infinite loop
   // unless the PPU is still active during LCD off (why would Dr Mario turn the LCD off?)
-//  if (!cpu.ppu.lcd_on) return;
+  if (!cpu.ppu.lcd_on) return;
   
   /* 456*144 + 4560 = 70224
    *                                    \
