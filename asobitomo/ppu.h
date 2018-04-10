@@ -50,7 +50,7 @@ public:
   
   PPU(CPU& cpu): raster(), screen(std::make_unique<GL>(cpu)),
     debugger(*this), tilemap(*this),
-    line(0), mode(Mode::OAM), ncycles(0), vblank_ncycles(0), cpu(cpu), lcd_on(true),
+    line(0), mode(Mode::OAM), ncycles(0), cpu(cpu), lcd_on(true),
     window_tilemap_offset(0), window_display(false),
     bg_window_tile_data_offset(0x8000),
     bg_tilemap_offset(0),
@@ -100,7 +100,6 @@ public:
   byte line;
   Mode mode;
   long ncycles;
-  long vblank_ncycles;
   bool lcd_on;
   
   word window_tilemap_offset;

@@ -65,7 +65,6 @@ PPU::step(long delta) {
       if (ncycles >= 172) {
         mode = Mode::HBLANK;
         ncycles -= 172;
-        // write one row to framebuffer
         
         rasterise_line();
         screen->set_row(line, raster.begin(), raster.end());
@@ -240,6 +239,8 @@ PPU::rasterise_line() {
         return tilemap_index_to_tile(index, (line - wy) % 8);
       });
       
+      // a single TileRow could be stored as 16 bits
+      
       flatten(tile_data, raster_row.begin());
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
         return apply_palette(idx, palette);
@@ -256,12 +257,12 @@ PPU::rasterise_line() {
   if (sprite_display) {
     std::fill(sprite_row.begin(), sprite_row.end(), 0);
     
+    auto sprite_height = sprite_mode == SpriteMode::S8x8 ? 8 : 16;
+    
 //    compare_oams(oam, old_oam.data());
     // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
-  
-      auto sprite_height = sprite_mode == SpriteMode::S8x8 ? 8 : 16;
   
       for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
         if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
