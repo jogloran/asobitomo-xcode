@@ -16,23 +16,24 @@ byte& MMU::operator[](word loc) {
   }
   
   // TODO: ff03 should have the lower byte of timer div
-  if (loc == 0xff04) { // timer DIV
-    return timer.div();
-  }
-  if (loc == 0xff05) { // timer counter
-    return timer.counter;
-  }
-  if (loc == 0xff06) {
-    return timer.modulo;
-  }
-  if (loc == 0xff07) {
-    return timer.tac();
-  }
-  
-  if (loc == 0xff00) { //joypad
-    handle_joypad();
-    mem[loc] = joypad;
-    return joypad;
+  switch (loc) {
+    case 0xff04: { // timer DIV
+      return timer.div();
+    }
+    case 0xff05: { // timer counter
+      return timer.counter;
+    }
+    case 0xff06: {
+      return timer.modulo;
+    }
+    case 0xff07: {
+      return timer.tac();
+    }
+    case 0xff00: { // joypad
+      handle_joypad();
+      mem[loc] = joypad;
+      return joypad;
+    }
   }
   
   if (loc <= 0x00ff) {
