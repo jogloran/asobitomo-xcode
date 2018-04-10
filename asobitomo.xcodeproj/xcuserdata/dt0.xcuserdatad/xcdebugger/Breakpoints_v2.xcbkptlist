@@ -24,7 +24,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "502"
-            endingLineNumber = "502">
+            endingLineNumber = "502"
+            landmarkName = "apply_palette(PPU::PaletteIndex pidx, byte sprite_palette)"
+            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

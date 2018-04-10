@@ -38,7 +38,8 @@ public:
   };
   
   typedef byte PaletteIndex;
-  typedef std::array<PaletteIndex, 8> TileRow;
+//  typedef std::array<PaletteIndex, 8> TileRow;
+  typedef uint16_t TileRow;
   
   struct RenderedSprite {
     RenderedSprite(const OAM& oam, byte oam_index, const TileRow& pixels): oam_(oam), oam_index_(oam_index), pixels_(pixels) {}
