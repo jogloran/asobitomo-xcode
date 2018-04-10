@@ -16,6 +16,17 @@ flatten(const std::array<std::array<T, A>, B>& in, typename std::array<T, A*B>::
   }
 }
 
+void flatten(std::array<PPU::PaletteIndex, 168>& raster_row, typename std::array<PPU::TileRow, 21>::iterator src) {
+  auto ptr = raster_row.begin();
+  for (int i = 0; i < 21; ++i) {
+    for (int j = 7; j >= 0; --j) {
+      auto mask = (1 << 2*j) | (1 << (2*j+1));
+      *ptr++ = (*src & mask) >> 2*j;
+    }
+    src++;
+  }
+}
+
 void
 PPU::stat(byte value) {
   set_lcd_on(value & (1 << 7));
@@ -222,7 +233,18 @@ PPU::rasterise_line() {
       return tilemap_index_to_tile(index, (line + scy) % 8);
     });
     
-//    flatten(tile_data, raster_row.begin());
+    // tile_data is 21 uint16_t
+    // need to copy each 2 bit unit into raster_row as a full byte
+//    auto src = tile_data.begin();
+//    auto ptr = raster_row.begin();
+//    for (int i = 0; i < 21; ++i) {
+//      for (int j = 7; j >= 0; --j) {
+//        auto mask = (1 << 2*j) | (1 << (2*j+1));
+//        *ptr++ = (*src & mask) >> 2*j;
+//      }
+//      src++;
+//    }
+    flatten(raster_row, tile_data.begin());
     
     // write to raster
     auto offset = static_cast<int>(scx % 8);
@@ -254,7 +276,7 @@ PPU::rasterise_line() {
       
       // a single TileRow could be stored as 16 bits
       
-//      flatten(tile_data, raster_row.begin());
+      flatten(raster_row, tile_data.begin());
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
         return apply_palette(idx, palette);
       });
