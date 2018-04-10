@@ -32,7 +32,7 @@ public:
     joypad(0xf),
     input(), mbc() {
     fill(mem.begin(), mem.end(), 0);
-//    std::copy(rom.begin(), rom.end(), mem.begin());
+    std::copy(rom.begin(), rom.end(), mem.begin());
     
     mem[0xf000] = 0xff;
 
@@ -84,6 +84,7 @@ public:
   APU& apu;
   Timer& timer;
   
+  std::array<byte, 0x100> rom;
   std::vector<byte> cart;
   
   static constexpr int RAM_BYTES = 65536;
