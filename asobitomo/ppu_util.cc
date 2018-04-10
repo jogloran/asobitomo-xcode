@@ -54,3 +54,24 @@ compare_oams(OAM* current_oam, OAM* old_oam) {
   }
 }
 
+void flatten(std::array<PPU::PaletteIndex, 168>& raster_row, typename std::array<PPU::TileRow, 21>::iterator src) {
+  auto ptr = raster_row.begin();
+  for (int i = 0; i < 21; ++i) {
+    for (int j = 7; j >= 0; --j) {
+      auto mask = (1 << 2*j) | (1 << (2*j+1));
+      *ptr++ = (*src & mask) >> 2*j;
+    }
+    src++;
+  }
+}
+
+void flatten_single(std::array<PPU::PaletteIndex, 64>& raster_row, typename std::array<PPU::TileRow, 8>::iterator src) {
+  auto ptr = raster_row.begin();
+  for (int i = 0; i < 8; ++i) {
+    for (int j = 7; j >= 0; --j) {
+      auto mask = (1 << 2*j) | (1 << (2*j+1));
+      *ptr++ = (*src & mask) >> 2*j;
+    }
+    src++;
+  }
+}

@@ -33,7 +33,7 @@ TM::show() {
       for (int m = 0; m < 8; ++m) {
         rows[m] = ppu_.decode(tile_data_address, m);
       }
-      flatten(tile_pixels, rows.begin());
+      flatten_single(tile_pixels, rows.begin());
       
       // Place tile at location
       for (int k = 0; k < tile_pixels.size(); ++k) {

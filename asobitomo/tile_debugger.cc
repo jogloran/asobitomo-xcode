@@ -22,7 +22,7 @@ void TD::show() {
     for (int m = 0; m < 8; ++m) {
       rows[m] = ppu_.decode(tile_start, m);
     }
-    flatten(tile_pixels, rows.begin());
+    flatten_single(tile_pixels, rows.begin());
     
     int row = i / 16;
     int col = i % 16;
