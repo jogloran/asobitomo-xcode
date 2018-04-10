@@ -74,10 +74,10 @@ MBC1::set(word loc, byte value) {
 
 void MBC1::save(std::string path) {
   std::ofstream eram(path, std::ios::binary);
-  eram.write((char*)external_ram.data(), 32768);
+  eram.write((char*)external_ram.data(), 0x2000);
 }
 
 void MBC1::load(std::string path) {
   std::ifstream eram(path, std::ios::binary);
-  eram.read((char*)external_ram.data(), 32768);
+  eram.read((char*)external_ram.data(), 0x2000);
 }

@@ -1,9 +1,6 @@
 
 #include "mmu.h"
 
-#include "mbc1.h"
-#include "mbc3.h"
-
 byte& MMU::operator[](word loc) {
   byte* result = mbc->get(loc);
   if (result != nullptr) {

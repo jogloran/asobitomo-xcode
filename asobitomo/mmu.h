@@ -26,8 +26,8 @@ extern bool in_title;
 
 class MMU {
 public:
-  MMU(std::string path, PPU& ppu, APU& apu, Timer& timer):
-    path(path),
+  MMU(std::string filename, PPU& ppu, APU& apu, Timer& timer):
+    path(filename),
     cart(32768, 0), rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
     joypad(0xf),
     input(), mbc() {
@@ -48,9 +48,10 @@ public:
     
     MBC cartridge_type = h->cartridge_type;
     mbc = mbc_for(cartridge_type, *this);
-    mbc->load(replace_path_extension(path, ".gb", ".sav"));
+    auto load_path = replace_path_extension(path, ".gb", ".sav");
+    mbc->load(load_path);
 
-    ppu.screen->add_exit_handler([this, path]() {
+    ppu.screen->add_exit_handler([this]() {
       auto sav_path = replace_path_extension(path, ".gb", ".sav");
       mbc->save(sav_path);
     });

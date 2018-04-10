@@ -84,10 +84,11 @@ const char* to_flag_string(byte f)  {
   return flags[f >> 4];
 }
 
-std::string replace_path_extension(std::string path, const std::string old_extension, const std::string extension) {
+std::string replace_path_extension(const std::string path, const std::string old_extension, const std::string extension) {
   auto pos = path.find(old_extension);
   if (pos != std::string::npos) {
-    return path.replace(pos, old_extension.size(), extension);
+    std::string copy = path;
+    return copy.replace(pos, old_extension.size(), extension);
   }
   return path;
 }

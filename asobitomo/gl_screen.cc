@@ -11,6 +11,7 @@ GL::GL(CPU& cpu, int scale)
   SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
   SDL_RenderSetLogicalSize(renderer_, Screen::BUF_WIDTH, Screen::BUF_HEIGHT);
   texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, Screen::BUF_WIDTH, Screen::BUF_HEIGHT);
+
 }
 
 void
