@@ -6,7 +6,7 @@
 #include "mmu.h"
 #include "ppu.h"
 #include "cpu.h"
-
+#include "ppu_util.h"
 
 void TD::show() {
   if (!enabled_) {
@@ -16,11 +16,13 @@ void TD::show() {
   word tile_offset = ppu_.bg_window_tile_data_offset;
   for (int i = 0; i < 256; ++i) {
     word tile_start = tile_offset + i * 16;
-    std::vector<PPU::PaletteIndex> tile_pixels;
+    std::array<PPU::PaletteIndex, 64> tile_pixels;
+    std::array<PPU::TileRow, 8> rows;
+    
     for (int m = 0; m < 8; ++m) {
-      auto row = ppu_.decode(tile_start, m);
-      //std::copy(row.begin(), row.end(), std::back_inserter(tile_pixels));
+      rows[m] = ppu_.decode(tile_start, m);
     }
+    flatten(tile_pixels, rows.begin());
     
     int row = i / 16;
     int col = i % 16;

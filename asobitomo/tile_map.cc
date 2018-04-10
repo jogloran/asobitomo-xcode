@@ -2,6 +2,7 @@
 
 #include "ppu.h"
 #include "cpu.h"
+#include "ppu_util.h"
 
 void
 TM::show() {
@@ -26,11 +27,13 @@ TM::show() {
       }
       
       // Decode tile
-      std::vector<PPU::PaletteIndex> tile_pixels;
+      std::array<PPU::PaletteIndex, 64> tile_pixels;
+      // m=0..8 goes over the 8 rows of each tile. Need to decode this into array<PPU::PaletteIndex, 8*8>
+      std::array<PPU::TileRow, 8> rows;
       for (int m = 0; m < 8; ++m) {
-        auto row = ppu_.decode(tile_data_address, m);
-//        std::copy(row.begin(), row.end(), std::back_inserter(tile_pixels));
+        rows[m] = ppu_.decode(tile_data_address, m);
       }
+      flatten(tile_pixels, rows.begin());
       
       // Place tile at location
       for (int k = 0; k < tile_pixels.size(); ++k) {
@@ -95,17 +98,6 @@ TM::show() {
     byte tile_index = ppu_.cpu.mmu[ppu_.bg_tilemap_offset + (mouse_y / scale_) * 32 + (mouse_x / scale_)];
     std::cout << "tile data offset: " << hex << setw(4) << ppu_.bg_window_tile_data_offset << std::endl;
     std::cout << "tile data start: " << hex << setw(4) << (ppu_.bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(tile_index))*16) << std::endl;
-
-    for (int i = 0; i < 8; ++i) {
-      auto row = ppu_.tilemap_index_to_tile(tile_index, i);
-
-//      for (PPU::PaletteIndex idx: row) {
-//        word addr = ppu_.bg_window_tile_data_offset + 0x800 +
-//          static_cast<signed char>(tile_index)*16 + i*2;
-//        std::cout << setw(4) << addr << ' ' << Console::d[idx] << Console::d[idx] << ' ';
-//      }
-      std::cout << std::endl;
-    }
 
      std::cout << hex << setfill('0') << setw(2) << int(mouse_x / scale_) << ' ' << setw(2) << int(mouse_y / scale_) << ' ' << setw(2) << int(tile_index) << std::endl;
   }

@@ -16,17 +16,6 @@ flatten(const std::array<std::array<T, A>, B>& in, typename std::array<T, A*B>::
   }
 }
 
-void flatten(std::array<PPU::PaletteIndex, 168>& raster_row, typename std::array<PPU::TileRow, 21>::iterator src) {
-  auto ptr = raster_row.begin();
-  for (int i = 0; i < 21; ++i) {
-    for (int j = 7; j >= 0; --j) {
-      auto mask = (1 << 2*j) | (1 << (2*j+1));
-      *ptr++ = (*src & mask) >> 2*j;
-    }
-    src++;
-  }
-}
-
 void
 PPU::stat(byte value) {
   set_lcd_on(value & (1 << 7));
@@ -233,17 +222,6 @@ PPU::rasterise_line() {
       return tilemap_index_to_tile(index, (line + scy) % 8);
     });
     
-    // tile_data is 21 uint16_t
-    // need to copy each 2 bit unit into raster_row as a full byte
-//    auto src = tile_data.begin();
-//    auto ptr = raster_row.begin();
-//    for (int i = 0; i < 21; ++i) {
-//      for (int j = 7; j >= 0; --j) {
-//        auto mask = (1 << 2*j) | (1 << (2*j+1));
-//        *ptr++ = (*src & mask) >> 2*j;
-//      }
-//      src++;
-//    }
     flatten(raster_row, tile_data.begin());
     
     // write to raster
@@ -273,8 +251,6 @@ PPU::rasterise_line() {
       std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, wx, wy](byte index) {
         return tilemap_index_to_tile(index, (line - wy) % 8);
       });
-      
-      // a single TileRow could be stored as 16 bits
       
       flatten(raster_row, tile_data.begin());
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
@@ -458,22 +434,7 @@ static const uint16_t m[256] =
 
 inline PPU::TileRow
 PPU::unpack_bits(byte lsb, byte msb) {
-  PPU::TileRow result;
-  result = m[msb] << 1 | m[lsb];
-  return result;
-  
-//  const uint64_t C = m[msb] << 1 | m[lsb];
-//  uint64_t data = (C & 0xc000) >> 14 |
-//                  (C & 0x3000) >> 4  |
-//                  (C & 0x0c00) << 6  |
-//                  (C & 0x0300) << 16 |
-//                  (C &   0xc0) << 26 |
-//                  (C &   0x30) << 36 |
-//                  (C &   0x0c) << 46 |
-//                  (C &   0x03) << 56;
-//  uint64_t* ptr = (uint64_t*)result.data();
-//  *ptr = data;
-//  return result;
+  return m[msb] << 1 | m[lsb];
 }
 
 inline void
