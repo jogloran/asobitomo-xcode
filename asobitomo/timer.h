@@ -34,4 +34,6 @@ public:
   byte tac_;
   bool enabled;
   int speed;
+  
+  constexpr static int CYCLES_PER_SECOND = 4'194'304;
 };

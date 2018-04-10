@@ -28,7 +28,6 @@
 		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
 		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
 		A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE576203A981900F3FD4F /* mmu.cc */; };
-		A2CCE57D203A9D6700F3FD4F /* Tetris.gb in Copy Files */ = {isa = PBXBuildFile; fileRef = A2CCE57C203A9C3600F3FD4F /* Tetris.gb */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,7 +46,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				A2CCE57D203A9D6700F3FD4F /* Tetris.gb in Copy Files */,
 			);
 			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
@@ -105,7 +103,6 @@
 		A2CCE575203A981900F3FD4F /* cpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
 		A2CCE576203A981900F3FD4F /* mmu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mmu.cc; sourceTree = "<group>"; };
 		A2CCE577203A981900F3FD4F /* mmu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mmu.h; sourceTree = "<group>"; };
-		A2CCE57C203A9C3600F3FD4F /* Tetris.gb */ = {isa = PBXFileReference; lastKnownFileType = file; name = Tetris.gb; path = ../../asobitomo/Tetris.gb; sourceTree = "<group>"; };
 		A2F50360203C9BDB000FCD02 /* op_names.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = op_names.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -175,7 +172,6 @@
 				093DACDB2044F4100087724B /* gl_screen.cc */,
 				09079487204089140063686E /* screen.h */,
 				09079488204089140063686E /* screen.cc */,
-				A2CCE57C203A9C3600F3FD4F /* Tetris.gb */,
 				A2CCE573203A981800F3FD4F /* cpu_cb_macros.h */,
 				A2CCE570203A981800F3FD4F /* cpu_macros.h */,
 				A2CCE575203A981900F3FD4F /* cpu.h */,
@@ -212,8 +208,8 @@
 				091FEE7B2073F793009D10F6 /* mbc5.h */,
 				091FEE7A2073F793009D10F6 /* mbc5.cc */,
 				09F569FB2065B10600FE8307 /* ppu_util.h */,
-				09C92A272069E34E00560357 /* apu.cc */,
 				09C92A282069E34E00560357 /* apu.h */,
+				09C92A272069E34E00560357 /* apu.cc */,
 				09C92A2A206B43DD00560357 /* audio_test.cpp */,
 				09C92A2B206B43DD00560357 /* audio_test.hpp */,
 			);

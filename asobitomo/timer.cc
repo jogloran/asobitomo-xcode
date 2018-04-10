@@ -19,7 +19,7 @@ Timer::step(long delta) {
   
   if (enabled) {
     counter_cycles += delta;
-    int frequency = 4194304 / speed;
+    int frequency = CYCLES_PER_SECOND / speed;
     if (counter_cycles >= frequency) {
       inc_tima();
 //      std::cout << "counter: " << dec << static_cast<int>(counter) << ", cycles = " << dec << counter_cycles << " (+" << delta << ")" << std::endl;
