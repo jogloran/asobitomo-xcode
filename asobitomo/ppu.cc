@@ -152,14 +152,6 @@ std::ostream& operator<<(std::ostream& out, const OAM& oam) {
     << ", flags = " << binary(oam.flags) << ")";
 }
 
-PPU::PaletteIndex sprite_value_at_offset(int sprite_position, uint16_t sprite_data) {
-  auto n = 7 - sprite_position;
-  auto offset = 2*n;
-  auto mask = (1 << (offset + 1)) | (1 << offset);
-  PPU::PaletteIndex pal = (sprite_data & mask) >> offset;
-  return pal;
-}
-
 PPU::TileRow
 PPU::tilemap_index_to_tile(byte index, byte y_offset) {
   // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
@@ -179,13 +171,6 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset) {
     return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
                   y_offset);
   }
-}
-
-void
-reverse_two_bit_units(uint16_t& v) {
-  v = ((v >> 2) & 0x3333) | ((v & 0x3333) << 2);
-  v = ((v >> 4) & 0x0f0f) | ((v & 0x0f0f) << 4);
-  v = ((v >> 8) & 0x00ff) | ((v & 0x00ff) << 8);
 }
 
 void
@@ -217,12 +202,13 @@ PPU::rasterise_line() {
     }
     
     // These are pointers into the tile map
-    std::fill(tile_data.begin(), tile_data.end(), 0);
+    std::for_each(tile_data.begin(), tile_data.end(),
+                  [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
     std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
       return tilemap_index_to_tile(index, (line + scy) % 8);
     });
     
-    flatten(raster_row, tile_data.begin());
+    flatten(tile_data, raster_row.begin());
     
     // write to raster
     auto offset = static_cast<int>(scx % 8);
@@ -247,12 +233,17 @@ PPU::rasterise_line() {
         row_tiles[i] = cpu.mmu[window_tilemap_offset + row_touched * 32 + (i % 32)];
       }
       
-      std::fill(tile_data.begin(), tile_data.end(), 0);
+      std::for_each(tile_data.begin(), tile_data.end(),
+                    [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
       std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, wx, wy](byte index) {
         return tilemap_index_to_tile(index, (line - wy) % 8);
       });
       
-      flatten(raster_row, tile_data.begin());
+
+      // a single TileRow could be stored as 16 bits
+      
+      flatten(tile_data, raster_row.begin());
+
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
         return apply_palette(idx, palette);
       });
@@ -312,8 +303,7 @@ PPU::rasterise_line() {
           auto decoded = decode(tile_data_address);
 
           if (entry.flags & (1 << 5)) {
-//            std::reverse(decoded.begin(), decoded.end());
-            reverse_two_bit_units(decoded);
+            std::reverse(decoded.begin(), decoded.end());
           }
           
           visible.emplace_back(RenderedSprite(entry, j, decoded));
@@ -334,9 +324,7 @@ PPU::rasterise_line() {
       
       auto bg_palette_index_ptr = palette_index_row.begin() + sprite.oam_.x - 8;
       auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
-//      auto sprite_ptr = sprite.pixels_.begin();
-      auto sprite_data = sprite.pixels_;
-      int sprite_position = 0;
+      auto sprite_ptr = sprite.pixels_.begin();
       
       byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
 
@@ -346,14 +334,14 @@ PPU::rasterise_line() {
       bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
       
       int n = 0;
-      while (raster_ptr < raster.end() && sprite_position < 8) {
+      while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
         // hack to prevent invalid array access when a sprite starts before column 0
         if (raster_ptr >= raster.begin()) {
           // We need to examine the original palette byte, since the bg-to-OBJ
           // priority bit in LCDC needs to examine the original palette index
           // (and not the index after palette mapping)
           
-          auto sprite_byte = sprite_value_at_offset(sprite_position, sprite_data); // Sprite palette index
+          auto sprite_byte = *sprite_ptr; // Sprite palette index
           auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
           
           if (!(sprite_behind_bg && bg_palette_byte != 0)) {
@@ -365,7 +353,7 @@ PPU::rasterise_line() {
           ++n;
         }
         
-        ++raster_ptr; ++sprite_position; ++bg_palette_index_ptr;
+        ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
       }
     }
     
@@ -430,7 +418,20 @@ static const uint16_t m[256] =
 
 inline PPU::TileRow
 PPU::unpack_bits(byte lsb, byte msb) {
-  return m[msb] << 1 | m[lsb];
+  PPU::TileRow result;
+  
+  const uint64_t C = m[msb] << 1 | m[lsb];
+  uint64_t data = (C & 0xc000) >> 14 |
+                  (C & 0x3000) >> 4  |
+                  (C & 0x0c00) << 6  |
+                  (C & 0x0300) << 16 |
+                  (C &   0xc0) << 26 |
+                  (C &   0x30) << 36 |
+                  (C &   0x0c) << 46 |
+                  (C &   0x03) << 56;
+  uint64_t* ptr = (uint64_t*)result.data();
+  *ptr = data;
+  return result;
 }
 
 inline void
