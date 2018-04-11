@@ -338,8 +338,8 @@ PPU::decode(word start_loc, byte start_y) {
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows
   
-  byte b1 = cpu.mmu[start_loc + start_y*2];
-  byte b2 = cpu.mmu[start_loc + start_y*2 + 1];
+  byte b1 = cpu.mmu.mem[start_loc + start_y*2];
+  byte b2 = cpu.mmu.mem[start_loc + start_y*2 + 1];
   
   // b1/b2 is packed:
   // b1            b2
