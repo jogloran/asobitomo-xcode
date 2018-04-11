@@ -88,9 +88,23 @@ public:
   void toggle_flags(byte flags) {
     f ^= flags;
   }
+  
+  byte get_byte() {
+    auto b = mmu[pc];
+    pc += 1;
+    return b;
+  }
+  
+  sbyte get_sbyte() {
+    auto r8 = static_cast<int8_t>(mmu[pc]);
+    pc += 1;
+    return r8;
+  }
 
   word get_word() {
-    return (mmu[pc + 1] << 8) | mmu[pc];
+    auto w = (mmu[pc + 1] << 8) | mmu[pc];
+    pc += 2;
+    return w;
   }
 
   word get_word(byte hi, byte lo) {

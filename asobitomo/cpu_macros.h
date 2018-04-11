@@ -14,7 +14,6 @@
 
 #define LD_WWORD_d16(wword) [](CPU& cpu) { \
   cpu.wword = cpu.get_word(); \
-  cpu.pc += 2; \
 }
 
 #define LD_ADDR_REG(hi, lo, reg) [](CPU& cpu) { \
@@ -26,7 +25,6 @@
   word loc = cpu.get_word(); \
   cpu.mmu.set(loc, cpu.sp & 0xff); \
   cpu.mmu.set(loc + 1, cpu.sp >> 8); \
-  cpu.pc += 2; \
 }
 
 #define INC_WORD(hi, lo) [](CPU& cpu) { \
@@ -90,16 +88,14 @@
 }
 
 #define LD_REG_d8(reg) [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
+  byte d8 = cpu.get_byte(); \
   cpu.reg = d8; \
-  cpu.pc += 1; \
 }
 
 #define LD_ADDR_d8(hi, lo) [](CPU& cpu) { \
   word loc = cpu.get_word(cpu.hi, cpu.lo); \
-  byte d8 = cpu.mmu[cpu.pc]; \
+  byte d8 = cpu.get_byte(); \
   cpu.mmu.set(loc, d8); \
-  cpu.pc += 1; \
 }
 
 #define RLCA() [](CPU& cpu) { \
@@ -199,8 +195,7 @@ LD_HL_SPECIAL_helper(a)
 
 #define JR_COND_r8(cond) [](CPU& cpu) { \
   if ((cond)) { \
-    int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc]); \
-    cpu.pc += 1; \
+    int8_t r8 = cpu.get_sbyte(); \
     cpu.pc = cpu.pc + r8; \
     cpu.cycles += 4; \
   } else { \
@@ -452,7 +447,6 @@ CP8_HELPER(a)
 
 #define CALL_COND_a16(cond) [](CPU& cpu) { \
   word a16 = cpu.get_word(); \
-  cpu.pc += 2; \
   if (cond) { \
     cpu.push_word(cpu.pc); \
     cpu.pc = a16; \
@@ -461,8 +455,7 @@ CP8_HELPER(a)
 }
 
 #define ADD_A_d8() [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
+  byte d8 = cpu.get_byte(); \
   int result = static_cast<int>(cpu.a) + d8; \
   cpu.check_half_carry(cpu.a, d8); \
   cpu.a = static_cast<byte>(result); \
@@ -472,8 +465,7 @@ CP8_HELPER(a)
 }
 
 #define ADC_A_d8() [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
+  byte d8 = cpu.get_byte(); \
   word result = cpu.a + d8 + cpu.C(); \
   cpu.check_half_carry(cpu.a, d8, cpu.C()); \
   cpu.check_carry(result); \
@@ -483,8 +475,7 @@ CP8_HELPER(a)
 }
 
 #define SUB_A_d8() [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
+  byte d8 = cpu.get_byte(); \
   int result = static_cast<int>(cpu.a) - d8; \
   cpu.check_half_carry_sub(cpu.a, d8); \
   cpu.a = static_cast<byte>(result); \
@@ -494,8 +485,7 @@ CP8_HELPER(a)
 }
 
 #define SBC_A_d8() [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
+  byte d8 = cpu.get_byte(); \
   int result = (static_cast<int>(cpu.a) - d8 - cpu.C()); \
   cpu.check_half_carry_sub(cpu.a, d8, cpu.C()); \
   cpu.check_carry(result); \
@@ -511,8 +501,7 @@ CP8_HELPER(a)
 }
 
 #define AND_d8() [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
+  byte d8 = cpu.get_byte(); \
   cpu.a = cpu.a & d8; \
   cpu.check_zero(cpu.a); \
   cpu.set_flags(Hf); \
@@ -520,16 +509,14 @@ CP8_HELPER(a)
 }
 
 #define OP_d8(op) [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
+  byte d8 = cpu.get_byte(); \
   cpu.a = cpu.a op d8; \
   cpu.check_zero(cpu.a); \
   cpu.unset_flags(Nf | Hf | Cf); \
 }
 
 #define CP_d8() [](CPU& cpu) { \
-  byte d8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
+  byte d8 = cpu.get_byte(); \
   int result = static_cast<int>(cpu.a) - d8; \
   cpu.check_half_carry_sub(cpu.a, d8); \
   cpu.set_flags(Nf); \
@@ -549,32 +536,30 @@ CP8_HELPER(a)
 
 #define LD_A_a16() [](CPU& cpu) { \
   word a16 = cpu.get_word(); \
-  cpu.pc += 2; \
   cpu.a = cpu.mmu[a16]; \
 }
 
 #define LD_a16_A() [](CPU& cpu) { \
   word a16 = cpu.get_word(); \
-  cpu.pc += 2; \
   cpu.mmu.set(a16, cpu.a); \
 }
 
 #define ADD_SP_r8() [](CPU& cpu) { \
-  int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc]); \
+  int8_t r8 = cpu.get_byte(); \
   cpu.check_half_carry(cpu.sp & 0xff, r8); \
-  word unsigned_result = static_cast<word>(cpu.sp & 0xff) + static_cast<word>(cpu.mmu[cpu.pc]); \
+  /* pc-1 because get_byte advances pc */ \
+  word unsigned_result = static_cast<word>(cpu.sp & 0xff) + static_cast<word>(cpu.mmu[cpu.pc-1]); \
   cpu.check_carry(unsigned_result); \
-  cpu.pc += 1; \
   cpu.sp = static_cast<int>(cpu.sp) + r8; \
   cpu.unset_flags(Zf | Nf); \
 }
 
 #define LD_HL_SP_plus_r8() [](CPU& cpu) { \
-  int8_t r8 = static_cast<int8_t>(cpu.mmu[cpu.pc]); \
+  int8_t r8 = cpu.get_byte(); \
   cpu.check_half_carry(cpu.sp & 0xff, r8); \
-  word unsigned_result = static_cast<word>(cpu.sp & 0xff) + static_cast<word>(cpu.mmu[cpu.pc]); \
+  /* pc-1 because get_byte advances pc */ \
+  word unsigned_result = static_cast<word>(cpu.sp & 0xff) + static_cast<word>(cpu.mmu[cpu.pc - 1]); \
   cpu.check_carry(unsigned_result); \
-  cpu.pc += 1; \
   int hl = static_cast<int>(cpu.sp) + r8; \
   cpu.h = hl >> 8; \
   cpu.l = hl & 0xff; \
@@ -590,15 +575,13 @@ CP8_HELPER(a)
 }
 
 #define LDH_A_a8() [](CPU& cpu) { \
-  byte a8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
-  cpu.a = cpu.mmu[0xff00 + a8]; \
+  byte d8 = cpu.get_byte(); \
+  cpu.a = cpu.mmu[0xff00 + d8]; \
 }
 
 #define LDH_a8_A() [](CPU& cpu) { \
-  byte a8 = cpu.mmu[cpu.pc]; \
-  cpu.pc += 1; \
-  cpu.mmu.set(0xff00 + a8, cpu.a); \
+  byte d8 = cpu.get_byte(); \
+  cpu.mmu.set(0xff00 + d8, cpu.a); \
 }
 
 #define LDH_ADDR_A(reg) [](CPU& cpu) { \
