@@ -309,11 +309,7 @@ PPU::rasterise_line() {
           word tile_data_begin = 0x8000 + tile_index * 16;
           word tile_data_address = tile_data_begin + tile_y * 2;
           
-          byte b1 = cpu.mmu[tile_data_address];
-          byte b2 = cpu.mmu[tile_data_address + 1];
-          
-          // Map the sprite indices through the palette map
-          auto decoded = unpack_bits(b1, b2);
+          auto decoded = decode(tile_data_address);
 
           if (entry.flags & (1 << 5)) {
 //            std::reverse(decoded.begin(), decoded.end());

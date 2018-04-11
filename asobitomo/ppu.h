@@ -86,7 +86,7 @@ public:
 
   void rasterise_line();
   
-  TileRow decode(word start_loc, byte start_y /* 0 to 7 */);
+  TileRow decode(word start_loc, byte start_y=0 /* 0 to 7 */);
   TileRow unpack_bits(byte lsb, byte msb);
   TileRow tilemap_index_to_tile(byte index, byte y_offset);
   std::unique_ptr<Screen> screen;
