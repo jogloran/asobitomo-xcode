@@ -97,7 +97,6 @@ public:
   
   Header header;
   
-  int i = 0;
   char last;
   
   std::unique_ptr<MBCBase> mbc;

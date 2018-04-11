@@ -239,9 +239,6 @@ PPU::rasterise_line() {
         return tilemap_index_to_tile(index, (line - wy) % 8);
       });
       
-
-      // a single TileRow could be stored as 16 bits
-      
       flatten(tile_data, raster_row.begin());
 
       std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
@@ -475,17 +472,6 @@ PPU::set_bg_display(bool on) {
 }
 
 inline PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette) {
-  switch (pidx) {
-    case 0:
-      return sprite_palette & 3;
-    case 1:
-      return (sprite_palette >> 2) & 3;
-    case 2:
-      return (sprite_palette >> 4) & 3;
-    case 3:
-      return (sprite_palette >> 6) & 3;
-    default:
-      throw std::runtime_error("invalid palette index");
-  }
+  return (sprite_palette >> (pidx * 2)) & 3;
 }
 
