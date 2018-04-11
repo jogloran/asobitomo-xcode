@@ -197,13 +197,15 @@ PPU::rasterise_line() {
     // scx % 8 != 0, the raster may actually span part
     // of the first tile and part of the last
     auto starting_index = scx / 8;
-    for (int i = 0; i <= 20; ++i) {
-      row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
-    }
+
+    // Equivalent to:
+    // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
+    auto* base = &cpu.mmu[bg_tilemap_offset + row_touched * 32];
+    auto n_copied_from_end = std::min(21, 32 - starting_index);
+    auto cur = std::copy_n(base + starting_index, n_copied_from_end, row_tiles.begin());
+    std::copy_n(base, 21 - n_copied_from_end, cur);
     
     // These are pointers into the tile map
-    std::for_each(tile_data.begin(), tile_data.end(),
-                  [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
     std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
       return tilemap_index_to_tile(index, (line + scy) % 8);
     });
@@ -228,14 +230,9 @@ PPU::rasterise_line() {
     
     if (line >= wy) {
       byte row_touched = (line - wy) / 8;
-      
-      for (int i = 0; i < 20; ++i) {
-        row_tiles[i] = cpu.mmu[window_tilemap_offset + row_touched * 32 + (i % 32)];
-      }
-      
-      std::for_each(tile_data.begin(), tile_data.end(),
-                    [](TileRow& v) { std::fill(v.begin(), v.end(), 0); });
-      std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, wx, wy](byte index) {
+
+      auto* base = &cpu.mmu[window_tilemap_offset + row_touched * 32];
+      std::transform(base, base + 20, tile_data.begin(), [this, wx, wy](byte index) {
         return tilemap_index_to_tile(index, (line - wy) % 8);
       });
       
@@ -258,7 +255,6 @@ PPU::rasterise_line() {
     
     auto sprite_height = sprite_mode == SpriteMode::S8x8 ? 8 : 16;
     
-//    compare_oams(oam, old_oam.data());
     // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
@@ -351,8 +347,6 @@ PPU::rasterise_line() {
         ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
       }
     }
-    
-    std::copy_n(oam, 40, old_oam.begin());
   }
 }
 
