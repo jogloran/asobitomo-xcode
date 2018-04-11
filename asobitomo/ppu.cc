@@ -330,7 +330,6 @@ PPU::rasterise_line() {
       //              else if background or window is color 0, sprite wins
       bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
       
-      int n = 0;
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
         // hack to prevent invalid array access when a sprite starts before column 0
         if (raster_ptr >= raster.begin()) {
@@ -347,7 +346,6 @@ PPU::rasterise_line() {
               *raster_ptr = idx;
             }
           }
-          ++n;
         }
         
         ++raster_ptr; ++sprite_ptr; ++bg_palette_index_ptr;
