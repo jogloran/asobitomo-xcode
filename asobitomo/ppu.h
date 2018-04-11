@@ -55,7 +55,7 @@ public:
     bg_window_tile_data_offset(0x8000),
     bg_tilemap_offset(0),
     sprite_mode(SpriteMode::S8x8), sprite_display(false),
-    bg_display(false), old_oam(40) {
+    bg_display(false) {
       
     visible.reserve(40);
     
@@ -113,13 +113,11 @@ public:
   CPU& cpu;
   
   friend class CPU;
-  std::vector<OAM> old_oam;
   
   // Caches
   std::array<PPU::PaletteIndex, 160> palette_index_row;
   std::array<word, 21> row_tiles;
   std::vector<RenderedSprite> visible;
-  std::array<byte, 160> sprite_row;
   std::array<PaletteIndex, 168> raster_row;
   std::array<TileRow, 21> tile_data;
 };

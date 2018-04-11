@@ -38,16 +38,8 @@ byte& MMU::operator[](word loc) {
       return rom[loc];
     else
       return cart[loc];
-  } else if (loc <= 0xcfff) {
-    return mem[loc]; /* 0xc000 - 0xcfff */
-  } else if (loc <= 0xdfff) {
-    return mem[loc]; /* 0xd000 - 0xdfff */
-  } else if (loc <= 0xfdff) {
-    /* 0xe000 - 0xfdff ==
-     0xc000 - 0xcdff */
+  } else if (loc >= 0xe000 && loc <= 0xfdff) {
     return mem[loc - 0x2000];
-  } else if (loc <= 0xfe9f) {
-    return mem[loc]; /* 0xfe00 - 0xfe9f */
   } else {
     return mem[loc];
   }

@@ -112,19 +112,19 @@ PPU::step(long delta) {
 
 void
 PPU::update_stat_register()  {
-  byte lyc = cpu.mmu[0xff45];
+  byte lyc = cpu.mmu.mem[0xff45];
 
-  byte stat = cpu.mmu[0xff41];
+  byte stat = cpu.mmu.mem[0xff41];
   if (lyc == line) {
     stat |= 0x4; // coincidence flag (bit 2)
   } else {
     stat &= ~0x4;
   }
   
-  cpu.mmu[0xff41] = (stat & 0xfc) | static_cast<byte>(mode);
-  cpu.mmu[0xff44] = static_cast<byte>(line);
+  cpu.mmu.mem[0xff41] = (stat & 0xfc) | static_cast<byte>(mode);
+  cpu.mmu.mem[0xff44] = static_cast<byte>(line); // Not sure why, but this has to be static_cast<byte> and not just
   
-  byte IF = cpu.mmu[0xff0f];
+  byte IF = cpu.mmu.mem[0xff0f];
   bool set_lcd_interrupt =
     ((stat & 0x40) && (lyc == line)) ||
     ((stat & 0x20) && mode == Mode::OAM) ||
@@ -142,7 +142,7 @@ PPU::update_stat_register()  {
     IF &= ~(1 << 0);
   }
   
-  cpu.mmu.set(0xff0f, IF);
+  cpu.mmu.mem[0xff0f] = IF;
 }
 
 std::ostream& operator<<(std::ostream& out, const OAM& oam) {
@@ -175,21 +175,21 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset) {
 
 void
 PPU::rasterise_line() {
-  byte& oam_ref = cpu.mmu[0xfe00];
-  OAM* oam = reinterpret_cast<OAM*>(&oam_ref);
+  // OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
+  byte* oam_ptr = &cpu.mmu.mem[0xfe00];
+  OAM* oam = reinterpret_cast<OAM*>(oam_ptr);
   
-  byte scx = cpu.mmu[0xff43];
-  byte scy = cpu.mmu[0xff42];
+  byte scx = cpu.mmu.mem[0xff43];
+  byte scy = cpu.mmu.mem[0xff42];
 
   // For the sprite palettes, the lowest two bits should always map to 0
-  byte obp0 = cpu.mmu[0xff48] & 0xfc;
-  byte obp1 = cpu.mmu[0xff49] & 0xfc;
+  byte obp0 = cpu.mmu.mem[0xff48] & 0xfc;
+  byte obp1 = cpu.mmu.mem[0xff49] & 0xfc;
   
   // Background palette
-  byte palette = cpu.mmu[0xff47];
+  byte palette = cpu.mmu.mem[0xff47];
 
   if (bg_display) {
-    // get the sequence of tiles which are touched
     auto row_touched = ((line + scy) % 256) / 8; // % 256 for scy wrap around
   
     // Create sequence of tiles to use (% 32 to wrap around)
@@ -205,14 +205,12 @@ PPU::rasterise_line() {
     auto cur = std::copy_n(base + starting_index, n_copied_from_end, row_tiles.begin());
     std::copy_n(base, 21 - n_copied_from_end, cur);
     
-    // These are pointers into the tile map
     std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
       return tilemap_index_to_tile(index, (line + scy) % 8);
     });
     
     flatten(tile_data, raster_row.begin());
     
-    // write to raster
     auto offset = static_cast<int>(scx % 8);
 
     auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
@@ -225,8 +223,8 @@ PPU::rasterise_line() {
   }
   
   if (window_display) {
-    byte wx = cpu.mmu[0xff4b];
-    byte wy = cpu.mmu[0xff4a];
+    byte wx = cpu.mmu.mem[0xff4b];
+    byte wy = cpu.mmu.mem[0xff4a];
     
     if (line >= wy) {
       byte row_touched = (line - wy) / 8;
@@ -244,42 +242,27 @@ PPU::rasterise_line() {
       
       // write to raster
       auto offset = static_cast<int>(wx - 7);
-      // TODO: is this correct when wx < 7?
       std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
     }
   }
   
   visible.clear();
   if (sprite_display) {
-    std::fill(sprite_row.begin(), sprite_row.end(), 0);
-    
     auto sprite_height = sprite_mode == SpriteMode::S8x8 ? 8 : 16;
     
-    // sprite OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
   
       for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
         if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
             line + 16 >= entry.y && line + 16 < entry.y + sprite_height) {
-          // sprite is visible on this line
-          // get tile data for sprite
           
-          auto tile_index = entry.tile_index;
-          
-          auto tile_y = (line - (entry.y - 16));
-          
-          // sprites are not necessarily aligned to the 8x8 grid
-          // we need to be able to tell which line of the sprite
-          // intersects the current scanline
-          
-          // if we are in this section, then entry.y - 16 <= line < entry.y - 8
-          // need to get the relevant row in the tile
-//          byte row_offset_within_tile = (line - (entry.y - 16)) % 8;
+          auto tile_y = line - (entry.y - 16);
           if (entry.flags & (1 << 6)) { // y flip
             tile_y = sprite_height - tile_y - 1;
           }
           
+          auto tile_index = entry.tile_index;
           if (sprite_mode == SpriteMode::S8x16) {
             if (tile_y < 8) {
               tile_index &= 0xfe;
@@ -289,7 +272,6 @@ PPU::rasterise_line() {
             }
           }
           
-          // sprite tiles start at 0x8000 and go to 0x8fff, 16 bytes per tile (each 2 bytes represent one of the 8 rows)
           word tile_data_begin = 0x8000 + tile_index * 16;
           word tile_data_address = tile_data_begin + tile_y * 2;
           
