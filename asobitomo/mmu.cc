@@ -1,5 +1,6 @@
 
 #include "mmu.h"
+#include "cpu.h"
 
 byte& MMU::operator[](word loc) {
   byte* result = mbc->get(loc);
@@ -31,6 +32,12 @@ byte& MMU::operator[](word loc) {
       mem[loc] = joypad;
       return joypad;
     }
+    case 0xff69: {
+      return bgp[bgp_index];
+    }
+    case 0xff6b: {
+      return obp[obp_index];
+    }
   }
   
   if (loc <= 0x00ff) {
@@ -38,6 +45,16 @@ byte& MMU::operator[](word loc) {
       return rom[loc];
     else
       return cart[loc];
+  } else if (loc >= 0x8000 && loc <= 0x9fff) {
+    if (vram_bank == 0) {
+      return mem[loc];
+    } else {
+      return vram_bank_mem[loc - 0x8000];
+    }
+  } else if (loc >= 0xc000 && loc <= 0xcfff) {
+    return cgb_ram[loc - 0xc000];
+  } else if (loc >= 0xd000 && loc <= 0xdfff) {
+    return cgb_ram[cgb_ram_bank * 0x1000 + (loc - 0xd000)];
   } else if (loc >= 0xe000 && loc <= 0xfdff) {
     return mem[loc - 0x2000];
   } else {
@@ -50,6 +67,21 @@ void MMU::set(word loc, byte value) {
     return;
   }
   if (apu.set(loc, value)) {
+    return;
+  }
+  
+  if (loc >= 0x8000 && loc <= 0x9fff) {
+    if (vram_bank == 0) {
+      mem[loc] = value;
+    } else {
+      vram_bank_mem[loc - 0x8000] = value;
+    }
+    return;
+  } else if (loc >= 0xc000 && loc <= 0xcfff) {
+    cgb_ram[loc - 0xc000] = value;
+    return;
+  } else if (loc >= 0xd000 && loc <= 0xdfff) {
+    cgb_ram[cgb_ram_bank * 0x1000 + (loc - 0xd000)] = value;
     return;
   }
   
@@ -80,6 +112,63 @@ void MMU::set(word loc, byte value) {
     }
     case 0xff07: {
       timer.set_tac(value);
+      break;
+    }
+    
+    case 0xff4d: {
+      if (value == 1) {
+        ppu.cpu.speed_switch_prepare();
+      }
+      break;
+    }
+    
+    case 0xff4f: { // vram bank switch
+      std::cout << "vram bank switch " << int(value) << std::endl;
+      vram_bank = value & 0x1;
+      break;
+    }
+    
+    case 0xff51:
+    case 0xff52:
+    case 0xff53:
+    case 0xff54:
+    case 0xff55: {
+      std::cout << "hdma " << hex<<loc << "=" << int(value) << std::endl;
+      break;
+    }
+    
+    case 0xff68: {
+      bgp_index = value & 0b00011111;
+      bgp_auto_increment_on_write = value & (1 << 7);
+      
+      break;
+    }
+    case 0xff69: {
+      // word values are stored little-endian (as usual)
+      bgp[bgp_index] = value;
+//      std::cout << "writing " << hex<<setfill('0')<<setw(2)<< int(value) << " <- " << int(bgp_index) << std::endl;
+      if (bgp_auto_increment_on_write) bgp_index = (bgp_index + 1) % 64;
+      
+      break;
+    }
+    case 0xff6a: {
+      obp_index = value & 0b00011111;
+      obp_auto_increment_on_write = value & (1 << 7);
+      break;
+    }
+    case 0xff6b: {
+      obp[obp_index] = value;
+      if (obp_auto_increment_on_write) obp_index = (obp_index + 1) % 64;
+      break;
+    }
+    
+    case 0xff70: {
+//      std::cout << "ram bank switch " << hex<<loc << "=" << int(value) << std::endl;
+      if (value == 0x0) {
+        cgb_ram_bank = 1;
+      } else if (value <= 0x7) {
+        cgb_ram_bank = value;
+      }
       break;
     }
       

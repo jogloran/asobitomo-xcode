@@ -117,6 +117,7 @@ public:
   // Caches
   std::array<PPU::PaletteIndex, 160> palette_index_row;
   std::array<word, 21> row_tiles;
+  std::array<byte, 21> cgb_attr_tiles;
   std::vector<RenderedSprite> visible;
   std::array<PaletteIndex, 168> raster_row;
   std::array<TileRow, 21> tile_data;

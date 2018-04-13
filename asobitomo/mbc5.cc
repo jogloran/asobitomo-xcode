@@ -1,6 +1,7 @@
 #include "mbc5.h"
 
 #include "mmu.h"
+#include "cpu.h"
 
 int
 MBC5::bank_no() {
@@ -40,9 +41,14 @@ MBC5::set(word loc, byte value) {
     return true; // Do not actually modify RAM
   } else if (loc <= 0x2fff) {
     bank = value; // low 8 bytes of ROM bank
+    if (bank == 0x3f) {
+        std::cout << "new bank: " << hex <<setw(2)<< int(bank_no()) << ' ' << loc << std::endl;
+      mmu.ppu.cpu.dump_state();
+    }
     return true;
   } else if (loc <= 0x3fff) {
     bank_hi = value & 0x1;
+    return true;
   } else if (loc <= 0x5fff) {
     ram_bank = value & 0xf;
     return true;

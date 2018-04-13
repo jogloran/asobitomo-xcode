@@ -40,9 +40,9 @@ Timer::reset_div() {
 
 void
 Timer::fire_timer_interrupt() {
-  byte IF = cpu.mmu[0xff0f];
+  byte IF = cpu.mmu.mem[0xff0f];
   IF |= 1 << 2;
-  cpu.mmu.set(0xff0f, IF);
+  cpu.mmu.mem[0xff0f] = IF;
 }
 
 byte&

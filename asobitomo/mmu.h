@@ -28,13 +28,18 @@ class MMU {
 public:
   MMU(std::string filename, PPU& ppu, APU& apu, Timer& timer):
     path(filename),
-    cart(32768, 0), rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
+    cart(32768, 0),
+    vram_bank(0),
+    rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
     joypad(0xf),
-    input(), mbc() {
+    input(), mbc(),
+    cgb_ram_bank(1) {
     fill(mem.begin(), mem.end(), 0);
     std::copy(rom.begin(), rom.end(), mem.begin());
     
     mem[0xf000] = 0xff;
+    
+    fill(bgp.begin(), bgp.end(), 0xff);
 
     byte header_bytes[0x50];
     std::ifstream f(path);
@@ -89,6 +94,9 @@ public:
   
   static constexpr int RAM_BYTES = 65536;
   std::array<byte, RAM_BYTES> mem;
+  
+  byte vram_bank;
+  std::array<byte, 0x2000> vram_bank_mem;
 
   bool rom_mapped;
   byte joypad;
@@ -100,6 +108,17 @@ public:
   char last;
   
   std::unique_ptr<MBCBase> mbc;
+  
+  std::array<byte, 4096*8> cgb_ram;
+  byte cgb_ram_bank;
+  
+  std::array<byte, 64> bgp;
+  byte bgp_index;
+  bool bgp_auto_increment_on_write;
+  
+  std::array<byte, 64> obp;
+  byte obp_index;
+  bool obp_auto_increment_on_write;
 };
 
 

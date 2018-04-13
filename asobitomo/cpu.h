@@ -62,7 +62,8 @@ public:
     pc(0x0000), sp(0x0000), cycles(0), timer(*this),
     ppu(*this), apu(), mmu(path, ppu, apu, timer),
     halted(false), in_halt_bug(false), interrupt_flags_before_halt(0),
-    interrupt_enabled(InterruptState::Disabled), in_cb(false) {
+    interrupt_enabled(InterruptState::Disabled), in_cb(false),
+    dbl(false), prepare_dbl(false) {
   }
 
   enum class InterruptState {
@@ -176,6 +177,9 @@ public:
   std::string interrupt_state_as_string(InterruptState state);
   
   bool in_cb;
+  
+  bool dbl;
+  bool prepare_dbl;
 
   static constexpr size_t NINSTR = 256;
 
@@ -266,6 +270,10 @@ public:
       unset_flags(Cf);
     }
     return hibit;
+  }
+  
+  void speed_switch_prepare() {
+    prepare_dbl = true;
   }
 
   static std::array<op, NINSTR> cb_ops;

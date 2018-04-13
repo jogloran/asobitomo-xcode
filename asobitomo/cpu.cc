@@ -258,8 +258,9 @@ void CPU::dump_state() {
     << "|" << setw(2) << hex << static_cast<int>(mmu[0xff45])
     << " LCDC: " << binary(mmu[0xff40])
     << " STAT: " << binary(mmu[0xff41])
-    << " on:" << int(timer.enabled)
+    << " fffe:" << hex << int(mmu[0xfffe])
     << " cy:" << dec << long(cycles)
+    << " vr:" << int(mmu.vram_bank)
 //    << setfill('0')
 //    << " tac:" << setw(2) << int(timer.tac_)
 //    << " cyc:" << dec << setw(2) << word(timer.counter_cycles)
@@ -270,7 +271,8 @@ void CPU::dump_state() {
 //    << " bgp:" << binary(mmu[0xff47])
 //    << " obp0:" << binary(mmu[0xff48])
 //    << " obp1:" << binary(mmu[0xff49])
-    << " rom:" << mmu.mbc->bank_no()
+    << " rom:" << hex << mmu.mbc->bank_no()
+    << " wram:" << hex << int(mmu.cgb_ram_bank)
     << " IF: " << binary(mmu[0xff0f])
     << " IE: " << binary(mmu[0xffff])
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
@@ -347,13 +349,21 @@ bool CPU::wake_if_interrupt_requested() {
 
 void CPU::stop() {
   pc += 1;
-  halted = true;
+  
+  if (prepare_dbl) {
+    dbl = true;
+    prepare_dbl = false;
+    
+    mmu.mem[0xff4d] = 1 << 7;
+  } else {
+    halted = true;
+  }
 }
 
 void CPU::halt() {
   if (interrupt_enabled == InterruptState::Disabled) {
-    byte interrupt_enable = mmu[0xffff];
-    byte interrupt_flags = mmu[0xff0f];
+    byte interrupt_enable = mmu.mem[0xffff];
+    byte interrupt_flags = mmu.mem[0xff0f];
     
     byte candidate_interrupts = interrupt_enable & interrupt_flags;
     // The HALT bug occurs when IME is zero, and some interrupt is
@@ -366,7 +376,7 @@ void CPU::halt() {
       halted = true;
     }
   } else {
-    interrupt_flags_before_halt = mmu[0xff0f];
+    interrupt_flags_before_halt = mmu.mem[0xff0f];
     halted = true;
   }
 }
@@ -424,10 +434,14 @@ void CPU::step(bool debug)  {
 
 void CPU::fake_boot() {
   pc = 0x100;
-  a = 0x1; f = 0xb0;
-  b = 0x0; c = 0x13;
-  d = 0x0; e = 0xd8;
-  h = 0x1; l = 0x4d;
+  a = 0x11; f = 0x80;
+  b = 0x00; c = 0x00;
+  d = 0xff; e = 0x56;
+  h = 0x00; l = 0x0d;
+//  a = 0x11; f = 0xb0;
+//  b = 0x0; c = 0x13;
+//  d = 0x0; e = 0xd8;
+//  h = 0x1; l = 0x4d;
   sp = 0xfffe;
   
   mmu.set(0xff10, 0x80);

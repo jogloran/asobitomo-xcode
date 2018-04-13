@@ -185,9 +185,9 @@ PPU::rasterise_line() {
   // For the sprite palettes, the lowest two bits should always map to 0
   byte obp0 = cpu.mmu.mem[0xff48] & 0xfc;
   byte obp1 = cpu.mmu.mem[0xff49] & 0xfc;
-  
+
   // Background palette
-  byte palette = cpu.mmu.mem[0xff47];
+  byte palette = 0b00011011;//cpu.mmu.mem[0xff47];
 
   if (bg_display) {
     auto row_touched = ((line + scy) % 256) / 8; // % 256 for scy wrap around
@@ -197,7 +197,15 @@ PPU::rasterise_line() {
     // scx % 8 != 0, the raster may actually span part
     // of the first tile and part of the last
     auto starting_index = scx / 8;
-
+    
+    // Access the corresponding data in vram bank 1
+    auto* cgb_attrs = &cpu.mmu.vram_bank_mem[(bg_tilemap_offset + row_touched * 32) - 0x8000];
+    {
+      auto n_copied_from_end = std::min(21, 32 - starting_index);
+      auto cur = std::copy_n(cgb_attrs + starting_index, n_copied_from_end, cgb_attr_tiles.begin());
+      std::copy_n(cgb_attrs, 21 - n_copied_from_end, cur);
+    }
+    
     // Equivalent to:
     // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
     auto* base = &cpu.mmu[bg_tilemap_offset + row_touched * 32];
@@ -216,10 +224,9 @@ PPU::rasterise_line() {
     auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
     std::copy(raster_row.begin(), raster_row.begin() + offset, fin);
     
-    std::transform(palette_index_row.begin(), palette_index_row.end(),
-      raster.begin(), [palette](PaletteIndex idx) {
-      return apply_palette(idx, palette);
-    });
+    for (int i = 0; i < palette_index_row.size(); ++i) {
+      raster[i] = (cgb_attr_tiles[i / 8] & 0b111) * 8 + palette_index_row[i];
+    }
   }
   
   if (window_display) {
@@ -228,6 +235,8 @@ PPU::rasterise_line() {
     
     if (line >= wy) {
       byte row_touched = (line - wy) / 8;
+      
+      auto* cgb_attrs = &cpu.mmu[(window_tilemap_offset + row_touched * 32) - 0x8000];
 
       auto* base = &cpu.mmu[window_tilemap_offset + row_touched * 32];
       std::transform(base, base + 20, tile_data.begin(), [this, wx, wy](byte index) {
@@ -236,9 +245,9 @@ PPU::rasterise_line() {
       
       flatten(tile_data, raster_row.begin());
 
-      std::transform(raster_row.begin(), raster_row.end(), raster_row.begin(), [palette](PaletteIndex idx) {
-        return apply_palette(idx, palette);
-      });
+      for (int i = 0; i < raster_row.size(); ++i) {
+        raster[i] = (cgb_attrs[i / 8] & 0b111) * 8 + palette_index_row[i];
+      }
       
       // write to raster
       auto offset = static_cast<int>(wx - 7);
