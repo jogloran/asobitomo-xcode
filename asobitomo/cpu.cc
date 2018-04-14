@@ -398,7 +398,7 @@ void CPU::step(bool debug)  {
   
   if (halted) {
     ppu.step(4);
-    apu.step(4);
+    //apu.step(4);
     timer.step(4);
     
     cycles += 4;
@@ -423,7 +423,7 @@ void CPU::step(bool debug)  {
     // we need this correct value to be fed into ppu.step
     
     ppu.step(cycles - old_cycles);
-    apu.step(cycles - old_cycles);
+    //apu.step(cycles - old_cycles);
     timer.step(cycles - old_cycles);
     
     if (instr != 0xf3 && instr != 0xfb) {

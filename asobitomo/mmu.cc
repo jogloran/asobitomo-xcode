@@ -189,7 +189,7 @@ void MMU::set(word loc, byte value) {
       //    }
       // This isn't valid if we are reading from "special"
       // memory locations (i.e. memory mapped I/O registers etc)
-      std::copy_n(&mem[src], 0xa0, &mem[0xfe00]);
+      std::copy_n(&((*this)[src]), 0xa0, &mem[0xfe00]);
       break;
     }
       

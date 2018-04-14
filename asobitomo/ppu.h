@@ -41,10 +41,13 @@ public:
   typedef std::array<PaletteIndex, 8> TileRow;
   
   struct RenderedSprite {
-    RenderedSprite(const OAM& oam, byte oam_index, const TileRow& pixels): oam_(oam), oam_index_(oam_index), pixels_(pixels) {}
+    RenderedSprite(const OAM& oam, byte oam_index, const TileRow& pixels, byte cgb_palette, bool cgb_ram_bank): oam_(oam), oam_index_(oam_index), pixels_(pixels),
+    cgb_palette_(cgb_palette), cgb_ram_bank_(cgb_ram_bank) {}
     OAM oam_;
     byte oam_index_;
     TileRow pixels_;
+    byte cgb_palette_;
+    bool cgb_ram_bank_;
   };
 
   
@@ -85,9 +88,9 @@ public:
 
   void rasterise_line();
   
-  TileRow decode(word start_loc, byte start_y=0 /* 0 to 7 */);
+  TileRow decode(word start_loc, byte start_y=0 /* 0 to 7 */, bool flip_horizontal=false);
   TileRow unpack_bits(byte lsb, byte msb);
-  TileRow tilemap_index_to_tile(byte index, byte y_offset);
+  TileRow tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal=false);
   std::unique_ptr<Screen> screen;
   TD debugger;
   TM tilemap;

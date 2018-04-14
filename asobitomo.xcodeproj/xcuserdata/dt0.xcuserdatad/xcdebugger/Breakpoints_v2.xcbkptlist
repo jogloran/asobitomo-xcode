@@ -25,7 +25,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "452"
             endingLineNumber = "452"
-            landmarkName = "PPU::rasterise_line()"
+            landmarkName = "PPU::set_window_tilemap_offset(word offset)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -47,34 +47,19 @@ GL::blit() {
     int pos = 0;
     // fb has dims 160x144
     for (byte b: fb) {
-      int col = pos % 160;
-      int row = pos / 160;
-      
-      row /= 8; col /= 8;
-      // this doesn't work since we need to get it from the tile map, not the viewport
-      
-      //      std::cout << "accessing " << row << " " << col << std::endl;
-      byte palette_num = 7;//cpu_.mmu.vram_bank_mem[(0x9800 + (32*row) + col) - 0x8000];
-      if (palette_num != 0) {
-        //        std::cout << "row " << row << " col " << col << " palette " << int(palette_num) << std::endl;
+      word bgp;
+      if (b / 8 < 16) {
+        bgp = cpu_.mmu.bgp[b] |
+                (cpu_.mmu.bgp[b+1] << 8);
+      } else {
+        b -= 128; // we use (16 + palette_no) to indicate OBPx, so subtract 16*8
+        bgp = cpu_.mmu.obp[b] |
+                (cpu_.mmu.obp[b+1] << 8);
       }
-      // select a palette value byte according to 'b'
-      if (row==0&&col==0) {
-        //        std::cout << "bytes: " << setw(2) << setfill('0') << int(cpu_.mmu.bgp[8 * palette_num + (2 * b)]) << ' ' <<
-        //        int((cpu_.mmu.bgp[8 * palette_num + (2 * b + 1)])) << std::endl;
-      }
-      
-      word bgp = cpu_.mmu.bgp[8 * palette_num + (2 * b)] |
-      (cpu_.mmu.bgp[8 * palette_num + (2 * b + 1)] << 8);
       //      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu.bgp[8 * palette_num + (2 * b)]) << ' '
       //      << int(cpu_.mmu.bgp[8 * palette_num + (2 * b + 1)]) << std::endl;
       // decode the colour values
       auto rgb = decode(bgp);
-      if (row==0&&col==0) {
-//        std::cout << int(palette_num ) << ' ' << int(b) << std::endl;
-//
-//        std::cout << hex << int(rgb[0]/8) << ' ' << int(rgb[1]/8) << ' ' << int(rgb[2]/8) << std::endl;
-      }
       
       buf[i++] = rgb[2];
       buf[i++] = rgb[1];
@@ -133,6 +118,15 @@ GL::blit() {
     for (int i = 0; i < 64; ++i) {
       std::cout << setw(2) << setfill('0') << int(cpu_.mmu.obp[i]) << ' ';
       if (i % 8 == 7) std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    exit(0);
+  } else if (keystates[SDL_SCANCODE_Z]) {
+    // Dump bg palette data
+    std::cout << hex << setw(2) << setfill('0');
+    for (int i = 0; i < 160; ++i) {
+      std::cout << setw(2) << setfill('0') << int(cpu_.mmu[0xfe00 + i]) << ' ';
+      if (i % 4 == 3) std::cout << std::endl;
     }
     std::cout << std::endl;
     exit(0);
