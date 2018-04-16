@@ -263,8 +263,7 @@ PPU::rasterise_line() {
     if (line >= wy) {
       byte row_touched = (line - wy) / 8;
       
-      auto* cgb_attrs = &cpu.mmu.vram_bank_mem[(window_tilemap_offset + row_touched * 32) - 0x8000];
-
+      auto* cgb_attrs = &cpu.mmu.vram(window_tilemap_offset + row_touched * 32, true);
       auto* base = &cpu.mmu.vram(window_tilemap_offset + row_touched * 32, false);
       std::transform(base, base + 20, tile_data.begin(), [this, wx, wy](byte index) {
         return tilemap_index_to_tile(index, (line - wy) % 8);

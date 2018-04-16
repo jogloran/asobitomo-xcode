@@ -95,9 +95,6 @@ public:
   
   static constexpr int RAM_BYTES = 65536;
   std::array<byte, RAM_BYTES> mem;
-  
-  byte vram_bank;
-  std::array<byte, 0x2000> vram_bank_mem;
 
   bool rom_mapped;
   byte joypad;
@@ -110,6 +107,8 @@ public:
   
   std::unique_ptr<MBCBase> mbc;
   
+  byte vram_bank;
+  
   std::array<byte, 4096*8> cgb_ram;
   byte cgb_ram_bank;
   
@@ -120,6 +119,9 @@ public:
   std::array<byte, 64> obp;
   byte obp_index;
   bool obp_auto_increment_on_write;
+  
+private:
+  std::array<byte, 0x2000> vram_bank_mem;
 };
 
 
