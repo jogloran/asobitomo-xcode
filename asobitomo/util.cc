@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <ios>
+#include <regex>
 
 std::string binary(byte b) {
   std::stringstream s;
@@ -84,11 +85,13 @@ const char* to_flag_string(byte f)  {
   return flags[f >> 4];
 }
 
-std::string replace_path_extension(const std::string path, const std::string old_extension, const std::string extension) {
-  auto pos = path.find(old_extension);
-  if (pos != std::string::npos) {
-    std::string copy = path;
-    return copy.replace(pos, old_extension.size(), extension);
-  }
-  return path;
+std::string replace_path_extension(const std::string path, const std::string old_extension_re, const std::string extension) {
+  auto regex = std::regex(old_extension_re);
+  return std::regex_replace(path, regex, extension);
+//  auto pos = path.find(old_extension);
+//  if (pos != std::string::npos) {
+//    std::string copy = path;
+//    return copy.replace(pos, old_extension.size(), extension);
+//  }
+//  return path;
 }

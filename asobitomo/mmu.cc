@@ -2,6 +2,14 @@
 #include "mmu.h"
 #include "cpu.h"
 
+byte& MMU::vram(word loc, bool use_alt_bank) {
+  if (!use_alt_bank) {
+    return mem[loc];
+  } else {
+    return vram_bank_mem[loc - 0x8000];
+  }
+}
+
 byte& MMU::operator[](word loc) {
   byte* result = mbc->get(loc);
   if (result != nullptr) {
@@ -123,7 +131,6 @@ void MMU::set(word loc, byte value) {
     }
     
     case 0xff4f: { // vram bank switch
-      std::cout << "vram bank switch " << int(value) << std::endl;
       vram_bank = value & 0x1;
       break;
     }

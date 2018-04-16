@@ -153,7 +153,7 @@ std::ostream& operator<<(std::ostream& out, const OAM& oam) {
 }
 
 PPU::TileRow
-PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal) {
+PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank) {
   // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
   // This takes each tile map index and retrieves
   // the corresponding line of the corresponding tile
@@ -163,13 +163,18 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal) {
   if (bg_window_tile_data_offset == 0x8000) {
     // data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
     return decode(bg_window_tile_data_offset + index*16,
-                  y_offset, flip_horizontal);
+                  y_offset, flip_horizontal, use_alt_bank);
   } else {
     // add 0x800 to interpret the tile map index as a signed index starting in the middle
     // of the tile data range (0x8800-97FF)
     // data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
+    // if index == 0x80, then static_cast<signed char>(index) == -128
+    // then bg_window_tile_data_offset == 0x8800
+    // index is
+    // 0x8800 + 0x800 + (-0x800) = 0x8800
+//    std::cout << int(index) << " -> " << hex << (bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16) << std::endl;
     return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
-                  y_offset, flip_horizontal);
+                  y_offset, flip_horizontal, use_alt_bank);
   }
 }
 
@@ -208,15 +213,11 @@ PPU::rasterise_line() {
     
     // Equivalent to:
     // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
-    auto* base = &cpu.mmu[bg_tilemap_offset + row_touched * 32];
+    auto* base = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, false /* TODO: */);
     auto n_copied_from_end = std::min(21, 32 - starting_index);
     auto cur = std::copy_n(base + starting_index, n_copied_from_end, row_tiles.begin());
     std::copy_n(base, 21 - n_copied_from_end, cur);
     
-    std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
-      return tilemap_index_to_tile(index, (line + scy) % 8);
-    });
-
     auto row_tile_ptr = row_tiles.begin();
     auto cgb_attrs_ptr = cgb_attr_tiles.begin();
     auto tile_data_ptr = tile_data.begin();
@@ -234,18 +235,34 @@ PPU::rasterise_line() {
       }
       
       byte index = *row_tile_ptr;
-      *tile_data_ptr++ = tilemap_index_to_tile(index, y_offset, flip_horizontal);
+      *tile_data_ptr++ = tilemap_index_to_tile(index, y_offset, flip_horizontal, vram_bank);
     }
     flatten(tile_data, raster_row.begin());
     
     auto offset = static_cast<int>(scx % 8);
 
-    auto fin = std::copy(raster_row.begin() + offset, raster_row.end(), palette_index_row.begin());
-    std::copy(raster_row.begin(), raster_row.begin() + offset, fin);
+    // Why do we need palette_index_row? Why not just write directly
+    // into raster? We need palette_index_row (or rather, whenever it is
+    // zero; maybe we can turn it into a mask instead) for the sprite/BG
+    // overlapping check
+    std::copy_n(raster_row.begin() + offset, 160, palette_index_row.begin());
     
+    // Why (i + offset) / 8?
+    // Consider scx = 5 so that there's a partial first and last tile
+    // partial tile                   partial tile
+    //       |  |--(19 whole tiles)-|   |
+    // xxxxxOOO OOOOOOOO ... OOOOOOOO OOOOOxxx
+    // raster index:
+    //      012 34567890 ...
+    // + offset
+    //      567 89012345 ...
+    // divided by 8
+    //    0        1     ...
+    // We need to add the offset (5) back to raster index to work out
+    // which CGB attr tile it corresponds to
     for (int i = 0; i < palette_index_row.size(); ++i) {
-      // cgb_attr_tiles offset doesn't account for scx
-      raster[i] = (cgb_attr_tiles[i / 8] & 0b111) * 8 + palette_index_row[i] * 2;
+      byte attr_tile = cgb_attr_tiles[(i + offset) / 8];
+      raster[i] = (attr_tile & 0b111) * 8 + palette_index_row[i] * 2;
     }
   }
   
@@ -258,7 +275,7 @@ PPU::rasterise_line() {
       
       auto* cgb_attrs = &cpu.mmu.vram_bank_mem[(window_tilemap_offset + row_touched * 32) - 0x8000];
 
-      auto* base = &cpu.mmu[window_tilemap_offset + row_touched * 32];
+      auto* base = &cpu.mmu.vram(window_tilemap_offset + row_touched * 32, false);
       std::transform(base, base + 20, tile_data.begin(), [this, wx, wy](byte index) {
         return tilemap_index_to_tile(index, (line - wy) % 8);
       });
@@ -266,7 +283,7 @@ PPU::rasterise_line() {
       flatten(tile_data, raster_row.begin());
 
       for (int i = 0; i < raster_row.size(); ++i) {
-        raster[i] = (cgb_attrs[i / 8] & 0b111) * 8 + palette_index_row[i] * 2;
+        raster_row[i] = (cgb_attrs[i / 8] & 0b111) * 8 + raster_row[i] * 2;
       }
       
       // write to raster
@@ -292,6 +309,7 @@ PPU::rasterise_line() {
           
           byte cgb_palette = entry.flags & 0x3;
           bool cgb_vram_bank = entry.flags & (1 << 3);
+          bool horizontal_flip = entry.flags & (1 << 5);
           
           auto tile_index = entry.tile_index;
           if (sprite_mode == SpriteMode::S8x16) {
@@ -306,11 +324,7 @@ PPU::rasterise_line() {
           word tile_data_begin = 0x8000 + tile_index * 16;
           word tile_data_address = tile_data_begin + tile_y * 2;
           
-          auto decoded = decode(tile_data_address);
-
-          if (entry.flags & (1 << 5)) {
-            std::reverse(decoded.begin(), decoded.end());
-          }
+          auto decoded = decode(tile_data_address, 0, horizontal_flip, cgb_vram_bank);
           
           visible.emplace_back(RenderedSprite(entry, j, decoded, cgb_palette, cgb_vram_bank));
           break;
@@ -332,7 +346,7 @@ PPU::rasterise_line() {
       auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
       auto sprite_ptr = sprite.pixels_.begin();
       
-      byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
+      // UNUSED: byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
 
       // If set to 0, sprite is always in front of bkgd and window
       // If set to 1, if background or window is colour 1, 2, 3, background or window wins
@@ -368,13 +382,14 @@ void flip_bits(PPU::TileRow& tile) {
 }
 
 PPU::TileRow
-PPU::decode(word start_loc, byte start_y, bool flip_horizontal) {
+PPU::decode(word start_loc, byte start_y, bool flip_horizontal, bool use_alt_bank) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows
   
-  byte b1 = cpu.mmu.mem[start_loc + start_y*2];
-  byte b2 = cpu.mmu.mem[start_loc + start_y*2 + 1];
+  word address = start_loc + start_y*2;
+  byte b1 = cpu.mmu.vram(address, use_alt_bank);
+  byte b2 = cpu.mmu.vram(address + 1, use_alt_bank);
   
   // b1/b2 is packed:
   // b1            b2

@@ -94,10 +94,23 @@ GL::blit() {
   const uint8_t* keystates = SDL_GetKeyboardState(&nkeys);
   if (keystates[SDL_SCANCODE_D]) {
     cpu_.dump_state();
-  } else if (keystates[SDL_SCANCODE_X]) {
+  } else if (keystates[SDL_SCANCODE_W]) {
+    std::cout << "bg window tile data offset: " << hex << setw(4) << cpu_.ppu.bg_window_tile_data_offset << std::endl;
     for (word addr = 0x9800; addr <= 0x9bff; ++addr) {
       std::cout << hex << setfill('0') << setw(2)
-      << int(cpu_.mmu.vram_bank_mem[addr - 0x8000])
+      << int(cpu_.mmu.vram(addr, false))
+      << ' ';
+      if ((addr-0x9800) % 32 == 31) {
+        std::cout << std::endl;
+      }
+    }
+    std::cout << std::endl;
+    exit(0);
+  } else if (keystates[SDL_SCANCODE_X]) {
+    std::cout << "bg window tile data offset: " << hex << setw(4) << cpu_.ppu.bg_window_tile_data_offset << std::endl;
+    for (word addr = 0x9800; addr <= 0x9bff; ++addr) {
+      std::cout << hex << setfill('0') << setw(2)
+      << int(cpu_.mmu.vram(addr, true))
       << ' ';
       if ((addr-0x9800) % 32 == 31) {
         std::cout << std::endl;

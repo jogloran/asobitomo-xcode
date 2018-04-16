@@ -53,11 +53,11 @@ public:
     
     MBC cartridge_type = h->cartridge_type;
     mbc = mbc_for(cartridge_type, *this);
-    auto load_path = replace_path_extension(path, ".gb", ".sav");
+    auto load_path = replace_path_extension(path, "\.gbc?", ".sav");
     mbc->load(load_path);
 
     ppu.screen->add_exit_handler([this]() {
-      auto sav_path = replace_path_extension(path, ".gb", ".sav");
+      auto sav_path = replace_path_extension(path, "\.gbc?", ".sav");
       mbc->save(sav_path);
     });
       
@@ -67,6 +67,7 @@ public:
 
   void set(word loc, byte value);
 
+  byte& vram(word loc, bool use_alt_bank);
   byte& operator[](word loc);
   
   void dump_cartridge_info() {

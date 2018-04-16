@@ -258,7 +258,7 @@ void CPU::dump_state() {
     << "|" << setw(2) << hex << static_cast<int>(mmu[0xff45])
     << " LCDC: " << binary(mmu[0xff40])
     << " STAT: " << binary(mmu[0xff41])
-    << " fffe:" << hex << int(mmu[0xfffe])
+    << " ac80:" << hex << setfill('0') << setw(2) << int(mmu[0xac80])<< setw(2)  << int(mmu[0xac81])<< setw(2) << int(mmu[0xac82])<< setw(2) << int(mmu[0xac83])
     << " cy:" << dec << long(cycles)
     << " vr:" << int(mmu.vram_bank)
 //    << setfill('0')
