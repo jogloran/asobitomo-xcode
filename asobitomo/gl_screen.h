@@ -10,6 +10,7 @@
 #include <gflags/gflags.h>
 
 DECLARE_bool(limit_framerate);
+DECLARE_int32(us_per_frame);
 
 class CPU;
 

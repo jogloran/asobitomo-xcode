@@ -17,6 +17,7 @@ DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops");
 DEFINE_bool(headless, false, "No display");
 DEFINE_bool(limit_framerate, true, "Limit framerate to 59.7 fps");
+DEFINE_int32(us_per_frame, 17'500, "ms per frame limit");
 DEFINE_int32(run_for_n, -1, "Run for n instructions");
 DEFINE_string(dump_states_to_file, "", "Dump states to file");
 DEFINE_string(dis_instrs, "", "Instructions to dump for");

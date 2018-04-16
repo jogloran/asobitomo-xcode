@@ -155,11 +155,6 @@ std::ostream& operator<<(std::ostream& out, const OAM& oam) {
 PPU::TileRow
 PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank) {
   // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
-  // This takes each tile map index and retrieves
-  // the corresponding line of the corresponding tile
-  // 2 bytes per row, 16 bytes per tile
-  // in each row, first byte is LSB of palette indices
-  //              second byte is MSB
   if (bg_window_tile_data_offset == 0x8000) {
     // data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
     return decode(bg_window_tile_data_offset + index*16,
@@ -168,11 +163,6 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool
     // add 0x800 to interpret the tile map index as a signed index starting in the middle
     // of the tile data range (0x8800-97FF)
     // data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
-    // if index == 0x80, then static_cast<signed char>(index) == -128
-    // then bg_window_tile_data_offset == 0x8800
-    // index is
-    // 0x8800 + 0x800 + (-0x800) = 0x8800
-//    std::cout << int(index) << " -> " << hex << (bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16) << std::endl;
     return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
                   y_offset, flip_horizontal, use_alt_bank);
   }
@@ -204,7 +194,7 @@ PPU::rasterise_line() {
     auto starting_index = scx / 8;
     
     // Access the corresponding data in vram bank 1
-    auto* cgb_attrs = &cpu.mmu.vram_bank_mem[(bg_tilemap_offset + row_touched * 32) - 0x8000];
+    auto* cgb_attrs = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, true);
     {
       auto n_copied_from_end = std::min(21, 32 - starting_index);
       auto cur = std::copy_n(cgb_attrs + starting_index, n_copied_from_end, cgb_attr_tiles.begin());
@@ -213,7 +203,7 @@ PPU::rasterise_line() {
     
     // Equivalent to:
     // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
-    auto* base = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, false /* TODO: */);
+    auto* base = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, false /* TODO: this should depend on cgb_attrs */);
     auto n_copied_from_end = std::min(21, 32 - starting_index);
     auto cur = std::copy_n(base + starting_index, n_copied_from_end, row_tiles.begin());
     std::copy_n(base, 21 - n_copied_from_end, cur);

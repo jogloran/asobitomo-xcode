@@ -76,8 +76,8 @@ GL::blit() {
     if (FLAGS_limit_framerate) {
       auto now = std::chrono::high_resolution_clock::now();
       auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_);
-      if (elapsed.count() < 16.75) {
-        auto val = std::chrono::microseconds(16750);
+      auto val = std::chrono::microseconds(FLAGS_us_per_frame);
+      if (elapsed < val) {
         auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
         
         auto delta(val - elapsed_us);
