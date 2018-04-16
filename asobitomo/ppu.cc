@@ -16,6 +16,13 @@ flatten(const std::array<std::array<T, A>, B>& in, typename std::array<T, A*B>::
   }
 }
 
+template <typename InIter, typename OutIter>
+void rotate_tiles(byte offset, InIter src, OutIter dest) {
+  auto n_copied_from_end = std::min(21, 32 - offset);
+  auto cur = std::copy_n(src + offset, n_copied_from_end, dest);
+  std::copy_n(src, 21 - n_copied_from_end, cur);
+}
+
 void
 PPU::stat(byte value) {
   set_lcd_on(value & (1 << 7));
@@ -195,18 +202,12 @@ PPU::rasterise_line() {
     
     // Access the corresponding data in vram bank 1
     auto* cgb_attrs = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, true);
-    {
-      auto n_copied_from_end = std::min(21, 32 - starting_index);
-      auto cur = std::copy_n(cgb_attrs + starting_index, n_copied_from_end, cgb_attr_tiles.begin());
-      std::copy_n(cgb_attrs, 21 - n_copied_from_end, cur);
-    }
+    rotate_tiles(starting_index, cgb_attrs, cgb_attr_tiles.begin());
     
     // Equivalent to:
     // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
-    auto* base = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, false /* TODO: this should depend on cgb_attrs */);
-    auto n_copied_from_end = std::min(21, 32 - starting_index);
-    auto cur = std::copy_n(base + starting_index, n_copied_from_end, row_tiles.begin());
-    std::copy_n(base, 21 - n_copied_from_end, cur);
+    auto* tilemap_ptr = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, false);
+    rotate_tiles(starting_index, tilemap_ptr, row_tiles.begin());
     
     auto row_tile_ptr = row_tiles.begin();
     auto cgb_attrs_ptr = cgb_attr_tiles.begin();
