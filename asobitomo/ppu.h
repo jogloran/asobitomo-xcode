@@ -90,7 +90,7 @@ public:
   
   TileRow decode(word start_loc, byte start_y=0 /* 0 to 7 */, bool flip_horizontal=false, bool use_alt_bank=false);
   TileRow unpack_bits(byte lsb, byte msb);
-  TileRow tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal=false, bool use_alt_bank=false);
+  TileRow tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal=false, bool use_alt_bank=false, bool force_8000_offset=false);
   std::unique_ptr<Screen> screen;
   TD debugger;
   TM tilemap;

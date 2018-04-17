@@ -23,6 +23,10 @@ void rotate_tiles(byte offset, InIter src, OutIter dest) {
   std::copy_n(src, 21 - n_copied_from_end, cur);
 }
 
+inline byte encode_palette(byte palette_number, bool sprite_palette, byte palette_index) {
+  return ((sprite_palette ? 16 : 0) + palette_number) * 8 + palette_index * 2;
+}
+
 void
 PPU::stat(byte value) {
   set_lcd_on(value & (1 << 7));
@@ -160,17 +164,18 @@ std::ostream& operator<<(std::ostream& out, const OAM& oam) {
 }
 
 PPU::TileRow
-PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank) {
+PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank, bool force_8000_offset) {
   // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
-  if (bg_window_tile_data_offset == 0x8000) {
+  word tile_data_offset = force_8000_offset ? 0x8000 : bg_window_tile_data_offset;
+  if (tile_data_offset == 0x8000) {
     // data ranges from 0x8000 (index 0) to 0x8fff (index 0xff)
-    return decode(bg_window_tile_data_offset + index*16,
+    return decode(tile_data_offset + index*16,
                   y_offset, flip_horizontal, use_alt_bank);
   } else {
     // add 0x800 to interpret the tile map index as a signed index starting in the middle
     // of the tile data range (0x8800-97FF)
     // data ranges from 0x8800 (index -127) to 0x9000 (index 0) to 0x97ff (index 128)
-    return decode(bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
+    return decode(tile_data_offset + 0x800 + (static_cast<signed char>(index))*16,
                   y_offset, flip_horizontal, use_alt_bank);
   }
 }
@@ -201,8 +206,8 @@ PPU::rasterise_line() {
     auto starting_index = scx / 8;
     
     // Access the corresponding data in vram bank 1
-    auto* cgb_attrs = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, true);
-    rotate_tiles(starting_index, cgb_attrs, cgb_attr_tiles.begin());
+    auto* cgb_attrs_base = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, true);
+    rotate_tiles(starting_index, cgb_attrs_base, cgb_attr_tiles.begin());
     
     // Equivalent to:
     // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
@@ -218,7 +223,6 @@ PPU::rasterise_line() {
       bool vram_bank = cgb_attr & (1 << 3);
       bool flip_horizontal = cgb_attr & (1 << 5);
       bool flip_vertical = cgb_attr & (1 << 6);
-      bool bg_master_priority = cgb_attr & (1 << 7);
       
       byte y_offset = (line + scy) % 8;
       if (flip_vertical) {
@@ -252,8 +256,11 @@ PPU::rasterise_line() {
     // We need to add the offset (5) back to raster index to work out
     // which CGB attr tile it corresponds to
     for (int i = 0; i < palette_index_row.size(); ++i) {
-      byte attr_tile = cgb_attr_tiles[(i + offset) / 8];
-      raster[i] = (attr_tile & 0b111) * 8 + palette_index_row[i] * 2;
+      byte cgb_attr = cgb_attr_tiles[(i + offset) / 8];
+      bool bg_master_priority = cgb_attr & (1 << 7);
+      byte palette_index = cgb_attr & 0b111;
+      
+      raster[i] = encode_palette(palette_index, false, palette_index_row[i]);
     }
   }
   
@@ -273,7 +280,7 @@ PPU::rasterise_line() {
       flatten(tile_data, raster_row.begin());
 
       for (int i = 0; i < raster_row.size(); ++i) {
-        raster_row[i] = (cgb_attrs[i / 8] & 0b111) * 8 + raster_row[i] * 2;
+        raster_row[i] = encode_palette(cgb_attrs[i / 8] & 0b111, false, raster_row[i]);
       }
       
       // write to raster
@@ -311,10 +318,7 @@ PPU::rasterise_line() {
             }
           }
           
-          word tile_data_begin = 0x8000 + tile_index * 16;
-          word tile_data_address = tile_data_begin + tile_y * 2;
-          
-          auto decoded = decode(tile_data_address, 0, horizontal_flip, cgb_vram_bank);
+          auto decoded = tilemap_index_to_tile(tile_index, tile_y, horizontal_flip, cgb_vram_bank, true);
           
           visible.emplace_back(RenderedSprite(entry, j, decoded, cgb_palette, cgb_vram_bank));
           break;
@@ -356,7 +360,7 @@ PPU::rasterise_line() {
           if (!(sprite_behind_bg && bg_palette_byte % 8 != 0)) {
             if (sprite_byte % 8 != 0) {
               // Use 16 + palette no to indicate OBPx instead of BGPx
-              *raster_ptr = (16 + sprite.cgb_palette_) * 8 + sprite_byte * 2;
+              *raster_ptr = encode_palette(sprite.cgb_palette_, true, sprite_byte);
             }
           }
         }
