@@ -295,34 +295,31 @@ PPU::rasterise_line() {
     
     for (size_t j = 0; j < 40; ++j) {
       OAM entry = oam[j];
-  
-      for (int x = 0; x < Screen::BUF_WIDTH; ++x) {
-        if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
-            line + 16 >= entry.y && line + 16 < entry.y + sprite_height) {
-          auto tile_y = line - (entry.y - 16);
-          if (entry.flags & (1 << 6)) { // y flip
-            tile_y = sprite_height - tile_y - 1;
-          }
-          
-          byte cgb_palette = entry.flags & 0x3;
-          bool cgb_vram_bank = entry.flags & (1 << 3);
-          bool horizontal_flip = entry.flags & (1 << 5);
-          
-          auto tile_index = entry.tile_index;
-          if (sprite_mode == SpriteMode::S8x16) {
-            if (tile_y < 8) {
-              tile_index &= 0xfe;
-            } else {
-              tile_y -= 8;
-              tile_index |= 0x01;
-            }
-          }
-          
-          auto decoded = tilemap_index_to_tile(tile_index, tile_y, horizontal_flip, cgb_vram_bank, true);
-          
-          visible.emplace_back(RenderedSprite(entry, j, decoded, cgb_palette, cgb_vram_bank));
-          break;
+    
+      if (entry.x != 0 && entry.x < 168 && entry.y != 0 && entry.y < 160 &&
+          line + 16 >= entry.y && line + 16 < entry.y + sprite_height) {
+        auto tile_y = line - (entry.y - 16);
+        if (entry.flags & (1 << 6)) { // y flip
+          tile_y = sprite_height - tile_y - 1;
         }
+        
+        byte cgb_palette = entry.flags & 0x3;
+        bool cgb_vram_bank = entry.flags & (1 << 3);
+        bool horizontal_flip = entry.flags & (1 << 5);
+        
+        auto tile_index = entry.tile_index;
+        if (sprite_mode == SpriteMode::S8x16) {
+          if (tile_y < 8) {
+            tile_index &= 0xfe;
+          } else {
+            tile_y -= 8;
+            tile_index |= 0x01;
+          }
+        }
+        
+        auto decoded = tilemap_index_to_tile(tile_index, tile_y, horizontal_flip, cgb_vram_bank, true);
+        
+        visible.emplace_back(RenderedSprite(entry, j, decoded, cgb_palette, cgb_vram_bank));
       }
     }
 
