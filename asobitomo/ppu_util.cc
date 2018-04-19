@@ -1,6 +1,10 @@
 #include "ppu_util.h"
 
 #include <iomanip>
+#include <iostream>
+
+using std::hex;
+using std::setw;
 
 using namespace std;
 
@@ -54,3 +58,9 @@ compare_oams(OAM* current_oam, OAM* old_oam) {
   }
 }
 
+std::ostream& operator<<(std::ostream& out, const OAM& oam) {
+  return out << "OAM(" << hex << static_cast<int>(oam.x) << ", "
+    << static_cast<int>(oam.y)
+    << ", tile_index = " << setw(2) << hex << static_cast<int>(oam.tile_index)
+    << ", flags = " << binary(oam.flags) << ")";
+}

@@ -225,3 +225,5 @@ inline void
 PPUBase::set_bg_display(bool on) {
   bg_display = on;
 }
+
+
