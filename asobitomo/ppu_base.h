@@ -90,4 +90,5 @@ public:
   CPU& cpu;
   
   friend class CPU;
+  
 };
