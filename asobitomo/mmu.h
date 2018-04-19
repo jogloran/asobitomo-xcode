@@ -21,12 +21,13 @@ using namespace std;
 #include "header_type.h"
 #include "rang.hpp"
 #include "util.h"
+#include "ppu_base.h"
 
 extern bool in_title;
 
 class MMU {
 public:
-  MMU(std::string filename, PPU& ppu, APU& apu, Timer& timer):
+  MMU(std::string filename, PPUBase& ppu, APU& apu, Timer& timer):
     path(filename),
     cart(32768, 0),
     vram_bank(0),
@@ -86,7 +87,7 @@ public:
 
   const std::string path;
 
-  PPU& ppu;
+  PPUBase& ppu;
   APU& apu;
   Timer& timer;
   

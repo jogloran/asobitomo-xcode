@@ -276,7 +276,7 @@ void CPU::dump_state() {
     << " IF: " << binary(mmu[0xff0f])
     << " IE: " << binary(mmu[0xffff])
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
-    << " (" << ppu_state_as_string(ppu.mode) << ")"
+    << " (" << ppu_state_as_string(ppu->mode) << ")"
     << "\t" << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
     << " " << op_name << rang::fg::reset << endl;
 }
@@ -397,7 +397,7 @@ void CPU::step(bool debug)  {
   in_cb = false;
   
   if (halted) {
-    ppu.step(4);
+    ppu->step(4);
     //apu.step(4);
     timer.step(4);
     
@@ -422,7 +422,7 @@ void CPU::step(bool debug)  {
     // ncycles[instr] accounts for different cycle lengths when taking conditional branches etc
     // we need this correct value to be fed into ppu.step
     
-    ppu.step(cycles - old_cycles);
+    ppu->step(cycles - old_cycles);
     //apu.step(cycles - old_cycles);
     timer.step(cycles - old_cycles);
     
@@ -434,7 +434,8 @@ void CPU::step(bool debug)  {
 
 void CPU::fake_boot() {
   pc = 0x100;
-  a = 0x11; f = 0x80;
+  a = (model == Model::CGB ? 0x11 : 0x01);
+  f = 0x80;
   b = 0x00; c = 0x00;
   d = 0xff; e = 0x56;
   h = 0x00; l = 0x0d;

@@ -23,7 +23,7 @@ DEFINE_string(dump_states_to_file, "", "Dump states to file");
 DEFINE_string(dis_instrs, "", "Instructions to dump for");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
 DEFINE_bool(fake_boot, true, "Initialise registers to post-ROM values");
-
+DEFINE_string(model, "CGB", "Model to emulate");
 DEFINE_bool(td, false, "Show tile debugger");
 DEFINE_bool(tm, false, "Show tile map");
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
   }
   
   if (!FLAGS_headless)
-    cpu.ppu.screen->on();
+    cpu.ppu->screen->on();
   
   long ninstrs = 0;
   while (run_for_n == -1 || ninstrs < run_for_n) {

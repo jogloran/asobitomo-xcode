@@ -28,11 +28,11 @@ std::array<byte, 3> decode(word w) {
 void
 GL::blit() {
   if (should_draw) {
-    static byte pal[4][4] = {
-      {238, 253, 210, 255},
-      {108, 162, 68, 255},
-      {68, 130, 79, 255},
-      {15, 39, 25, 255},
+    static byte pal[4][3] = {
+      {238, 253, 210},
+      {108, 162, 68},
+      {68, 130, 79},
+      {15, 39, 25},
     };
     
     // to hack this in, we could
@@ -47,24 +47,31 @@ GL::blit() {
     int pos = 0;
     // fb has dims 160x144
     for (byte b: fb) {
-      word bgp;
-      if (b / 8 < 16) {
-        bgp = cpu_.mmu.bgp[b] |
-                (cpu_.mmu.bgp[b+1] << 8);
+      if (cpu_.model == CPU::Model::CGB) {
+        word bgp;
+        if (b / 8 < 16) {
+          bgp = cpu_.mmu.bgp[b] |
+          (cpu_.mmu.bgp[b+1] << 8);
+        } else {
+          b -= 128; // we use (16 + palette_no) to indicate OBPx, so subtract 16*8
+          bgp = cpu_.mmu.obp[b] |
+          (cpu_.mmu.obp[b+1] << 8);
+        }
+        //      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu.bgp[8 * palette_num + (2 * b)]) << ' '
+        //      << int(cpu_.mmu.bgp[8 * palette_num + (2 * b + 1)]) << std::endl;
+        // decode the colour values
+        auto rgb = decode(bgp);
+        
+        buf[i++] = rgb[2];
+        buf[i++] = rgb[1];
+        buf[i++] = rgb[0];
+        buf[i++] = 255;
       } else {
-        b -= 128; // we use (16 + palette_no) to indicate OBPx, so subtract 16*8
-        bgp = cpu_.mmu.obp[b] |
-                (cpu_.mmu.obp[b+1] << 8);
+        buf[i++] = pal[b][2];
+        buf[i++] = pal[b][1];
+        buf[i++] = pal[b][0];
+        buf[i++] = 255;
       }
-      //      std::cout << hex << setfill('0') << setw(2) << int(cpu_.mmu.bgp[8 * palette_num + (2 * b)]) << ' '
-      //      << int(cpu_.mmu.bgp[8 * palette_num + (2 * b + 1)]) << std::endl;
-      // decode the colour values
-      auto rgb = decode(bgp);
-      
-      buf[i++] = rgb[2];
-      buf[i++] = rgb[1];
-      buf[i++] = rgb[0];
-      buf[i++] = 255;
       
       ++pos;
     }
@@ -95,7 +102,7 @@ GL::blit() {
   if (keystates[SDL_SCANCODE_D]) {
     cpu_.dump_state();
   } else if (keystates[SDL_SCANCODE_W]) {
-    std::cout << "bg window tile data offset: " << hex << setw(4) << cpu_.ppu.bg_window_tile_data_offset << std::endl;
+    std::cout << "bg window tile data offset: " << hex << setw(4) << cpu_.ppu->bg_window_tile_data_offset << std::endl;
     for (word addr = 0x9800; addr <= 0x9bff; ++addr) {
       std::cout << hex << setfill('0') << setw(2)
       << int(cpu_.mmu.vram(addr, false))
@@ -107,7 +114,7 @@ GL::blit() {
     std::cout << std::endl;
     exit(0);
   } else if (keystates[SDL_SCANCODE_X]) {
-    std::cout << "bg window tile data offset: " << hex << setw(4) << cpu_.ppu.bg_window_tile_data_offset << std::endl;
+    std::cout << "bg window tile data offset: " << hex << setw(4) << cpu_.ppu->bg_window_tile_data_offset << std::endl;
     for (word addr = 0x9800; addr <= 0x9bff; ++addr) {
       std::cout << hex << setfill('0') << setw(2)
       << int(cpu_.mmu.vram(addr, true))

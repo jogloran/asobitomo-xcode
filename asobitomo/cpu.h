@@ -3,9 +3,15 @@
 #include "types.h"
 #include "mmu.h"
 #include "ppu.h"
+#include "ppu_base.h"
+
 #include <array>
 #include <iomanip>
+#include <memory>
 #include "flags.h"
+#include "ppu_dmg.h"
+
+DECLARE_string(model);
 
 extern bool ASOBITOMO_DEBUG;
 
@@ -58,9 +64,33 @@ typedef void (*op)(CPU&);
 
 class CPU {
 public:
-  CPU(std::string path): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
-    pc(0x0000), sp(0x0000), cycles(0), timer(*this),
-    ppu(*this), apu(), mmu(path, ppu, apu, timer),
+  enum class Model {
+    DMG,
+    CGB,
+  };
+  
+  std::unique_ptr<PPUBase> get_model(Model model) {
+    switch (model) {
+      case Model::DMG: return std::make_unique<GameBoyPPU>(*this);
+      case Model::CGB: return std::make_unique<PPU>(*this);
+      default:
+        throw std::runtime_error("Invalid model type");
+    }
+  }
+  
+  Model interpret_model(std::string model_string) {
+    if (model_string == "DMG") return Model::DMG;
+    if (model_string == "CGB") return Model::CGB;
+    
+    throw std::runtime_error("Invalid model type");
+  }
+  
+  CPU(std::string path): CPU(path, interpret_model(FLAGS_model)) {}
+  
+  CPU(std::string path, Model model): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
+    pc(0x0000), sp(0x0000), cycles(0), model(model),
+    timer(*this),
+    ppu(get_model(model)), apu(), mmu(path, *ppu, apu, timer),
     halted(false), in_halt_bug(false), interrupt_flags_before_halt(0),
     interrupt_enabled(InterruptState::Disabled), in_cb(false),
     dbl(false), prepare_dbl(false) {
@@ -163,8 +193,9 @@ public:
   word pc, sp;
   long cycles;
 
+  Model model;
   Timer timer;
-  PPU ppu;
+  std::unique_ptr<PPUBase> ppu;
   APU apu;
   MMU mmu;
   
