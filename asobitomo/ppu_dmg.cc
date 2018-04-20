@@ -186,7 +186,7 @@ GameBoyPPU::rasterise_line() {
   }
 }
 
-PPUBase::TileRow
+PPU::TileRow
 GameBoyPPU::decode(word start_loc, byte start_y) {
   // start_y is from 0 to 7
   // we want row start_y of the tile

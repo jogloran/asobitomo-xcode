@@ -1,6 +1,6 @@
 #include "tile_map.h"
 
-#include "ppu.h"
+#include "ppu_base.h"
 #include "cpu.h"
 #include "ppu_util.h"
 

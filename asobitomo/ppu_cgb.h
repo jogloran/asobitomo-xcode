@@ -15,7 +15,7 @@
 DECLARE_bool(tm);
 DECLARE_bool(td);
 
-class PPU : public PPUBase {
+class ColorGameBoyPPU : public PPU {
 public:
   struct RenderedSprite {
     RenderedSprite(const OAM& oam, byte oam_index, const TileRow& pixels, byte cgb_palette, bool cgb_ram_bank): oam_(oam), oam_index_(oam_index), pixels_(pixels),
@@ -27,8 +27,8 @@ public:
     bool cgb_ram_bank_;
   };
   
-  PPU(CPU& cpu):
-    PPUBase(cpu, std::make_unique<TD>(*this), std::make_unique<TM>(*this)) {
+  ColorGameBoyPPU(CPU& cpu):
+    PPU(cpu, std::make_unique<TD>(*this), std::make_unique<TM>(*this)) {
     visible.reserve(40);
   }
   

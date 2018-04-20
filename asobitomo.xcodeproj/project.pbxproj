@@ -29,7 +29,7 @@
 		09FB8E80205AD87C000A1CF6 /* tile_debugger.cc in Sources */ = {isa = PBXBuildFile; fileRef = 09FB8E7E205AD87C000A1CF6 /* tile_debugger.cc */; };
 		A2CCE578203A981900F3FD4F /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE571203A981800F3FD4F /* main.cc */; };
 		A2CCE579203A981900F3FD4F /* cpu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE572203A981800F3FD4F /* cpu.cc */; };
-		A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu.cc */; };
+		A2CCE57A203A981900F3FD4F /* ppu_cgb.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE574203A981900F3FD4F /* ppu_cgb.cc */; };
 		A2CCE57B203A981900F3FD4F /* mmu.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2CCE576203A981900F3FD4F /* mmu.cc */; };
 /* End PBXBuildFile section */
 
@@ -101,13 +101,13 @@
 		09FB8E7F205AD87C000A1CF6 /* tile_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tile_debugger.h; sourceTree = "<group>"; };
 		A2CCE563203A97FD00F3FD4F /* asobitomo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asobitomo; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CCE56D203A981800F3FD4F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
-		A2CCE56E203A981800F3FD4F /* ppu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ppu.h; sourceTree = "<group>"; };
+		A2CCE56E203A981800F3FD4F /* ppu_cgb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ppu_cgb.h; sourceTree = "<group>"; };
 		A2CCE56F203A981800F3FD4F /* flags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = flags.h; sourceTree = "<group>"; };
 		A2CCE570203A981800F3FD4F /* cpu_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu_macros.h; sourceTree = "<group>"; };
 		A2CCE571203A981800F3FD4F /* main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cc; sourceTree = "<group>"; };
 		A2CCE572203A981800F3FD4F /* cpu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cpu.cc; sourceTree = "<group>"; };
 		A2CCE573203A981800F3FD4F /* cpu_cb_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu_cb_macros.h; sourceTree = "<group>"; };
-		A2CCE574203A981900F3FD4F /* ppu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ppu.cc; sourceTree = "<group>"; };
+		A2CCE574203A981900F3FD4F /* ppu_cgb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ppu_cgb.cc; sourceTree = "<group>"; };
 		A2CCE575203A981900F3FD4F /* cpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
 		A2CCE576203A981900F3FD4F /* mmu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mmu.cc; sourceTree = "<group>"; };
 		A2CCE577203A981900F3FD4F /* mmu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mmu.h; sourceTree = "<group>"; };
@@ -188,8 +188,8 @@
 				A2CCE571203A981800F3FD4F /* main.cc */,
 				A2CCE577203A981900F3FD4F /* mmu.h */,
 				A2CCE576203A981900F3FD4F /* mmu.cc */,
-				A2CCE56E203A981800F3FD4F /* ppu.h */,
-				A2CCE574203A981900F3FD4F /* ppu.cc */,
+				A2CCE56E203A981800F3FD4F /* ppu_cgb.h */,
+				A2CCE574203A981900F3FD4F /* ppu_cgb.cc */,
 				A2CCE56D203A981800F3FD4F /* types.h */,
 				A2F50360203C9BDB000FCD02 /* op_names.h */,
 				0907948C2043A02D0063686E /* console_screen.h */,
@@ -335,7 +335,7 @@
 				A2CCE578203A981900F3FD4F /* main.cc in Sources */,
 				09079489204089140063686E /* screen.cc in Sources */,
 				09C92A292069E34E00560357 /* apu.cc in Sources */,
-				A2CCE57A203A981900F3FD4F /* ppu.cc in Sources */,
+				A2CCE57A203A981900F3FD4F /* ppu_cgb.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

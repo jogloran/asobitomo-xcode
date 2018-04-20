@@ -9,11 +9,11 @@
 
 DECLARE_bool(td);
 
-class PPUBase;
+class PPU;
 
 class TD {
 public:
-  TD(PPUBase& ppu): ppu_(ppu), enabled_(FLAGS_td) {
+  TD(PPU& ppu): ppu_(ppu), enabled_(FLAGS_td) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("TD", 500, 0, TD_WIDTH * 4, TD_HEIGHT * 4, SDL_WINDOW_HIDDEN);
@@ -38,7 +38,7 @@ public:
   }
   
 private:
-  PPUBase& ppu_;
+  PPU& ppu_;
   
   std::array<byte, (16*8*4) * (16*8) * 4> buf;
   

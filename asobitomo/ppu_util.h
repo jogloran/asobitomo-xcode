@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ppu.h"
+#include "ppu_base.h"
 #include "types.h"
 #include "util.h"
 

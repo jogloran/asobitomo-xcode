@@ -1,4 +1,4 @@
-#include "ppu.h"
+#include "ppu_cgb.h"
 #include "cpu.h"
 #include "util.h"
 #include "ppu_util.h"
@@ -13,7 +13,7 @@ inline byte encode_palette(byte palette_number, bool sprite_palette, byte palett
 }
 
 PPU::TileRow
-PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank, bool force_8000_offset) {
+ColorGameBoyPPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank, bool force_8000_offset) {
   // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
   word tile_data_offset = force_8000_offset ? 0x8000 : bg_window_tile_data_offset;
   if (tile_data_offset == 0x8000) {
@@ -30,7 +30,7 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool
 }
 
 void
-PPU::rasterise_line() {
+ColorGameBoyPPU::rasterise_line() {
   // OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
   byte* oam_ptr = &cpu.mmu.mem[0xfe00];
   OAM* oam = reinterpret_cast<OAM*>(oam_ptr);
@@ -192,7 +192,7 @@ void flip_bits(PPU::TileRow& tile) {
 }
 
 PPU::TileRow
-PPU::decode(word start_loc, byte start_y, bool flip_horizontal, bool use_alt_bank) {
+ColorGameBoyPPU::decode(word start_loc, byte start_y, bool flip_horizontal, bool use_alt_bank) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows

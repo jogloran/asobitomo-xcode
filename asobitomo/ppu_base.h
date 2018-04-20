@@ -30,9 +30,9 @@ struct OAM {
 
 class CPU;
 
-class PPUBase {
+class PPU {
 public:
-  PPUBase(CPU& cpu,
+  PPU(CPU& cpu,
     std::unique_ptr<TD> td, std::unique_ptr<TM> tm): raster(), screen(std::make_unique<GL>(cpu)),
     line(0), mode(Mode::OAM), ncycles(0), cpu(cpu), lcd_on(true),
     window_tilemap_offset(0), window_display(false),

@@ -13,7 +13,6 @@ using namespace std;
 
 #include "sdl_input.h"
 #include "types.h"
-#include "ppu.h"
 #include "apu.h"
 #include "timer.h"
 #include "mbc_types.h"
@@ -22,16 +21,17 @@ using namespace std;
 #include "rang.hpp"
 #include "util.h"
 #include "ppu_base.h"
+#include "hdma.h"
 
 extern bool in_title;
 
 class MMU {
 public:
-  MMU(std::string filename, PPUBase& ppu, APU& apu, Timer& timer):
+  MMU(std::string filename, PPU& ppu, APU& apu, Timer& timer):
     path(filename),
     cart(32768, 0),
     vram_bank(0),
-    rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
+    rom_mapped(true), ppu(ppu), apu(apu), timer(timer), hdma(*this),
     joypad(0xf),
     input(), mbc(),
     cgb_ram_bank(1) {
@@ -87,7 +87,7 @@ public:
 
   const std::string path;
 
-  PPUBase& ppu;
+  PPU& ppu;
   APU& apu;
   Timer& timer;
   

@@ -1,6 +1,6 @@
 #include "gl_screen.h"
 #include "cpu.h"
-#include "ppu.h"
+#include "ppu_base.h"
 
 GL::GL(CPU& cpu, int scale)
 : cpu_(cpu), buf(), scale_(scale), last_(std::chrono::high_resolution_clock::now()) {

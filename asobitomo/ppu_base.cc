@@ -4,21 +4,21 @@
 #include "ppu_util.h"
 
 void
-PPUBase::stat(byte value) {
+PPU::stat(byte value) {
   set_lcd_on(value & (1 << 7));
   set_window_tilemap_offset(value & (1 << 6) ? 0x9c00 : 0x9800);
   set_window_display(value & (1 << 5));
   set_bg_window_tile_data_offset(value & (1 << 4) ? 0x8000 : 0x8800);
   set_bg_tilemap_offset(value & (1 << 3) ? 0x9c00 : 0x9800);
   set_sprite_mode(value & (1 << 2) ?
-    PPUBase::SpriteMode::S8x16 :
-    PPUBase::SpriteMode::S8x8);
+    PPU::SpriteMode::S8x16 :
+    PPU::SpriteMode::S8x8);
   set_sprite_display(value & (1 << 1));
   set_bg_display(value & 0x1);
 }
 
 void
-PPUBase::step(long delta) {
+PPU::step(long delta) {
   ncycles += delta;
   
   // Dr Mario seems to wait for vblank while in HALT, which leads to an infinite loop
@@ -98,7 +98,7 @@ PPUBase::step(long delta) {
 }
 
 void
-PPUBase::update_stat_register()  {
+PPU::update_stat_register()  {
   byte lyc = cpu.mmu.mem[0xff45];
 
   byte stat = cpu.mmu.mem[0xff41];
@@ -168,9 +168,9 @@ static const uint16_t m[256] =
   0x5540, 0x5541, 0x5544, 0x5545, 0x5550, 0x5551, 0x5554, 0x5555
 };
 
-PPUBase::TileRow
-PPUBase::unpack_bits(byte lsb, byte msb) {
-  PPUBase::TileRow result;
+PPU::TileRow
+PPU::unpack_bits(byte lsb, byte msb) {
+  PPU::TileRow result;
 
   const uint64_t C = m[msb] << 1 | m[lsb];
   uint64_t data = (C & 0xc000) >> 14 |
@@ -187,42 +187,42 @@ PPUBase::unpack_bits(byte lsb, byte msb) {
 }
 
 inline void
-PPUBase::set_lcd_on(bool on) {
+PPU::set_lcd_on(bool on) {
   lcd_on = on;
 }
 
 inline void
-PPUBase::set_window_tilemap_offset(word offset) {
+PPU::set_window_tilemap_offset(word offset) {
   window_tilemap_offset = offset;
 }
 
 inline void
-PPUBase::set_bg_window_tile_data_offset(word offset) {
+PPU::set_bg_window_tile_data_offset(word offset) {
   bg_window_tile_data_offset = offset;
 }
 
 inline void
-PPUBase::set_window_display(bool on) {
+PPU::set_window_display(bool on) {
   window_display = on;
 }
 
 inline void
-PPUBase::set_bg_tilemap_offset(word offset) {
+PPU::set_bg_tilemap_offset(word offset) {
   bg_tilemap_offset = offset;
 }
 
 inline void
-PPUBase::set_sprite_mode(SpriteMode mode) {
+PPU::set_sprite_mode(SpriteMode mode) {
   sprite_mode = mode;
 }
 
 inline void
-PPUBase::set_sprite_display(bool on) {
+PPU::set_sprite_display(bool on) {
   sprite_display = on;
 }
 
 inline void
-PPUBase::set_bg_display(bool on) {
+PPU::set_bg_display(bool on) {
   bg_display = on;
 }
 

@@ -2,14 +2,15 @@
 
 #include "types.h"
 #include "mmu.h"
-#include "ppu.h"
+#include "ppu_cgb.h"
+#include "ppu_dmg.h"
 #include "ppu_base.h"
 
 #include <array>
 #include <iomanip>
 #include <memory>
 #include "flags.h"
-#include "ppu_dmg.h"
+
 
 DECLARE_string(model);
 
@@ -69,10 +70,10 @@ public:
     CGB,
   };
   
-  std::unique_ptr<PPUBase> get_model(Model model) {
+  std::unique_ptr<PPU> get_model(Model model) {
     switch (model) {
       case Model::DMG: return std::make_unique<GameBoyPPU>(*this);
-      case Model::CGB: return std::make_unique<PPU>(*this);
+      case Model::CGB: return std::make_unique<ColorGameBoyPPU>(*this);
       default:
         throw std::runtime_error("Invalid model type");
     }
@@ -195,7 +196,7 @@ public:
 
   Model model;
   Timer timer;
-  std::unique_ptr<PPUBase> ppu;
+  std::unique_ptr<PPU> ppu;
   APU apu;
   MMU mmu;
   

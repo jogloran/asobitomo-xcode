@@ -17,7 +17,7 @@ DECLARE_bool(td);
 
 class CPU;
 
-class GameBoyPPU : public PPUBase {
+class GameBoyPPU : public PPU {
 public:
   struct RenderedSprite {
     RenderedSprite(const OAM& oam, byte oam_index, const TileRow& pixels): oam_(oam), oam_index_(oam_index), pixels_(pixels) {}
@@ -27,7 +27,7 @@ public:
   };
   
   GameBoyPPU(CPU& cpu):
-    PPUBase(cpu, std::make_unique<TD>(*this), std::make_unique<TM>(*this)) {
+    PPU(cpu, std::make_unique<TD>(*this), std::make_unique<TM>(*this)) {
     visible.reserve(40);
     
     
@@ -43,11 +43,11 @@ public:
   }
   
   // Caches
-  std::array<PPUBase::PaletteIndex, 160> palette_index_row;
+  std::array<PPU::PaletteIndex, 160> palette_index_row;
   std::array<word, 21> row_tiles;
   std::vector<GameBoyPPU::RenderedSprite> visible;
   std::array<PaletteIndex, 168> raster_row;
   std::array<TileRow, 21> tile_data;
 };
 
-PPUBase::PaletteIndex apply_palette(PPUBase::PaletteIndex pidx, byte sprite_palette);
+PPU::PaletteIndex apply_palette(PPU::PaletteIndex pidx, byte sprite_palette);
