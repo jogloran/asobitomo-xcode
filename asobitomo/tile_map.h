@@ -9,11 +9,11 @@
 
 DECLARE_bool(tm);
 
-class PPU;
+class PPUBase;
 
 class TM {
 public:
-  TM(PPU& ppu): ppu_(ppu), enabled_(FLAGS_tm), scale_(2) {
+  TM(PPUBase& ppu): ppu_(ppu), enabled_(FLAGS_tm), scale_(2) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("TM", 0, 500, TM_WIDTH * scale_, TM_HEIGHT * scale_, SDL_WINDOW_HIDDEN);
@@ -40,7 +40,7 @@ private:
   constexpr static int TM_WIDTH = 32*8;
   constexpr static int TM_HEIGHT = 32*8;
   
-  PPU& ppu_;
+  PPUBase& ppu_;
   int scale_;
   
   std::array<byte, (TM_WIDTH * 4) * (TM_HEIGHT * 4)> buf;

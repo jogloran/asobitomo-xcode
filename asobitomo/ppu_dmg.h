@@ -27,21 +27,20 @@ public:
   };
   
   GameBoyPPU(CPU& cpu):
-    PPUBase(cpu) {
-//    debugger(*this), tilemap(*this) {
+    PPUBase(cpu, std::make_unique<TD>(*this), std::make_unique<TM>(*this)) {
     visible.reserve(40);
     
-//    debugger.set_enabled(FLAGS_td);
-//    tilemap.set_enabled(FLAGS_tm);
+    
   }
   
   void rasterise_line();
   
   TileRow decode(word start_loc, byte start_y=0 /* 0 to 7 */);
-  TileRow tilemap_index_to_tile(byte index, byte y_offset);
   
-//  TD debugger;
-//  TM tilemap;
+  TileRow tilemap_index_to_tile(byte index, byte y_offset);
+  TileRow tilemap_index_to_tile_debug(byte index, byte y_offset) {
+    return tilemap_index_to_tile(index, y_offset);
+  }
   
   // Caches
   std::array<PPUBase::PaletteIndex, 160> palette_index_row;

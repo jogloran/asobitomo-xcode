@@ -19,7 +19,7 @@ void TD::show() {
     std::vector<PPU::PaletteIndex> tile_pixels;
     
     for (int m = 0; m < 8; ++m) {
-      auto row = ppu_.decode(tile_start, m);
+      auto row = ppu_.tilemap_index_to_tile_debug(i, m);
       std::copy(row.begin(), row.end(), std::back_inserter(tile_pixels));
     }
     

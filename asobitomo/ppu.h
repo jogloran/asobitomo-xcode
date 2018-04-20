@@ -28,21 +28,18 @@ public:
   };
   
   PPU(CPU& cpu):
-    PPUBase(cpu),
-    debugger(*this), tilemap(*this) {
+    PPUBase(cpu, std::make_unique<TD>(*this), std::make_unique<TM>(*this)) {
     visible.reserve(40);
-    
-    debugger.set_enabled(FLAGS_td);
-    tilemap.set_enabled(FLAGS_tm);
   }
   
   void rasterise_line();
   
   TileRow decode(word start_loc, byte start_y=0 /* 0 to 7 */, bool flip_horizontal=false, bool use_alt_bank=false);
-  TileRow tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal=false, bool use_alt_bank=false, bool force_8000_offset=false);
   
-  TD debugger;
-  TM tilemap;
+  TileRow tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal=false, bool use_alt_bank=false, bool force_8000_offset=false);
+  TileRow tilemap_index_to_tile_debug(byte index, byte y_offset) {
+    return tilemap_index_to_tile(index, y_offset);
+  }
   
 public:
   std::vector<RenderedSprite> visible;

@@ -69,8 +69,8 @@ PPUBase::step(long delta) {
           mode = Mode::VBLANK;
           // last hblank: blit buffer
           screen->blit();
-//          debugger.show();
-//          tilemap.show();
+          debugger->show();
+          tilemap->show();
         } else {
           mode = Mode::OAM;
         }
