@@ -272,6 +272,7 @@ void CPU::dump_state() {
 //    << " obp0:" << binary(mmu[0xff48])
 //    << " obp1:" << binary(mmu[0xff49])
     << " rom:" << hex << mmu.mbc->bank_no()
+    << " ram:" << hex << mmu.mbc->ram_bank_no()
     << " wram:" << hex << int(mmu.cgb_ram_bank)
     << " IF: " << binary(mmu[0xff0f])
     << " IE: " << binary(mmu[0xffff])

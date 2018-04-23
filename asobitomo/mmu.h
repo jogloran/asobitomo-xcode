@@ -23,6 +23,9 @@ using namespace std;
 #include "ppu_base.h"
 #include "hdma.h"
 
+DECLARE_bool(no_load);
+DECLARE_bool(no_save);
+
 extern bool in_title;
 
 class MMU {
@@ -54,13 +57,18 @@ public:
     
     MBC cartridge_type = h->cartridge_type;
     mbc = mbc_for(cartridge_type, *this);
-    auto load_path = replace_path_extension(path, "\.gbc?", ".sav");
-    mbc->load(load_path);
-
-    ppu.screen->add_exit_handler([this]() {
-      auto sav_path = replace_path_extension(path, "\.gbc?", ".sav");
-      mbc->save(sav_path);
-    });
+    
+    if (!FLAGS_no_load) {
+      auto load_path = replace_path_extension(path, R"(\.gbc?)", ".sav");
+      mbc->load(load_path);
+    }
+  
+    if (!FLAGS_no_save) {
+      ppu.screen->add_exit_handler([this]() {
+        auto sav_path = replace_path_extension(path, R"(\.gbc?)", ".sav");
+        mbc->save(sav_path);
+      });
+    }
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);

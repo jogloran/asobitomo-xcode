@@ -19,6 +19,7 @@ DEFINE_bool(headless, false, "No display");
 DEFINE_bool(limit_framerate, true, "Limit framerate to 59.7 fps");
 DEFINE_int32(us_per_frame, 17'500, "ms per frame limit");
 DEFINE_int32(run_for_n, -1, "Run for n instructions");
+DEFINE_int32(run_for_cycles, -1, "Run for n cycles");
 DEFINE_string(dump_states_to_file, "", "Dump states to file");
 DEFINE_string(dis_instrs, "", "Instructions to dump for");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
@@ -26,6 +27,8 @@ DEFINE_bool(fake_boot, true, "Initialise registers to post-ROM values");
 DEFINE_string(model, "CGB", "Model to emulate");
 DEFINE_bool(td, false, "Show tile debugger");
 DEFINE_bool(tm, false, "Show tile map");
+DEFINE_bool(no_load, false, "Don't load external RAM from file");
+DEFINE_bool(no_save, false, "Don't save external RAM to file");
 
 DEFINE_bool(xx, false, "Debug");
 
@@ -65,6 +68,7 @@ int main(int argc, char** argv) {
   
   should_dump = FLAGS_dis;
   int run_for_n = FLAGS_run_for_n;
+  int run_for_cycles = FLAGS_run_for_cycles;
   
   std::ofstream states_file;
   if (FLAGS_dump_states_to_file != "") {
@@ -75,7 +79,8 @@ int main(int argc, char** argv) {
     cpu.ppu->screen->on();
   
   long ninstrs = 0;
-  while (run_for_n == -1 || ninstrs < run_for_n) {
+  while ((run_for_n == -1 || ninstrs < run_for_n) &&
+         (run_for_cycles == -1 || cpu.cycles < run_for_cycles)) {
     if (FLAGS_cloop) {
       history.emplace_back(cpu.pc);
       if (history.size() >= 20) {

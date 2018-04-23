@@ -27,6 +27,7 @@ public:
   void load(std::string path);
   
   int bank_no();
+  int ram_bank_no() { return ram_bank; }
   
   MMU& mmu;
   
@@ -37,5 +38,5 @@ public:
   bool select_external_ram;
   bool external_ram_enabled;
   
-  std::array<byte, 0x2000> external_ram;
+  std::array<byte, 0x8000> external_ram;
 };
