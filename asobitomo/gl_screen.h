@@ -30,5 +30,12 @@ public:
   int scale_;
   
   std::chrono::time_point<std::chrono::high_resolution_clock> last_;
-
+  
+  enum class Speed {
+    Fast,
+    Normal,
+    Slow
+  };
+  Speed speed;
+  bool speed_toggled;
 };

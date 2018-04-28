@@ -2,8 +2,11 @@
 #include "cpu.h"
 #include "ppu_base.h"
 
+extern bool should_dump;
+extern bool cloop;
+
 GL::GL(CPU& cpu, int scale)
-: cpu_(cpu), buf(), scale_(scale), last_(std::chrono::high_resolution_clock::now()) {
+: cpu_(cpu), buf(), scale_(scale), last_(std::chrono::high_resolution_clock::now()), speed(Speed::Normal), speed_toggled(false) {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_InitSubSystem(SDL_INIT_VIDEO);
   window_ = SDL_CreateWindow("Game", 0, 0,
@@ -148,6 +151,44 @@ GL::blit() {
     }
     std::cout << std::endl;
     exit(0);
+  } else if (keystates[SDL_SCANCODE_1]) {
+    speed_toggled = true;
+  } else if (speed_toggled && !keystates[SDL_SCANCODE_1]) {
+    speed = speed == Speed::Slow ? Speed::Normal : Speed::Slow;
+    speed_toggled = false;
+  } else {
+    if (keystates[SDL_SCANCODE_TAB]) {
+      speed = Speed::Fast;
+    } else if (speed == Speed::Fast){
+      speed = Speed::Normal;
+    }
+  }
+  
+  if (keystates[SDL_SCANCODE_L]) {
+    if (!should_dump) {
+      std::cerr << "Dumping" << std::endl;
+      should_dump = true;
+      cloop = true;
+    }
+  }
+  if (keystates[SDL_SCANCODE_SEMICOLON]) {
+    if (should_dump) {
+      should_dump = false;
+      cloop = false;
+      std::cerr << "Stopped dumping" << std::endl;
+    }
+  }
+  
+  switch (speed) {
+    case Speed::Normal:
+      FLAGS_us_per_frame = 17500;
+      break;
+    case Speed::Fast:
+      FLAGS_us_per_frame = 3500;
+      break;
+    case Speed::Slow:
+      FLAGS_us_per_frame = 150000;
+      break;
   }
   
   SDL_Event event;
