@@ -185,7 +185,7 @@ public:
     interrupt_enabled = InterruptState::EnableNext;
   }
   void disable_interrupts_next_instruction() {
-    interrupt_enabled = InterruptState::DisableNext;
+    interrupt_enabled = InterruptState::Disabled;
   }
 
   void initiate_dma(word src);
