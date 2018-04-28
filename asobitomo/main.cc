@@ -26,7 +26,7 @@ DEFINE_string(dis_instrs, "", "Instructions to dump for");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
 DEFINE_bool(dis_dump_from_pc, false, "Start dumping once pc has gotten to one of the values in dis_pcs");
 DEFINE_bool(fake_boot, true, "Initialise registers to post-ROM values");
-DEFINE_string(model, "CGB", "Model to emulate");
+DEFINE_string(model, "", "Model to emulate");
 DEFINE_bool(td, false, "Show tile debugger");
 DEFINE_bool(tm, false, "Show tile map");
 DEFINE_bool(no_load, false, "Don't load external RAM from file");

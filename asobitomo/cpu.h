@@ -79,14 +79,22 @@ public:
     }
   }
   
-  Model interpret_model(std::string model_string) {
+  Model interpret_model(std::string rom_path, std::string model_string) {
+    if (model_string == "") {
+      std::string extension = rom_path.substr(rom_path.find_last_of(".") + 1);
+      if (extension == "gbc") {
+        return Model::CGB;
+      } else if (extension == "gb") {
+        return Model::DMG;
+      }
+    }
     if (model_string == "DMG") return Model::DMG;
     if (model_string == "CGB") return Model::CGB;
     
     throw std::runtime_error("Invalid model type");
   }
   
-  CPU(std::string path): CPU(path, interpret_model(FLAGS_model)) {}
+  CPU(std::string path): CPU(path, interpret_model(path, FLAGS_model)) {}
   
   CPU(std::string path, Model model): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
     pc(0x0000), sp(0x0000), cycles(0), model(model),
