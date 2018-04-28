@@ -310,4 +310,6 @@ public:
 
   static std::array<op, NINSTR> cb_ops;
   static std::array<op, NINSTR> ops;
+  
+  std::string get_pc_spec();
 };

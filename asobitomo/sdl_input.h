@@ -1,9 +1,6 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include <gflags/gflags.h>
-
-extern bool should_dump;
 
 enum class Buttons : int {
   U = 1 << 7,
@@ -53,12 +50,6 @@ public:
     }
     if (keystates[SDL_SCANCODE_LSHIFT]) {
       state |= Buttons::B;
-    }
-    if (keystates[SDL_SCANCODE_L]) {
-      should_dump = true;
-    }
-    if (keystates[SDL_SCANCODE_SEMICOLON]) {
-      should_dump = false;
     }
   }
   

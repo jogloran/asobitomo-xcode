@@ -231,22 +231,36 @@ std::set<PCSpec> parse_dis_pcs() {
   return result;
 }
 
+bool dump_from_pc = false;
+
+std::string CPU::get_pc_spec() {
+  std::stringstream s;
+  s << hex << setw(2) << setfill('0') << mmu.mbc->bank_no() << ':' << setw(4) << hex << pc;
+  return s.str();
+}
+
 void CPU::dump_state() {
   auto op_name = op_name_for(pc);
   static std::regex dis_pattern(FLAGS_dis_instrs);
-  static std::set<word> dis_pcs(parse_dis_pcs());
+  static std::set<PCSpec> dis_pcs(parse_dis_pcs());
   
   if (FLAGS_dis_instrs != "" && !std::regex_match(op_name, dis_pattern)) {
     return;
   }
   
-  if (FLAGS_dis_pcs != "" && dis_pcs.find(pc) == dis_pcs.end()) {
+  PCSpec pc_spec = get_pc_spec();
+  
+  if ((FLAGS_dis_pcs != "" && dis_pcs.find(pc_spec) == dis_pcs.end()) && !dump_from_pc) {
     return;
+  }
+  
+  if (FLAGS_dis_dump_from_pc) {
+    dump_from_pc = true;
   }
   
   byte instr = mmu[pc];
   cout << setfill('0') <<
-    "[0x" << setw(4) << hex << pc << "] "
+    "[" << setw(2) << hex << int(mmu.effective_rom_bank_for_loc(pc)) << ':' << setw(4) << hex << pc << "] "
     "af " << setw(2) << hex << static_cast<int>(a)
           << ' ' << to_flag_string(f) << ' ' <<
     "bc " << two_byte_fmt(b, c) << ' ' <<
@@ -257,10 +271,13 @@ void CPU::dump_state() {
       static_cast<int>(sp) << ' '
     << "LY|C: " << setw(2) << hex << static_cast<int>(mmu[0xff44])
     << "|" << setw(2) << hex << static_cast<int>(mmu[0xff45])
-    << " LCDC: " << binary(mmu[0xff40])
-    << " STAT: " << binary(mmu[0xff41])
-    << " ac80:" << hex << setfill('0') << setw(2) << int(mmu[0xac80])<< setw(2)  << int(mmu[0xac81])<< setw(2) << int(mmu[0xac82])<< setw(2) << int(mmu[0xac83])
+//    << " LCDC: " << binary(mmu[0xff40])
+//    << " STAT: " << binary(mmu[0xff41])
+//    << " ac06:" << hex << setfill('0') << setw(2) << int(mmu[0xac06])
+//        << setw(2) << int(mmu[0xac07])
+//    << " ac80:" << hex << setfill('0') << setw(2) << int(mmu[0xac80])<< setw(2)  << int(mmu[0xac81])<< setw(2) << int(mmu[0xac82])<< setw(2) << int(mmu[0xac83])
     << " cy:" << dec << long(cycles)
+    << " pcy:" << dec << long(ppu->ncycles)
     << " vr:" << int(mmu.vram_bank)
 //    << setfill('0')
 //    << " tac:" << setw(2) << int(timer.tac_)
@@ -272,14 +289,13 @@ void CPU::dump_state() {
 //    << " bgp:" << binary(mmu[0xff47])
 //    << " obp0:" << binary(mmu[0xff48])
 //    << " obp1:" << binary(mmu[0xff49])
-    << " rom:" << hex << mmu.mbc->bank_no()
     << " ram:" << hex << mmu.mbc->ram_bank_no()
     << " wram:" << hex << int(mmu.cgb_ram_bank)
     << " IF: " << binary(mmu[0xff0f])
     << " IE: " << binary(mmu[0xffff])
     << " (" << interrupt_state_as_string(interrupt_enabled) << ")"
     << " (" << ppu_state_as_string(ppu->mode) << ")"
-    << "\t" << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
+    << ' ' << hex << setfill('0') << setw(2) << int(instr) << rang::fg::blue
     << " " << op_name << rang::fg::reset << endl;
 }
 

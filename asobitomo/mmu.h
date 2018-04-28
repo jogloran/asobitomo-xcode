@@ -79,6 +79,8 @@ public:
   byte& vram(word loc, bool use_alt_bank);
   byte& operator[](word loc);
   
+  byte effective_rom_bank_for_loc(word loc);
+  
   void dump_cartridge_info() {
     std::cout << rang::style::dim << rang::fg::gray << "Title\t\t" << rang::fg::black << rang::style::reset << (char*)header.title_or_manufacturer.title << rang::fg::reset << rang::style::reset << std::endl;
     std::cout << rang::style::dim << rang::fg::gray << "Type\t\t" << rang::fg::black << rang::style::reset  << header.cartridge_type << rang::fg::reset << rang::style::reset << std::endl;

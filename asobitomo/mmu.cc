@@ -244,3 +244,12 @@ MMU::handle_joypad() {
   
   joypad = (0xf0 & value) | key_input;
 }
+
+byte
+MMU::effective_rom_bank_for_loc(word loc) {
+  if (loc <= 0x3fff) {
+    return 0;
+  } else {
+    return mbc->bank_no();
+  }
+}
