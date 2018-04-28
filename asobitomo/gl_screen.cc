@@ -85,9 +85,7 @@ GL::blit() {
       auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_);
       auto val = std::chrono::microseconds(FLAGS_us_per_frame);
       if (elapsed < val) {
-        auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
-        
-        auto delta(val - elapsed_us);
+        auto delta(val - elapsed);
         std::this_thread::sleep_for(delta);
       }
       last_ = std::chrono::high_resolution_clock::now();
