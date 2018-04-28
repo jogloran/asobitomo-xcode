@@ -122,7 +122,7 @@ PPU::update_stat_register()  {
     IF &= ~(1 << 1);
   }
   
-  if (mode == Mode::VBLANK) {
+  if (mode == Mode::VBLANK && line == 144) {
     IF |= 1 << 0;
   } else {
     IF &= ~(1 << 0);
