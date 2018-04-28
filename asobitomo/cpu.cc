@@ -14,6 +14,7 @@
 
 DECLARE_string(dis_instrs);
 DECLARE_string(dis_pcs);
+DECLARE_bool(dis_dump_from_pc);
 
 bool ASOBITOMO_DEBUG = false;
 
@@ -214,17 +215,17 @@ void CPU::dump_registers_to_file(std::ofstream& out) {
   out << static_cast<byte>(pc >> 8) << static_cast<byte>(pc & 0xff) << a << f << b << c << d << e << h << l;
 }
 
-std::set<word> parse_dis_pcs() {
-  std::set<word> result;
+using PCSpec = std::string;
+std::set<PCSpec> parse_dis_pcs() {
+  std::set<PCSpec> result;
   if (FLAGS_dis_pcs == "") return result;
   
   std::string instrs(FLAGS_dis_pcs);
   std::replace(instrs.begin(), instrs.end(), ',', ' ');
   
   std::istringstream ss(instrs);
-  ss >> std::setbase(16);
-  std::copy(std::istream_iterator<word>(ss),
-            std::istream_iterator<word>(),
+  std::copy(std::istream_iterator<PCSpec>(ss),
+            std::istream_iterator<PCSpec>(),
             std::inserter(result, result.begin()));
   
   return result;
