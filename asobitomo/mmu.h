@@ -21,7 +21,6 @@ using namespace std;
 #include "rang.hpp"
 #include "util.h"
 #include "ppu_base.h"
-#include "hdma.h"
 
 DECLARE_bool(no_load);
 DECLARE_bool(no_save);
