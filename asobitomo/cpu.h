@@ -192,7 +192,7 @@ public:
   void enable_interrupts_next_instruction() {
     interrupt_enabled = InterruptState::EnableNext;
   }
-  void disable_interrupts_next_instruction() {
+  void disable_interrupts() {
     interrupt_enabled = InterruptState::Disabled;
   }
 

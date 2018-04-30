@@ -609,7 +609,7 @@ CP8_HELPER(a)
 }
 
 #define DI() [](CPU& cpu) { \
-  cpu.disable_interrupts_next_instruction(); \
+  cpu.disable_interrupts(); \
 }
 
 #define EI() [](CPU& cpu) { \
