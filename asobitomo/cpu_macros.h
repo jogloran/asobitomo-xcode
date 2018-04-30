@@ -604,10 +604,6 @@ CP8_HELPER(a)
 ////  throw std::runtime_error("Invalid opcode"); \
 //}
 
-#define UNIMPL() [](CPU& cpu) { \
-  throw std::runtime_error("Unimplemented opcode"); \
-}
-
 #define DI() [](CPU& cpu) { \
   cpu.disable_interrupts_next_instruction(); \
 }

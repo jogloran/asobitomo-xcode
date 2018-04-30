@@ -351,10 +351,10 @@ void CPU::stop() {
   pc += 1;
   
   if (prepare_dbl) {
-    dbl = true;
+    dbl = !dbl;
     prepare_dbl = false;
     
-    mmu.mem[0xff4d] = 1 << 7;
+    mmu.mem[0xff4d] = dbl << 7;
   } else {
     halted = true;
   }

@@ -127,7 +127,7 @@ public:
   }
   
   sbyte get_sbyte() {
-    auto r8 = static_cast<int8_t>(mmu[pc]);
+    auto r8 = static_cast<sbyte>(mmu[pc]);
     pc += 1;
     return r8;
   }
@@ -305,6 +305,7 @@ public:
   
   void speed_switch_prepare() {
     prepare_dbl = true;
+    mmu.mem[0xff4d] = 1; // Set ff4d bit 0 to show the CPU is in the "prepare" state
   }
 
   static std::array<op, NINSTR> cb_ops;
