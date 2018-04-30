@@ -15,6 +15,7 @@
 DECLARE_string(dis_instrs);
 DECLARE_string(dis_pcs);
 DECLARE_bool(dis_dump_from_pc);
+DECLARE_bool(audio);
 
 bool ASOBITOMO_DEBUG = false;
 
@@ -416,7 +417,9 @@ void CPU::step(bool debug)  {
   
   if (halted) {
     ppu->step(4);
-    //apu.step(4);
+    if (FLAGS_audio) {
+      apu.step(4);
+    }
     timer.step(4);
     
     cycles += 4;
@@ -441,7 +444,9 @@ void CPU::step(bool debug)  {
     // we need this correct value to be fed into ppu.step
     
     ppu->step(cycles - old_cycles);
-    //apu.step(cycles - old_cycles);
+    if (FLAGS_audio) {
+      apu.step(cycles - old_cycles);
+    }
     timer.step(cycles - old_cycles);
     
     if (instr != 0xf3 && instr != 0xfb) {

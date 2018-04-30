@@ -184,7 +184,7 @@ GL::blit() {
       FLAGS_us_per_frame = 17500;
       break;
     case Speed::Fast:
-      FLAGS_us_per_frame = 3500;
+      FLAGS_us_per_frame = 1750;
       break;
     case Speed::Slow:
       FLAGS_us_per_frame = 150000;

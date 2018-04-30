@@ -31,6 +31,7 @@ DEFINE_bool(td, false, "Show tile debugger");
 DEFINE_bool(tm, false, "Show tile map");
 DEFINE_bool(no_load, false, "Don't load external RAM from file");
 DEFINE_bool(no_save, false, "Don't save external RAM to file");
+DEFINE_bool(audio, false, "Enable sound");
 
 DEFINE_bool(xx, false, "Debug");
 
