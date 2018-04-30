@@ -95,7 +95,9 @@ GameBoyPPU::rasterise_line() {
       
       // write to raster
       auto offset = static_cast<int>(wx - 7);
-      std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
+      if (offset < 160) {
+        std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
+      }
     }
   }
   
