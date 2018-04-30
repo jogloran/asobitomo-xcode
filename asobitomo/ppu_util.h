@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ppu.h"
+#include "ppu_base.h"
 #include "types.h"
+#include "util.h"
 
 #include <algorithm>
 
@@ -22,3 +23,12 @@ void rotate_tiles(byte offset, InIter src, OutIter dest) {
   auto cur = std::copy_n(src + offset, n_copied_from_end, dest);
   std::copy_n(src, 21 - n_copied_from_end, cur);
 }
+
+template <typename SpriteType>
+void sprite_sort(std::vector<SpriteType>& v) {
+  std::sort(v.begin(), v.end(), [](SpriteType s1, SpriteType s2) {
+      return s1.oam_.x == s2.oam_.x ? s1.oam_index_ < s2.oam_index_ : s1.oam_.x < s2.oam_.x;
+    });
+}
+
+std::ostream& operator<<(std::ostream& out, const OAM& oam);

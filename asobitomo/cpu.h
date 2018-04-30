@@ -2,14 +2,15 @@
 
 #include "types.h"
 #include "mmu.h"
-#include "ppu.h"
+#include "ppu_cgb.h"
+#include "ppu_dmg.h"
 #include "ppu_base.h"
 
 #include <array>
 #include <iomanip>
 #include <memory>
 #include "flags.h"
-#include "ppu_dmg.h"
+
 
 DECLARE_string(model);
 
@@ -69,23 +70,31 @@ public:
     CGB,
   };
   
-  std::unique_ptr<PPUBase> get_model(Model model) {
+  std::unique_ptr<PPU> get_model(Model model) {
     switch (model) {
       case Model::DMG: return std::make_unique<GameBoyPPU>(*this);
-      case Model::CGB: return std::make_unique<PPU>(*this);
+      case Model::CGB: return std::make_unique<ColorGameBoyPPU>(*this);
       default:
         throw std::runtime_error("Invalid model type");
     }
   }
   
-  Model interpret_model(std::string model_string) {
+  Model interpret_model(std::string rom_path, std::string model_string) {
+    if (model_string == "") {
+      std::string extension = rom_path.substr(rom_path.find_last_of(".") + 1);
+      if (extension == "gbc") {
+        return Model::CGB;
+      } else if (extension == "gb") {
+        return Model::DMG;
+      }
+    }
     if (model_string == "DMG") return Model::DMG;
     if (model_string == "CGB") return Model::CGB;
     
     throw std::runtime_error("Invalid model type");
   }
   
-  CPU(std::string path): CPU(path, interpret_model(FLAGS_model)) {}
+  CPU(std::string path): CPU(path, interpret_model(path, FLAGS_model)) {}
   
   CPU(std::string path, Model model): a(0), f(0), b(0), c(0), d(0), e(0), h(0), l(0),
     pc(0x0000), sp(0x0000), cycles(0), model(model),
@@ -183,8 +192,8 @@ public:
   void enable_interrupts_next_instruction() {
     interrupt_enabled = InterruptState::EnableNext;
   }
-  void disable_interrupts_next_instruction() {
-    interrupt_enabled = InterruptState::DisableNext;
+  void disable_interrupts() {
+    interrupt_enabled = InterruptState::Disabled;
   }
 
   void initiate_dma(word src);
@@ -195,7 +204,7 @@ public:
 
   Model model;
   Timer timer;
-  std::unique_ptr<PPUBase> ppu;
+  std::unique_ptr<PPU> ppu;
   APU apu;
   MMU mmu;
   
@@ -310,4 +319,6 @@ public:
 
   static std::array<op, NINSTR> cb_ops;
   static std::array<op, NINSTR> ops;
+  
+  std::string get_pc_spec();
 };

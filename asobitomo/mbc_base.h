@@ -12,4 +12,5 @@ public:
   virtual void load(std::string path) {}
   
   virtual int bank_no() = 0;
+  virtual int ram_bank_no() { return -1; }
 };

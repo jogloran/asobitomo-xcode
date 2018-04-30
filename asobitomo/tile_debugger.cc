@@ -4,7 +4,7 @@
 #include "tile_debugger.h"
 
 #include "mmu.h"
-#include "ppu.h"
+#include "ppu_base.h"
 #include "cpu.h"
 #include "ppu_util.h"
 
@@ -13,13 +13,11 @@ void TD::show() {
     return;
   }
   
-  word tile_offset = ppu_.bg_window_tile_data_offset;
   for (int i = 0; i < 256; ++i) {
-    word tile_start = tile_offset + i * 16;
     std::vector<PPU::PaletteIndex> tile_pixels;
     
     for (int m = 0; m < 8; ++m) {
-      auto row = ppu_.decode(tile_start, m);
+      auto row = ppu_.tilemap_index_to_tile_debug(i, m);
       std::copy(row.begin(), row.end(), std::back_inserter(tile_pixels));
     }
     

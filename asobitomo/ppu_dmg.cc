@@ -56,10 +56,8 @@ GameBoyPPU::rasterise_line() {
 
     // Equivalent to:
     // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
-    auto* base = &cpu.mmu[bg_tilemap_offset + row_touched * 32];
-    auto n_copied_from_end = std::min(21, 32 - starting_index);
-    auto cur = std::copy_n(base + starting_index, n_copied_from_end, row_tiles.begin());
-    std::copy_n(base, 21 - n_copied_from_end, cur);
+    auto* tilemap_ptr = &cpu.mmu[bg_tilemap_offset + row_touched * 32];
+    rotate_tiles(starting_index, tilemap_ptr, row_tiles.begin());
     
     std::transform(row_tiles.begin(), row_tiles.end(), tile_data.begin(), [this, scx, scy](byte index) {
       return tilemap_index_to_tile(index, (line + scy) % 8);
@@ -97,7 +95,9 @@ GameBoyPPU::rasterise_line() {
       
       // write to raster
       auto offset = static_cast<int>(wx - 7);
-      std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
+      if (offset < 160) {
+        std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
+      }
     }
   }
   
@@ -126,11 +126,16 @@ GameBoyPPU::rasterise_line() {
           }
         }
         
-        auto decoded = tilemap_index_to_tile(tile_index, tile_y);
-//        word tile_data_begin = 0x8000 + tile_index * 16;
-//        word tile_data_address = tile_data_begin + tile_y * 2;
-//
-//        auto decoded = decode(tile_data_address);
+        // TODO: Need to work out how to modify tilemap_index_to_tile
+        //       to hardcode 0x8000
+        word tile_data_begin = 0x8000 + tile_index * 16;
+        word tile_data_address = tile_data_begin + tile_y * 2;
+        
+        byte b1 = cpu.mmu[tile_data_address];
+        byte b2 = cpu.mmu[tile_data_address + 1];
+
+        // Map the sprite indices through the palette map
+        auto decoded = unpack_bits(b1, b2);
         
         if (entry.flags & (1 << 5)) {
           std::reverse(decoded.begin(), decoded.end());
@@ -140,9 +145,7 @@ GameBoyPPU::rasterise_line() {
       }
     }
 
-    std::sort(visible.begin(), visible.end(), [](RenderedSprite s1, RenderedSprite s2) {
-      return s1.oam_.x == s2.oam_.x ? s1.oam_index_ < s2.oam_index_ : s1.oam_.x < s2.oam_.x;
-    });
+    sprite_sort(visible);
     
     int sprites_rendered = 0;
     for (auto sprite : visible) {
@@ -185,14 +188,14 @@ GameBoyPPU::rasterise_line() {
   }
 }
 
-PPUBase::TileRow
+PPU::TileRow
 GameBoyPPU::decode(word start_loc, byte start_y) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows
   
-  byte b1 = cpu.mmu.mem[start_loc + start_y*2];
-  byte b2 = cpu.mmu.mem[start_loc + start_y*2 + 1];
+  byte b1 = cpu.mmu.vram(start_loc + start_y*2, false);
+  byte b2 = cpu.mmu.vram(start_loc + start_y*2 + 1, false);
   
   // b1/b2 is packed:
   // b1            b2

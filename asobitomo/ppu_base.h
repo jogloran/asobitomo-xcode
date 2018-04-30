@@ -7,6 +7,12 @@
 #include "screen.h"
 #include "gl_screen.h"
 
+#include "tile_debugger.h"
+#include "tile_map.h"
+
+DECLARE_bool(td);
+DECLARE_bool(tm);
+
 struct OAM {
   byte y;
   byte x;
@@ -24,16 +30,20 @@ struct OAM {
 
 class CPU;
 
-class PPUBase {
+class PPU {
 public:
-  PPUBase(CPU& cpu): raster(), screen(std::make_unique<GL>(cpu)),
+  PPU(CPU& cpu,
+    std::unique_ptr<TD> td, std::unique_ptr<TM> tm): raster(), screen(std::make_unique<GL>(cpu)),
     line(0), mode(Mode::OAM), ncycles(0), cpu(cpu), lcd_on(true),
     window_tilemap_offset(0), window_display(false),
     bg_window_tile_data_offset(0x8000),
     bg_tilemap_offset(0),
     sprite_mode(SpriteMode::S8x8), sprite_display(false),
-    bg_display(false) {
-
+    bg_display(false),
+    debugger(std::move(td)), tilemap(std::move(tm)) {
+      
+    debugger->set_enabled(FLAGS_td);
+    tilemap->set_enabled(FLAGS_tm);
   }
   
   virtual void rasterise_line() = 0;
@@ -44,6 +54,8 @@ public:
   
   typedef byte PaletteIndex;
   typedef std::array<PaletteIndex, 8> TileRow;
+  
+  virtual TileRow tilemap_index_to_tile_debug(byte index, byte start_y) = 0;
   
   enum class SpriteMode {
     S8x8, S8x16
@@ -90,4 +102,7 @@ public:
   CPU& cpu;
   
   friend class CPU;
+  
+  std::unique_ptr<TD> debugger;
+  std::unique_ptr<TM> tilemap;
 };

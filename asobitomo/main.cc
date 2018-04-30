@@ -12,6 +12,7 @@
 #include "rang.hpp"
 
 bool should_dump = false;
+bool cloop = false;
 
 DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops");
@@ -19,13 +20,18 @@ DEFINE_bool(headless, false, "No display");
 DEFINE_bool(limit_framerate, true, "Limit framerate to 59.7 fps");
 DEFINE_int32(us_per_frame, 17'500, "ms per frame limit");
 DEFINE_int32(run_for_n, -1, "Run for n instructions");
+DEFINE_int32(run_for_cycles, -1, "Run for n cycles");
 DEFINE_string(dump_states_to_file, "", "Dump states to file");
 DEFINE_string(dis_instrs, "", "Instructions to dump for");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
+DEFINE_bool(dis_dump_from_pc, false, "Start dumping once pc has gotten to one of the values in dis_pcs");
 DEFINE_bool(fake_boot, true, "Initialise registers to post-ROM values");
-DEFINE_string(model, "CGB", "Model to emulate");
+DEFINE_string(model, "", "Model to emulate");
 DEFINE_bool(td, false, "Show tile debugger");
 DEFINE_bool(tm, false, "Show tile map");
+DEFINE_bool(no_load, false, "Don't load external RAM from file");
+DEFINE_bool(no_save, false, "Don't save external RAM to file");
+DEFINE_bool(audio, false, "Enable sound");
 
 DEFINE_bool(xx, false, "Debug");
 
@@ -49,7 +55,6 @@ int main(int argc, char** argv) {
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
-  const bool debug = FLAGS_cloop;
   
   if (FLAGS_fake_boot) {
     cpu.fake_boot();
@@ -64,7 +69,10 @@ int main(int argc, char** argv) {
   in_title = false;
   
   should_dump = FLAGS_dis;
+  cloop = FLAGS_cloop;
+  
   int run_for_n = FLAGS_run_for_n;
+  int run_for_cycles = FLAGS_run_for_cycles;
   
   std::ofstream states_file;
   if (FLAGS_dump_states_to_file != "") {
@@ -75,8 +83,9 @@ int main(int argc, char** argv) {
     cpu.ppu->screen->on();
   
   long ninstrs = 0;
-  while (run_for_n == -1 || ninstrs < run_for_n) {
-    if (FLAGS_cloop) {
+  while ((run_for_n == -1 || ninstrs < run_for_n) &&
+         (run_for_cycles == -1 || cpu.cycles < run_for_cycles)) {
+    if (cloop) {
       history.emplace_back(cpu.pc);
       if (history.size() >= 20) {
         history.pop_front();

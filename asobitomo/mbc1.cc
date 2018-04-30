@@ -1,6 +1,7 @@
 #include "mbc1.h"
 
 #include "mmu.h"
+#include "cpu.h"
 
 int
 MBC1::bank_no() {
@@ -9,20 +10,14 @@ MBC1::bank_no() {
 
 byte*
 MBC1::get(word loc) {
-  if (loc <= 0x1fff) {
+  if (loc <= 0x3fff) {
     return &mmu.cart[loc];
-  } else if (loc <= 0x3fff) {
-    return &mmu.cart[loc];
-  } else if (loc <= 0x5fff) {
-    int full_bank = (bank_hi << 5) + bank; // TODO: need wraparound behaviour?
-    if (full_bank > 0x1f) full_bank = 0x1f;
-    return &mmu.cart[full_bank * 0x4000 + (loc - 0x4000)];
   } else if (loc <= 0x7fff) {
     int full_bank = (bank_hi << 5) + bank; // TODO: need wraparound behaviour?
     if (full_bank > 0x1f) full_bank = 0x1f;
     return &mmu.cart[full_bank * 0x4000 + (loc - 0x4000)];
   } else if (loc >= 0xa000 && loc <= 0xbfff) {
-    return &external_ram[loc - 0xa000];
+    return &external_ram[ram_bank * 0x2000 + (loc - 0xa000)];
   }
   
   return nullptr;
@@ -31,13 +26,7 @@ MBC1::get(word loc) {
 bool
 MBC1::set(word loc, byte value) {
   if (loc <= 0x1fff) {
-    if ((value & 0xf) == 0xa) {
-      // enable
-      external_ram_enabled = true;
-    } else {
-      // disable (default)
-      external_ram_enabled = false;
-    }
+    external_ram_enabled = (value & 0xa) != 0;
     
     return true; // Do not actually modify RAM
   } else if (loc <= 0x3fff) {
@@ -65,7 +54,7 @@ MBC1::set(word loc, byte value) {
     select_external_ram = value & 0x1;
     return true;
   } else if (loc >= 0xa000 && loc <= 0xbfff) {
-    external_ram[loc - 0xa000] = value;
+    external_ram[ram_bank * 0x2000 + (loc - 0xa000)] = value;
     return true;
   }
   
@@ -74,10 +63,10 @@ MBC1::set(word loc, byte value) {
 
 void MBC1::save(std::string path) {
   std::ofstream eram(path, std::ios::binary);
-  eram.write((char*)external_ram.data(), 0x2000);
+  eram.write((char*)external_ram.data(), 0x8000);
 }
 
 void MBC1::load(std::string path) {
   std::ifstream eram(path, std::ios::binary);
-  eram.read((char*)external_ram.data(), 0x2000);
+  eram.read((char*)external_ram.data(), 0x8000);
 }

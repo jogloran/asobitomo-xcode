@@ -13,7 +13,6 @@ using namespace std;
 
 #include "sdl_input.h"
 #include "types.h"
-#include "ppu.h"
 #include "apu.h"
 #include "timer.h"
 #include "mbc_types.h"
@@ -22,16 +21,20 @@ using namespace std;
 #include "rang.hpp"
 #include "util.h"
 #include "ppu_base.h"
+#include "hdma.h"
+
+DECLARE_bool(no_load);
+DECLARE_bool(no_save);
 
 extern bool in_title;
 
 class MMU {
 public:
-  MMU(std::string filename, PPUBase& ppu, APU& apu, Timer& timer):
+  MMU(std::string filename, PPU& ppu, APU& apu, Timer& timer):
     path(filename),
     cart(32768, 0),
     vram_bank(0),
-    rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
+    rom_mapped(true), ppu(ppu), apu(apu), timer(timer), hdma(*this),
     joypad(0xf),
     input(), mbc(),
     cgb_ram_bank(1) {
@@ -54,13 +57,18 @@ public:
     
     MBC cartridge_type = h->cartridge_type;
     mbc = mbc_for(cartridge_type, *this);
-    auto load_path = replace_path_extension(path, "\.gbc?", ".sav");
-    mbc->load(load_path);
-
-    ppu.screen->add_exit_handler([this]() {
-      auto sav_path = replace_path_extension(path, "\.gbc?", ".sav");
-      mbc->save(sav_path);
-    });
+    
+    if (!FLAGS_no_load) {
+      auto load_path = replace_path_extension(path, R"(\.gbc?)", ".sav");
+      mbc->load(load_path);
+    }
+  
+    if (!FLAGS_no_save) {
+      ppu.screen->add_exit_handler([this]() {
+        auto sav_path = replace_path_extension(path, R"(\.gbc?)", ".sav");
+        mbc->save(sav_path);
+      });
+    }
       
     f.seekg(0);
     f.read((char*)cart.data(), rom_size);
@@ -70,6 +78,8 @@ public:
 
   byte& vram(word loc, bool use_alt_bank);
   byte& operator[](word loc);
+  
+  byte effective_rom_bank_for_loc(word loc);
   
   void dump_cartridge_info() {
     std::cout << rang::style::dim << rang::fg::gray << "Title\t\t" << rang::fg::black << rang::style::reset << (char*)header.title_or_manufacturer.title << rang::fg::reset << rang::style::reset << std::endl;
@@ -87,7 +97,7 @@ public:
 
   const std::string path;
 
-  PPUBase& ppu;
+  PPU& ppu;
   APU& apu;
   Timer& timer;
   

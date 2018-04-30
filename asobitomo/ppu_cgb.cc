@@ -1,4 +1,4 @@
-#include "ppu.h"
+#include "ppu_cgb.h"
 #include "cpu.h"
 #include "util.h"
 #include "ppu_util.h"
@@ -12,16 +12,8 @@ inline byte encode_palette(byte palette_number, bool sprite_palette, byte palett
   return ((sprite_palette ? 16 : 0) + palette_number) * 8 + palette_index * 2;
 }
 
-
-std::ostream& operator<<(std::ostream& out, const OAM& oam) {
-  return out << "OAM(" << hex << static_cast<int>(oam.x) << ", "
-    << static_cast<int>(oam.y)
-    << ", tile_index = " << setw(2) << hex << static_cast<int>(oam.tile_index)
-    << ", flags = " << binary(oam.flags) << ")";
-}
-
 PPU::TileRow
-PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank, bool force_8000_offset) {
+ColorGameBoyPPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool use_alt_bank, bool force_8000_offset) {
   // There are 0x1000 bytes of tile data -- each entry is 0x10 bytes, so there are 0x100 entries
   word tile_data_offset = force_8000_offset ? 0x8000 : bg_window_tile_data_offset;
   if (tile_data_offset == 0x8000) {
@@ -38,7 +30,7 @@ PPU::tilemap_index_to_tile(byte index, byte y_offset, bool flip_horizontal, bool
 }
 
 void
-PPU::rasterise_line() {
+ColorGameBoyPPU::rasterise_line() {
   // OAM is at 0xfe00 - 0xfea0 (40 sprites, 4 bytes each)
   byte* oam_ptr = &cpu.mmu.mem[0xfe00];
   OAM* oam = reinterpret_cast<OAM*>(oam_ptr);
@@ -49,18 +41,11 @@ PPU::rasterise_line() {
   if (bg_display) {
     auto row_touched = ((line + scy) % 256) / 8; // % 256 for scy wrap around
   
-    // Create sequence of tiles to use (% 32 to wrap around)
-    // Note that we actually take 21 tiles, because if
-    // scx % 8 != 0, the raster may actually span part
-    // of the first tile and part of the last
     auto starting_index = scx / 8;
     
-    // Access the corresponding data in vram bank 1
     auto* cgb_attrs_base = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, true);
     rotate_tiles(starting_index, cgb_attrs_base, cgb_attr_tiles.begin());
     
-    // Equivalent to:
-    // 0<=i<=21, row_tiles[i] = cpu.mmu[bg_tilemap_offset + row_touched * 32 + ((starting_index + i) % 32)];
     auto* tilemap_ptr = &cpu.mmu.vram(bg_tilemap_offset + row_touched * 32, false);
     rotate_tiles(starting_index, tilemap_ptr, row_tiles.begin());
     
@@ -86,10 +71,6 @@ PPU::rasterise_line() {
     
     auto offset = static_cast<int>(scx % 8);
 
-    // Why do we need palette_index_row? Why not just write directly
-    // into raster? We need palette_index_row (or rather, whenever it is
-    // zero; maybe we can turn it into a mask instead) for the sprite/BG
-    // overlapping check
     std::copy_n(raster_row.begin() + offset, 160, palette_index_row.begin());
     
     // Why (i + offset) / 8?
@@ -133,9 +114,10 @@ PPU::rasterise_line() {
         raster_row[i] = encode_palette(cgb_attrs[i / 8] & 0b111, false, raster_row[i]);
       }
       
-      // write to raster
       auto offset = static_cast<int>(wx - 7);
-      std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
+      if (offset < 160) {
+        std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
+      }
     }
   }
   
@@ -173,9 +155,7 @@ PPU::rasterise_line() {
       }
     }
 
-    std::sort(visible.begin(), visible.end(), [](RenderedSprite s1, RenderedSprite s2) {
-      return s1.oam_.x == s2.oam_.x ? s1.oam_index_ < s2.oam_index_ : s1.oam_.x < s2.oam_.x;
-    });
+    sprite_sort(visible);
     
     int sprites_rendered = 0;
     for (auto sprite : visible) {
@@ -187,20 +167,11 @@ PPU::rasterise_line() {
       auto raster_ptr = raster.begin() + sprite.oam_.x - 8;
       auto sprite_ptr = sprite.pixels_.begin();
       
-      // UNUSED: byte sprite_palette = (sprite.oam_.flags & (1 << 4)) ? obp1 : obp0;
-
-      // If set to 0, sprite is always in front of bkgd and window
-      // If set to 1, if background or window is colour 1, 2, 3, background or window wins
-      //              else if background or window is color 0, sprite wins
       bool sprite_behind_bg = (sprite.oam_.flags & (1 << 7)) != 0;
       
       while (raster_ptr < raster.end() && sprite_ptr < sprite.pixels_.end()) {
         // hack to prevent invalid array access when a sprite starts before column 0
         if (raster_ptr >= raster.begin()) {
-          // We need to examine the original palette byte, since the bg-to-OBJ
-          // priority bit in LCDC needs to examine the original palette index
-          // (and not the index after palette mapping)
-          
           auto sprite_byte = *sprite_ptr; // Sprite palette index
           auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
           
@@ -223,7 +194,7 @@ void flip_bits(PPU::TileRow& tile) {
 }
 
 PPU::TileRow
-PPU::decode(word start_loc, byte start_y, bool flip_horizontal, bool use_alt_bank) {
+ColorGameBoyPPU::decode(word start_loc, byte start_y, bool flip_horizontal, bool use_alt_bank) {
   // start_y is from 0 to 7
   // we want row start_y of the tile
   // 2 bytes per row, 8 rows

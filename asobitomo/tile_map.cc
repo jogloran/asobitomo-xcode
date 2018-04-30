@@ -1,6 +1,6 @@
 #include "tile_map.h"
 
-#include "ppu.h"
+#include "ppu_base.h"
 #include "cpu.h"
 #include "ppu_util.h"
 
@@ -29,7 +29,7 @@ TM::show() {
       // Decode tile
       std::vector<PPU::PaletteIndex> tile_pixels;
       for (int m = 0; m < 8; ++m) {
-        auto row = ppu_.decode(tile_data_address, m);
+        auto row = ppu_.tilemap_index_to_tile_debug(tile_index, m);
         std::copy(row.begin(), row.end(), std::back_inserter(tile_pixels));
       }
       
@@ -98,7 +98,7 @@ TM::show() {
     std::cout << "tile data start: " << hex << setw(4) << (ppu_.bg_window_tile_data_offset + 0x800 + (static_cast<signed char>(tile_index))*16) << std::endl;
 
     for (int i = 0; i < 8; ++i) {
-      auto row = ppu_.tilemap_index_to_tile(tile_index, i);
+      auto row = ppu_.tilemap_index_to_tile_debug(tile_index, i);
 
       for (PPU::PaletteIndex idx: row) {
         word addr = ppu_.bg_window_tile_data_offset + 0x800 +
