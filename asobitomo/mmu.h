@@ -33,7 +33,7 @@ public:
     path(filename),
     cart(32768, 0),
     vram_bank(0),
-    rom_mapped(true), ppu(ppu), apu(apu), timer(timer), hdma(*this),
+    rom_mapped(true), ppu(ppu), apu(apu), timer(timer),
     joypad(0xf),
     input(), mbc(),
     cgb_ram_bank(1) {
