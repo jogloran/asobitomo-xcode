@@ -109,12 +109,14 @@ ColorGameBoyPPU::rasterise_line() {
       });
       
       flatten(tile_data, raster_row.begin());
-
+      
+      auto offset = static_cast<int>(wx - 7);
+      std::copy_n(raster_row.begin(), 160 - std::max(0, offset), palette_index_row.begin() + offset);
+      
       for (int i = 0; i < raster_row.size(); ++i) {
         raster_row[i] = encode_palette(cgb_attrs[i / 8] & 0b111, false, raster_row[i]);
       }
       
-      auto offset = static_cast<int>(wx - 7);
       if (offset < 160) {
         std::copy_n(raster_row.begin(), 160 - std::max(0, offset), raster.begin() + std::max(0, offset));
       }
