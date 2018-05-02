@@ -5,6 +5,7 @@
 #include <iostream>
 #include <ios>
 #include <iomanip>
+#include <algorithm>
 #include "types.h"
 
 #include "rang.hpp"
@@ -32,3 +33,9 @@ private:
 
 two_byte_fmt_manip two_byte_fmt(byte b1, byte b2);
 std::ostream& operator<<(std::ostream& out, const two_byte_fmt_manip& manip);
+
+template <typename T>
+void pv(T begin, T end) {
+  copy(begin, end, std::ostream_iterator<int>(std::cerr, " "));
+  std::cerr << std::endl;
+}
