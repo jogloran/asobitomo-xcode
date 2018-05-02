@@ -52,6 +52,8 @@ GL::blit() {
     for (byte b: fb) {
       if (cpu_.model == CPU::Model::CGB) {
         word bgp;
+        if (b % 2 == 1) --b;
+        
         if (b / 8 < 16) {
           bgp = cpu_.mmu.bgp[b] |
           (cpu_.mmu.bgp[b+1] << 8);
@@ -121,6 +123,18 @@ GL::blit() {
       << int(cpu_.mmu.vram(addr, true))
       << ' ';
       if ((addr-0x9800) % 32 == 31) {
+        std::cout << std::endl;
+      }
+    }
+    std::cout << std::endl;
+    exit(0);
+  } else if (keystates[SDL_SCANCODE_V]) {
+    std::cout << "bg window tile data offset: " << hex << setw(4) << cpu_.ppu->bg_window_tile_data_offset << std::endl;
+    for (word addr = 0x9c00; addr <= 0x9fff; ++addr) {
+      std::cout << hex << setfill('0') << setw(2)
+      << int(cpu_.mmu.vram(addr, true))
+      << ' ';
+      if ((addr-0x9c00) % 32 == 31) {
         std::cout << std::endl;
       }
     }

@@ -8,8 +8,16 @@
 #include <algorithm>
 #include <sstream>
 
-inline byte encode_palette(byte palette_number, bool sprite_palette, byte palette_index) {
-  return ((sprite_palette ? 16 : 0) + palette_number) * 8 + palette_index * 2;
+inline byte encode_palette(byte palette_number, bool sprite_palette, byte palette_index, bool bg_priority=false) {
+  // palette number can be 0-7
+  // bg/win palette numbers are from 0*8+0*2  = 0   to 7*8+4*2  = 64
+  // with bg priority flag      from            1   to            65
+  // sprite palette numbers are from 16*8+0*2 = 128 to 23*8+4*2 = 192
+  return ((sprite_palette ? 16 : 0) + palette_number) * 8 + palette_index * 2 + bg_priority;
+}
+
+inline bool bg_master_priority(byte encoded_palette) {
+  return encoded_palette & 0b1;
 }
 
 PPU::TileRow
@@ -91,7 +99,7 @@ ColorGameBoyPPU::rasterise_line() {
       bool bg_master_priority = cgb_attr & (1 << 7);
       byte palette_index = cgb_attr & 0b111;
       
-      raster[i] = encode_palette(palette_index, false, palette_index_row[i]);
+      raster[i] = encode_palette(palette_index, false, palette_index_row[i], bg_master_priority);
     }
   }
   
@@ -177,7 +185,16 @@ ColorGameBoyPPU::rasterise_line() {
           auto sprite_byte = *sprite_ptr; // Sprite palette index
           auto bg_palette_byte = *bg_palette_index_ptr; // Background palette index
           
-          if (!(sprite_behind_bg && bg_palette_byte % 8 != 0)) {
+          // Conditions for sprite to overlap background:
+          // - bg does not have master priority, AND
+          // - it is not the case that:
+          //     - sprite should be behind BG, AND
+          //     - BG is not transparent
+          if (!bg_master_priority(*raster_ptr) && !(sprite_behind_bg && bg_palette_byte != 0)) {
+            // don't draw sprite (i.e. do nothing and let background shine through) if sprite_behind_bg and bg_palette_byte != 0
+            // i.e. draw sprite if not (sprite_behind_bg and bg_palette_byte != 0), i.e. if !sprite_behind_bg or bg_palette_byte == 0
+            
+            // The problem is that we are drawing the sprite for all 8x8, not just where bg_palette_byte == 0
             if (sprite_byte % 8 != 0) {
               // Use 16 + palette no to indicate OBPx instead of BGPx
               *raster_ptr = encode_palette(sprite.cgb_palette_, true, sprite_byte);
