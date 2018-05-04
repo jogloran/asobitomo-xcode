@@ -84,7 +84,7 @@ public:
 public:
   std::array<byte, 160> raster;
   
-  void update_stat_register();
+  void update_stat_register(bool just_transitioned);
   
   byte line;
   Mode mode;
@@ -98,6 +98,8 @@ public:
   SpriteMode sprite_mode;
   bool sprite_display;
   bool bg_display;
+  
+  bool set_lcd_interrupt_prev;
   
   CPU& cpu;
   
