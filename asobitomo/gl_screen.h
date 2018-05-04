@@ -27,6 +27,8 @@ public:
   void blit();
   
   std::array<byte, BUF_WIDTH * BUF_HEIGHT * 4> buf;
+  std::array<byte, BUF_WIDTH * BUF_HEIGHT * 4> prev_buf;
+  
   int scale_;
   
   std::chrono::time_point<std::chrono::high_resolution_clock> last_;

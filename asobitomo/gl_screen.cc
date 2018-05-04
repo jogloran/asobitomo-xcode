@@ -47,6 +47,7 @@ GL::blit() {
     // to the value of _b_
     
     int i = 0;
+    int j = 0;
     int pos = 0;
     // fb has dims 160x144
     for (byte b: fb) {
@@ -72,10 +73,10 @@ GL::blit() {
         buf[i++] = rgb[0];
         buf[i++] = 255;
       } else {
-        buf[i++] = pal[b][2];
-        buf[i++] = pal[b][1];
-        buf[i++] = pal[b][0];
-        buf[i++] = 255;
+        buf[i++] = (pal[b][2] + prev_buf[j++]) / 2;
+        buf[i++] = (pal[b][1] + prev_buf[j++]) / 2;
+        buf[i++] = (pal[b][0] + prev_buf[j++]) / 2;
+        buf[i++] = (255 + prev_buf[j++]) / 2;
       }
       
       ++pos;
@@ -95,6 +96,8 @@ GL::blit() {
       }
       last_ = std::chrono::high_resolution_clock::now();
     }
+    
+    std::copy(buf.begin(), buf.end(), prev_buf.begin());
   }
   
   // this slows emulator way down

@@ -38,14 +38,17 @@ PPU::step(long delta) {
    *              456                   |
    *                                    /
    */
+  bool just_transitioned = false;
   switch (mode) {
     case Mode::OAM:
       if (ncycles >= 80) {
         mode = Mode::VRAM;
         ncycles -= 80;
+        
+        just_transitioned = true;
       }
       
-      update_stat_register();
+      update_stat_register(just_transitioned);
       break;
     case Mode::VRAM:
       if (ncycles >= 172) {
@@ -54,9 +57,11 @@ PPU::step(long delta) {
         
         rasterise_line();
         screen->set_row(line, raster.begin(), raster.end());
+        
+        just_transitioned = true;
       }
       
-      update_stat_register();
+      update_stat_register(just_transitioned);
       
       break;
     case Mode::HBLANK:
@@ -73,7 +78,7 @@ PPU::step(long delta) {
         } else {
           mode = Mode::OAM;
         }
-        update_stat_register();
+        update_stat_register(true);
       }
       break;
     case Mode::VBLANK:
@@ -87,9 +92,11 @@ PPU::step(long delta) {
         if (line > 153) {
           mode = Mode::OAM;
           line = 0;
+          
+          just_transitioned = true;
         }
         
-        update_stat_register();
+        update_stat_register(just_transitioned);
       }
       
       break;
@@ -97,7 +104,7 @@ PPU::step(long delta) {
 }
 
 void
-PPU::update_stat_register()  {
+PPU::update_stat_register(bool just_transitioned)  {
   byte lyc = cpu.mmu.mem[0xff45];
 
   byte stat = cpu.mmu.mem[0xff41];
@@ -108,24 +115,24 @@ PPU::update_stat_register()  {
   }
   
   cpu.mmu.mem[0xff41] = (stat & 0xfc) | static_cast<byte>(mode);
-  cpu.mmu.mem[0xff44] = static_cast<byte>(line); // Not sure why, but this has to be static_cast<byte> and not just
+  cpu.mmu.mem[0xff44] = line;
   
   byte IF = cpu.mmu.mem[0xff0f];
   bool set_lcd_interrupt =
     ((stat & 0x40) && (lyc == line)) ||
-    ((stat & 0x20) && mode == Mode::OAM) ||
-    ((stat & 0x10) && mode == Mode::VBLANK) ||
-    ((stat & 0x08) && mode == Mode::HBLANK);
-  if (set_lcd_interrupt) {
+    (just_transitioned && (
+      ((stat & 0x20) && mode == Mode::OAM) ||
+      ((stat & 0x10) && mode == Mode::VBLANK) ||
+      ((stat & 0x08) && mode == Mode::HBLANK)));
+  if (set_lcd_interrupt && !set_lcd_interrupt_prev) {
     IF |= 1 << 1;
-  } else {
-    IF &= ~(1 << 1);
   }
   
-  if (mode == Mode::VBLANK && line == 144) {
+  set_lcd_interrupt_prev = set_lcd_interrupt;
+  
+  bool set_vblank_interrupt = mode == Mode::VBLANK && line == 144;
+  if (set_vblank_interrupt) {
     IF |= 1 << 0;
-  } else {
-    IF &= ~(1 << 0);
   }
   
   cpu.mmu.mem[0xff0f] = IF;
