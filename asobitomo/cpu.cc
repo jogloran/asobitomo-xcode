@@ -319,8 +319,8 @@ void CPU::fire_interrupts() {
     return;
   }
 
-  byte interrupt_enable = mmu[0xffff];
-  byte interrupt_flags = mmu[0xff0f];
+  byte interrupt_enable = mmu.mem[0xffff];
+  byte interrupt_flags = mmu.mem[0xff0f];
 
   byte candidate_interrupts = interrupt_enable & interrupt_flags;
 
