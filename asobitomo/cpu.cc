@@ -70,7 +70,7 @@ std::array<op, 256> CPU::ops {
 
  JR_COND_r8((cpu.Z() == 0)) /* JR NZ */ /* 0x20 */,
  LD_WORD_d16(h, l) /* 0x21 */,
- LD_LOC_REG_AUG(+, h, l, a) /* LD (HL+), A todo */ /* 0x22 */,
+ LD_LOC_REG_AUG(+, h, l, a) /* LD (HL+), A */ /* 0x22 */,
  INC_WORD(h, l) /* 0x23 */,
  INC_REG(h) /* 0x24 */,
  DEC_REG(h) /* 0x25 */,
@@ -85,9 +85,9 @@ std::array<op, 256> CPU::ops {
  LD_REG_d8(l) /* 0x2e */,
  CPL() /* CPL */ /* 0x2f */,
 
- JR_COND_r8((cpu.C() == 0)) /* todo */ /* 0x30 */,
+ JR_COND_r8((cpu.C() == 0)) /* 0x30 */,
  LD_WWORD_d16(sp) /* 0x31 */,
- LD_LOC_REG_AUG(-, h, l, a) /* LD (HL-),A todo */ /* 0x32 */,
+ LD_LOC_REG_AUG(-, h, l, a) /* LD (HL-),A */ /* 0x32 */,
  INC_WWORD(sp) /* 0x33 */,
  INC_ADDR(h, l) /* 0x34 */,
  DEC_ADDR(h, l) /* 0x35 */,
